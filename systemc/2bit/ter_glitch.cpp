@@ -326,12 +326,8 @@ SC_MODULE(BalancedTernaryAdder2) {
     void print_report() {
         unsigned int total_switches = 0;
 
-        std::cout << "\n=======================================================\n";
-        std::cout << "        2-TRIT BALANCED TERNARY ADDER SWITCH REPORT    \n";
-        std::cout << "=======================================================\n";
-
         for (int i = 0; i < 2; i++) {
-            unsigned int stage1_switches =
+            total_switches +=
                 stage1_adders[i]->xor1_switches +
                 stage1_adders[i]->xor2_switches +
                 stage1_adders[i]->and1_switches +
@@ -339,42 +335,19 @@ SC_MODULE(BalancedTernaryAdder2) {
                 stage1_adders[i]->and3_switches +
                 stage1_adders[i]->or1_switches;
 
-            std::cout << " S1_FA" << (i + 1)
-                      << " | XOR1 SW: " << std::setw(3) << stage1_adders[i]->xor1_switches
-                      << " | XOR2 SW: " << std::setw(3) << stage1_adders[i]->xor2_switches
-                      << " | AND1 SW: " << std::setw(3) << stage1_adders[i]->and1_switches
-                      << " | AND2 SW: " << std::setw(3) << stage1_adders[i]->and2_switches
-                      << " | AND3 SW: " << std::setw(3) << stage1_adders[i]->and3_switches
-                      << " | OR1 SW: " << std::setw(3) << stage1_adders[i]->or1_switches
-                      << " | TOTAL: " << std::setw(3) << stage1_switches
-                      << "\n";
-
-            total_switches += stage1_switches;
-
-            unsigned int stage2_switches =
+            total_switches +=
                 stage2_adders[i]->xor1_switches +
                 stage2_adders[i]->xor2_switches +
                 stage2_adders[i]->and1_switches +
                 stage2_adders[i]->and2_switches +
                 stage2_adders[i]->and3_switches +
                 stage2_adders[i]->or1_switches;
-
-            std::cout << " S2_FA" << (i + 1)
-                      << " | XOR1 SW: " << std::setw(3) << stage2_adders[i]->xor1_switches
-                      << " | XOR2 SW: " << std::setw(3) << stage2_adders[i]->xor2_switches
-                      << " | AND1 SW: " << std::setw(3) << stage2_adders[i]->and1_switches
-                      << " | AND2 SW: " << std::setw(3) << stage2_adders[i]->and2_switches
-                      << " | AND3 SW: " << std::setw(3) << stage2_adders[i]->and3_switches
-                      << " | OR1 SW: " << std::setw(3) << stage2_adders[i]->or1_switches
-                      << " | TOTAL: " << std::setw(3) << stage2_switches
-                      << "\n";
-
-            total_switches += stage2_switches;
         }
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " GESAMTSUMME ALLER SWITCHES IM 2-TRIT BALANCED ADDER: "
-                  << total_switches << "\n";
+        std::cout << "\n=======================================================\n";
+        std::cout << " 2-TRIT BALANCED TERNARY ADDER\n";
+        std::cout << " GATES: 24\n";
+        std::cout << " SWITCHES: " << total_switches << "\n";
         std::cout << "=======================================================\n";
     }
 
@@ -400,13 +373,8 @@ SC_MODULE(Testbench) {
 
     BalancedTernaryAdder2* design_ptr;
 
-    unsigned int number_of_additions;
-    unsigned int accumulated_expected_results;
-
     SC_CTOR(Testbench)
-        : design_ptr(nullptr),
-          number_of_additions(0),
-          accumulated_expected_results(0)
+        : design_ptr(nullptr)
     {
         SC_THREAD(stimulus);
     }
@@ -423,26 +391,11 @@ SC_MODULE(Testbench) {
 
         design_ptr->reset_counters();
 
-        std::cout << "\n=======================================================\n";
-        std::cout << "       EXHAUSTIVE 2-TRIT TERNARY ADDER TEST 0..3       \n";
-        std::cout << "=======================================================\n";
-        std::cout << " Nr | A_dec | B_dec | Expected | A_a | A_b | B_a | B_b | S_minus | S_plus\n";
-        std::cout << "----+-------+-------+----------+-----+-----+-----+-----+---------+--------\n";
-
         for (unsigned int a_value = 0; a_value < 4; a_value++) {
             for (unsigned int b_value = 0; b_value < 4; b_value++) {
                 apply_test(a_value, b_value);
             }
         }
-
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " Anzahl getesteter Additionen: "
-                  << number_of_additions << "\n";
-        std::cout << " Summe aller erwarteten Ergebniswerte: "
-                  << accumulated_expected_results << "\n";
-        std::cout << " Erwartete Anzahl: 16\n";
-        std::cout << " Erwartete Ergebnissumme: 48\n";
-        std::cout << "=======================================================\n";
 
         design_ptr->print_report();
 
@@ -459,23 +412,6 @@ SC_MODULE(Testbench) {
         B_b.write(encoded_b.rail_b);
 
         wait(20, SC_NS);
-
-        unsigned int expected_result = a_value + b_value;
-
-        number_of_additions++;
-        accumulated_expected_results += expected_result;
-
-        std::cout << std::setw(3) << number_of_additions << " | "
-                  << std::setw(5) << a_value << " | "
-                  << std::setw(5) << b_value << " | "
-                  << std::setw(8) << expected_result << " | "
-                  << A_a.read() << " | "
-                  << A_b.read() << " | "
-                  << B_a.read() << " | "
-                  << B_b.read() << " | "
-                  << S_minus.read() << "     | "
-                  << S_plus.read()
-                  << "\n";
     }
 };
 

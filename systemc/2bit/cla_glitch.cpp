@@ -122,25 +122,12 @@ SC_MODULE(CarryLookaheadAdder2) {
         return t;
     }
 
-    void print_report() {
+    void print_report(unsigned int number_of_errors) {
         std::cout << "\n=======================================================\n";
-        std::cout << "       2-BIT CARRY LOOKAHEAD ADDER SWITCH REPORT      \n";
-        std::cout << "=======================================================\n";
-        std::cout << " PG tier  | P0_XOR:" << std::setw(4) << p_sw[0]
-                  << "  G0_AND:" << std::setw(4) << g_sw[0]
-                  << "  P1_XOR:" << std::setw(4) << p_sw[1]
-                  << "  G1_AND:" << std::setw(4) << g_sw[1] << "\n";
-        std::cout << " C1 logic | AND:"   << std::setw(4) << c1a_sw
-                  << "  OR:"              << std::setw(4) << c1o_sw << "\n";
-        std::cout << " C2 logic | AND1:"  << std::setw(4) << c2a1_sw
-                  << "  AND2:"            << std::setw(4) << c2a2_sw
-                  << "  AND3:"            << std::setw(4) << c2a3_sw
-                  << "  OR1:"             << std::setw(4) << c2o1_sw
-                  << "  OR2:"             << std::setw(4) << c2o2_sw << "\n";
-        std::cout << " Sum tier | S0_XOR:" << std::setw(4) << s_sw[0]
-                  << "  S1_XOR:"          << std::setw(4) << s_sw[1] << "\n";
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " GATES: 13   TOTAL SWITCHES: " << total_switches() << "\n";
+        std::cout << " 2-BIT CARRY LOOKAHEAD ADDER\n";
+        std::cout << " GATES: 13\n";
+        std::cout << " SWITCHES: " << total_switches() << "\n";
+        std::cout << " ERRORS: " << number_of_errors << "\n";
         std::cout << "=======================================================\n";
     }
 };
@@ -155,37 +142,20 @@ SC_MODULE(Testbench) {
 
     CarryLookaheadAdder2* cla_ptr;
 
-    unsigned int number_of_additions;
-    unsigned int accumulated_expected_results;
-    unsigned int accumulated_actual_results;
     unsigned int number_of_errors;
 
     SC_CTOR(Testbench)
-        : cla_ptr(nullptr), number_of_additions(0),
-          accumulated_expected_results(0), accumulated_actual_results(0), number_of_errors(0)
+        : cla_ptr(nullptr), number_of_errors(0)
     { SC_THREAD(stimulus); }
 
     void stimulus() {
-        std::cout << "\n=======================================================\n";
-        std::cout << "         EXHAUSTIVE 2-BIT CARRY LOOKAHEAD TEST        \n";
-        std::cout << "=======================================================\n";
-        std::cout << " Nr |  A | A_dec |  B | B_dec | Expected | Sum | Cout | Actual | Status\n";
-        std::cout << "----+----+-------+----+-------+----------+-----+------+--------+--------\n";
-
         for (unsigned int a_value = 0; a_value < 4; a_value++) {
             for (unsigned int b_value = 0; b_value < 4; b_value++) {
                 apply_test(a_value, b_value);
             }
         }
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " Anzahl getesteter 2-Bit-Additionen: " << number_of_additions << "\n";
-        std::cout << " Summe aller erwarteten Ergebniswerte: " << accumulated_expected_results << "\n";
-        std::cout << " Summe aller tatsaechlichen Ergebniswerte: " << accumulated_actual_results << "\n";
-        std::cout << " Anzahl Fehler: " << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
-
-        cla_ptr->print_report();
+        cla_ptr->print_report(number_of_errors);
         sc_stop();
     }
 
@@ -197,20 +167,7 @@ SC_MODULE(Testbench) {
         unsigned int expected_result = a_value + b_value;
         unsigned int actual_sum      = to_unsigned_2bit(Sum.read());
         unsigned int actual_result   = actual_sum + (Cout.read() ? 4U : 0U);
-        bool is_correct = expected_result == actual_result;
-
-        number_of_additions++;
-        accumulated_expected_results += expected_result;
-        accumulated_actual_results   += actual_result;
-        if (!is_correct) number_of_errors++;
-
-        std::cout << std::setw(3) << number_of_additions << " | "
-                  << A.read() << " | " << std::setw(5) << a_value << " | "
-                  << B.read() << " | " << std::setw(5) << b_value << " | "
-                  << std::setw(8) << expected_result << " | "
-                  << Sum.read() << " | " << std::setw(4) << Cout.read() << " | "
-                  << std::setw(6) << actual_result << " | "
-                  << (is_correct ? "OK" : "FEHLER") << "\n";
+        if (expected_result != actual_result) number_of_errors++;
     }
 };
 

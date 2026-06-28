@@ -43,7 +43,8 @@
       "Bash(MSYS_NO_PATHCONV=1 wsl bash /home/alterhans/projects/bachelor/systemc/run.sh 4bit ter_4bit)",
       "Bash(echo \"TER4_RUN=$?\")",
       "Bash(grep \"GESAMTSUMME\" /tmp/rca2.txt /tmp/ter2.txt /tmp/rca4.txt /tmp/ter4.txt)",
-      "Bash(wsl bash *)"
+      "Bash(wsl bash *)",
+      "Bash(cat > *)"
     ]
   }
 }

@@ -174,14 +174,13 @@ SC_MODULE(CarryLookaheadAdder4) {
         blk->A(A); blk->B(B); blk->Cin(const_zero); blk->Sum(Sum); blk->Cout(Cout);
     }
 
-    void print_report() {
+    void print_report(unsigned int number_of_errors) {
         unsigned int total = blk->total_block_switches();
         std::cout << "\n=======================================================\n";
-        std::cout << "       4-BIT CARRY LOOKAHEAD ADDER SWITCH REPORT      \n";
-        std::cout << "=======================================================\n";
-        std::cout << " BLK0 (bits 0-3) | switches: " << total << "\n";
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " GATES: 38   TOTAL SWITCHES: " << total << "\n";
+        std::cout << " 4-BIT CARRY LOOKAHEAD ADDER\n";
+        std::cout << " GATES: 38\n";
+        std::cout << " SWITCHES: " << total << "\n";
+        std::cout << " ERRORS: " << number_of_errors << "\n";
         std::cout << "=======================================================\n";
     }
 
@@ -198,35 +197,20 @@ SC_MODULE(Testbench) {
 
     CarryLookaheadAdder4* cla_ptr;
 
-    unsigned int number_of_additions;
-    unsigned int accumulated_expected_results;
-    unsigned int accumulated_actual_results;
     unsigned int number_of_errors;
 
     SC_CTOR(Testbench)
-        : cla_ptr(nullptr), number_of_additions(0),
-          accumulated_expected_results(0), accumulated_actual_results(0), number_of_errors(0)
+        : cla_ptr(nullptr), number_of_errors(0)
     { SC_THREAD(stimulus); }
 
     void stimulus() {
-        std::cout << "\n=======================================================\n";
-        std::cout << "         EXHAUSTIVE 4-BIT CARRY LOOKAHEAD TEST        \n";
-        std::cout << "=======================================================\n";
-
         for (unsigned int a_value = 0; a_value < 16; a_value++) {
             for (unsigned int b_value = 0; b_value < 16; b_value++) {
                 apply_test(a_value, b_value);
             }
         }
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " Anzahl getesteter 4-Bit-Additionen: " << number_of_additions << "\n";
-        std::cout << " Summe aller erwarteten Ergebniswerte: " << accumulated_expected_results << "\n";
-        std::cout << " Summe aller tatsaechlichen Ergebniswerte: " << accumulated_actual_results << "\n";
-        std::cout << " Anzahl Fehler: " << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
-
-        cla_ptr->print_report();
+        cla_ptr->print_report(number_of_errors);
         sc_stop();
     }
 
@@ -238,12 +222,7 @@ SC_MODULE(Testbench) {
         unsigned int expected_result = a_value + b_value;
         unsigned int actual_sum      = to_unsigned_4bit(Sum.read());
         unsigned int actual_result   = actual_sum + (Cout.read() ? 16U : 0U);
-        bool is_correct = expected_result == actual_result;
-
-        number_of_additions++;
-        accumulated_expected_results += expected_result;
-        accumulated_actual_results   += actual_result;
-        if (!is_correct) number_of_errors++;
+        if (expected_result != actual_result) number_of_errors++;
     }
 };
 

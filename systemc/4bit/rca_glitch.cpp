@@ -188,25 +188,16 @@ SC_MODULE(RippleCarryAdder4) {
         Cout.write(c[3].read());
     }
 
-    // Function to generate the per-gate report at the end
-    void print_report() {
+    void print_report(unsigned int number_of_errors) {
         unsigned int total_sw = 0;
-        std::cout << "\n=======================================================\n";
-        std::cout << "          RIPPLE CARRY ADDER SWITCH REPORT             \n";
-        std::cout << "=======================================================\n";
-        
         for (int i = 0; i < 4; i++) {
-            std::string name = "FA" + std::to_string(i + 1); // FA1 bis FA4 für einheitliche Optik
-            
-            std::cout << " " << name << " | XOR1 SW: " << std::setw(3) << fa[i]->xor1_switches 
-                      << " | XOR2 SW: " << std::setw(3) << fa[i]->xor2_switches 
-                      << " | OR1 SW: "  << std::setw(3) << fa[i]->or1_switches << "\n";
-            
-            // Gesamtsumme berechnen (XOR1 + XOR2 + AND1 + AND2 + OR1)
             total_sw += (fa[i]->xor1_switches + fa[i]->xor2_switches + fa[i]->and1_switches + fa[i]->and2_switches + fa[i]->or1_switches);
         }
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " GESAMTSUMME ALLER SWITCHES IM RIPPLE CARRY ADDER: " << total_sw << "\n";
+        std::cout << "\n=======================================================\n";
+        std::cout << " 4-BIT RIPPLE CARRY ADDER\n";
+        std::cout << " GATES: 20\n";
+        std::cout << " SWITCHES: " << total_sw << "\n";
+        std::cout << " ERRORS: " << number_of_errors << "\n";
         std::cout << "=======================================================\n";
     }
 
@@ -226,44 +217,23 @@ SC_MODULE(Testbench) {
 
     RippleCarryAdder4* rca_ptr; // Pointer to access printing function
 
-    unsigned int number_of_additions;
-    unsigned int accumulated_expected_results;
-    unsigned int accumulated_actual_results;
     unsigned int number_of_errors;
 
     SC_CTOR(Testbench)
         : rca_ptr(nullptr),
-          number_of_additions(0),
-          accumulated_expected_results(0),
-          accumulated_actual_results(0),
           number_of_errors(0)
     {
         SC_THREAD(stimulus);
     }
 
     void stimulus() {
-        std::cout << "\n=======================================================\n";
-        std::cout << "          EXHAUSTIVE 4-BIT RIPPLE CARRY TEST           \n";
-        std::cout << "=======================================================\n";
-
         for (unsigned int a_value = 0; a_value < 16; a_value++) {
             for (unsigned int b_value = 0; b_value < 16; b_value++) {
                 apply_test(a_value, b_value);
             }
         }
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " Anzahl getesteter 4-Bit-Additionen: "
-                  << number_of_additions << "\n";
-        std::cout << " Summe aller erwarteten Ergebniswerte: "
-                  << accumulated_expected_results << "\n";
-        std::cout << " Summe aller tatsächlichen Ergebniswerte: "
-                  << accumulated_actual_results << "\n";
-        std::cout << " Anzahl Fehler: "
-                  << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
-
-        rca_ptr->print_report();
+        rca_ptr->print_report(number_of_errors);
         sc_stop();
     }
 
@@ -278,13 +248,7 @@ SC_MODULE(Testbench) {
         unsigned int actual_sum = to_unsigned_4bit(Sum.read());
         unsigned int actual_result = actual_sum + (Cout.read() ? 16U : 0U);
 
-        bool is_correct = expected_result == actual_result;
-
-        number_of_additions++;
-        accumulated_expected_results += expected_result;
-        accumulated_actual_results += actual_result;
-
-        if (!is_correct) {
+        if (expected_result != actual_result) {
             number_of_errors++;
         }
     }

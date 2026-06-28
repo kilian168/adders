@@ -342,21 +342,9 @@ SC_MODULE(BalancedTernaryAdder) {
 
     void print_report() {
         unsigned int total_sw = 0;
-
-        std::cout << "\n=======================================================\n";
-        std::cout << "        BALANCED TERNARY ADDER SWITCH REPORT           \n";
-        std::cout << "=======================================================\n";
-
         BsdBinaryFullAdder* blocks[8] = {fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8};
-        std::string names[8] = {"FA1", "FA2", "FA3", "FA4", "FA5", "FA6", "FA7", "FA8"};
 
         for (int i = 0; i < 8; i++) {
-            std::cout << " " << names[i]
-                      << " | XOR1 SW: " << std::setw(3) << blocks[i]->xor1_switches
-                      << " | XOR2 SW: " << std::setw(3) << blocks[i]->xor2_switches
-                      << " | OR1 SW: " << std::setw(3) << blocks[i]->or1_switches
-                      << "\n";
-
             total_sw += (
                 blocks[i]->xor1_switches +
                 blocks[i]->xor2_switches +
@@ -367,8 +355,10 @@ SC_MODULE(BalancedTernaryAdder) {
             );
         }
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " GESAMTSUMME ALLER SWITCHES IM BALANCED ADDER: " << total_sw << "\n";
+        std::cout << "\n=======================================================\n";
+        std::cout << " 4-TRIT BALANCED TERNARY ADDER\n";
+        std::cout << " GATES: 48\n";
+        std::cout << " SWITCHES: " << total_sw << "\n";
         std::cout << "=======================================================\n";
     }
 
@@ -393,13 +383,8 @@ SC_MODULE(Testbench) {
 
     BalancedTernaryAdder* design_ptr;
 
-    unsigned int number_of_additions;
-    unsigned int accumulated_expected_results;
-
     SC_CTOR(Testbench)
-        : design_ptr(nullptr),
-          number_of_additions(0),
-          accumulated_expected_results(0)
+        : design_ptr(nullptr)
     {
         SC_THREAD(stimulus);
     }
@@ -416,24 +401,11 @@ SC_MODULE(Testbench) {
 
         design_ptr->reset_counters();
 
-        std::cout << "\n=======================================================\n";
-        std::cout << "       EXHAUSTIVE 4-TRIT TERNARY ADDER TEST 0..15      \n";
-        std::cout << "=======================================================\n";
-
         for (unsigned int a_value = 0; a_value < 16; a_value++) {
             for (unsigned int b_value = 0; b_value < 16; b_value++) {
                 apply_test(a_value, b_value);
             }
         }
-
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " Anzahl getesteter Additionen: "
-                  << number_of_additions << "\n";
-        std::cout << " Summe aller erwarteten Ergebniswerte: "
-                  << accumulated_expected_results << "\n";
-        std::cout << " Erwartete Anzahl: 256\n";
-        std::cout << " Erwartete Ergebnissumme: 3840\n";
-        std::cout << "=======================================================\n";
 
         design_ptr->print_report();
 
@@ -450,11 +422,6 @@ SC_MODULE(Testbench) {
         B_b.write(encoded_b.rail_b);
 
         wait(20, SC_NS);
-
-        unsigned int expected_result = a_value + b_value;
-
-        number_of_additions++;
-        accumulated_expected_results += expected_result;
     }
 };
 

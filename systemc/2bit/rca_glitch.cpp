@@ -209,36 +209,23 @@ SC_MODULE(RippleCarryAdder2) {
         Cout.write(c[1].read());
     }
 
-    void print_report() {
+    void print_report(unsigned int number_of_errors) {
         unsigned int total_switches = 0;
 
-        std::cout << "\n=======================================================\n";
-        std::cout << "          2-BIT RIPPLE CARRY ADDER SWITCH REPORT       \n";
-        std::cout << "=======================================================\n";
-
         for (int i = 0; i < 2; i++) {
-            unsigned int block_switches =
+            total_switches +=
                 fa[i]->xor1_switches +
                 fa[i]->xor2_switches +
                 fa[i]->and1_switches +
                 fa[i]->and2_switches +
                 fa[i]->or1_switches;
-
-            std::cout << " FA" << (i + 1)
-                      << " | XOR1 SW: " << std::setw(3) << fa[i]->xor1_switches
-                      << " | XOR2 SW: " << std::setw(3) << fa[i]->xor2_switches
-                      << " | AND1 SW: " << std::setw(3) << fa[i]->and1_switches
-                      << " | AND2 SW: " << std::setw(3) << fa[i]->and2_switches
-                      << " | OR1 SW: " << std::setw(3) << fa[i]->or1_switches
-                      << " | TOTAL: " << std::setw(3) << block_switches
-                      << "\n";
-
-            total_switches += block_switches;
         }
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " GESAMTSUMME ALLER SWITCHES IM 2-BIT RCA: "
-                  << total_switches << "\n";
+        std::cout << "\n=======================================================\n";
+        std::cout << " 2-BIT RIPPLE CARRY ADDER\n";
+        std::cout << " GATES: 10\n";
+        std::cout << " SWITCHES: " << total_switches << "\n";
+        std::cout << " ERRORS: " << number_of_errors << "\n";
         std::cout << "=======================================================\n";
     }
 
@@ -261,46 +248,23 @@ SC_MODULE(Testbench) {
 
     RippleCarryAdder2* rca_ptr;
 
-    unsigned int number_of_additions;
-    unsigned int accumulated_expected_results;
-    unsigned int accumulated_actual_results;
     unsigned int number_of_errors;
 
     SC_CTOR(Testbench)
         : rca_ptr(nullptr),
-          number_of_additions(0),
-          accumulated_expected_results(0),
-          accumulated_actual_results(0),
           number_of_errors(0)
     {
         SC_THREAD(stimulus);
     }
 
     void stimulus() {
-        std::cout << "\n=======================================================\n";
-        std::cout << "          EXHAUSTIVE 2-BIT RIPPLE CARRY TEST           \n";
-        std::cout << "=======================================================\n";
-        std::cout << " Nr |  A | A_dec |  B | B_dec | Expected | Sum | Cout | Actual | Status\n";
-        std::cout << "----+----+-------+----+-------+----------+-----+------+--------+--------\n";
-
         for (unsigned int a_value = 0; a_value < 4; a_value++) {
             for (unsigned int b_value = 0; b_value < 4; b_value++) {
                 apply_test(a_value, b_value);
             }
         }
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " Anzahl getesteter 2-Bit-Additionen: "
-                  << number_of_additions << "\n";
-        std::cout << " Summe aller erwarteten Ergebniswerte: "
-                  << accumulated_expected_results << "\n";
-        std::cout << " Summe aller tatsächlichen Ergebniswerte: "
-                  << accumulated_actual_results << "\n";
-        std::cout << " Anzahl Fehler: "
-                  << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
-
-        rca_ptr->print_report();
+        rca_ptr->print_report(number_of_errors);
 
         sc_stop();
     }
@@ -315,27 +279,9 @@ SC_MODULE(Testbench) {
         unsigned int actual_sum = to_unsigned_2bit(Sum.read());
         unsigned int actual_result = actual_sum + (Cout.read() ? 4U : 0U);
 
-        bool is_correct = expected_result == actual_result;
-
-        number_of_additions++;
-        accumulated_expected_results += expected_result;
-        accumulated_actual_results += actual_result;
-
-        if (!is_correct) {
+        if (expected_result != actual_result) {
             number_of_errors++;
         }
-
-        std::cout << std::setw(3) << number_of_additions << " | "
-                  << A.read() << " | "
-                  << std::setw(5) << a_value << " | "
-                  << B.read() << " | "
-                  << std::setw(5) << b_value << " | "
-                  << std::setw(8) << expected_result << " | "
-                  << Sum.read() << " | "
-                  << std::setw(4) << Cout.read() << " | "
-                  << std::setw(6) << actual_result << " | "
-                  << (is_correct ? "OK" : "FEHLER")
-                  << "\n";
     }
 };
 

@@ -197,19 +197,15 @@ SC_MODULE(CarryLookaheadAdder12) {
         Sum.write(s);
     }
 
-    void print_report() {
+    void print_report(unsigned int number_of_errors) {
         unsigned int total=0;
+        for(int i=0;i<3;i++) total+=blk[i]->total_block_switches();
+
         std::cout << "\n=======================================================\n";
-        std::cout << "      12-BIT CARRY LOOKAHEAD ADDER SWITCH REPORT      \n";
-        std::cout << "=======================================================\n";
-        for(int i=0;i<3;i++){
-            unsigned int bsw=blk[i]->total_block_switches();
-            std::cout << " BLK" << i << " (bits " << (i*4) << "-" << (i*4+3)
-                      << ") | switches: " << bsw << "\n";
-            total+=bsw;
-        }
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " GATES: 114   TOTAL SWITCHES: " << total << "\n";
+        std::cout << " 12-BIT CARRY LOOKAHEAD ADDER\n";
+        std::cout << " GATES: 114\n";
+        std::cout << " SWITCHES: " << total << "\n";
+        std::cout << " ERRORS: " << number_of_errors << "\n";
         std::cout << "=======================================================\n";
     }
 
@@ -226,21 +222,13 @@ SC_MODULE(Testbench) {
 
     CarryLookaheadAdder12* cla_ptr;
 
-    unsigned int number_of_additions;
-    unsigned long long accumulated_expected_results;
-    unsigned long long accumulated_actual_results;
     unsigned int number_of_errors;
 
     SC_CTOR(Testbench)
-        : cla_ptr(nullptr), number_of_additions(0),
-          accumulated_expected_results(0), accumulated_actual_results(0), number_of_errors(0)
+        : cla_ptr(nullptr), number_of_errors(0)
     { SC_THREAD(stimulus); }
 
     void stimulus() {
-        std::cout << "\n=======================================================\n";
-        std::cout << "    MONTE CARLO SIMULATION - 12-BIT CLA ADDER         \n";
-        std::cout << "=======================================================\n";
-
         std::mt19937 rng(12345);
         std::uniform_int_distribution<unsigned int> dist(0U, 4095U);
 
@@ -249,14 +237,7 @@ SC_MODULE(Testbench) {
             apply_test(dist(rng), dist(rng));
         }
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " Anzahl getesteter 12-Bit-Additionen: " << number_of_additions << "\n";
-        std::cout << " Summe aller erwarteten Ergebniswerte: " << accumulated_expected_results << "\n";
-        std::cout << " Summe aller tatsaechlichen Ergebniswerte: " << accumulated_actual_results << "\n";
-        std::cout << " Anzahl Fehler: " << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
-
-        cla_ptr->print_report();
+        cla_ptr->print_report(number_of_errors);
         sc_stop();
     }
 
@@ -268,12 +249,7 @@ SC_MODULE(Testbench) {
         unsigned int expected_result = a_value + b_value;
         unsigned int actual_sum      = to_unsigned_12bit(Sum.read());
         unsigned int actual_result   = actual_sum + (Cout.read() ? 4096U : 0U);
-        bool is_correct = expected_result == actual_result;
-
-        number_of_additions++;
-        accumulated_expected_results += expected_result;
-        accumulated_actual_results   += actual_result;
-        if (!is_correct) number_of_errors++;
+        if (expected_result != actual_result) number_of_errors++;
     }
 };
 

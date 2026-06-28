@@ -201,21 +201,15 @@ SC_MODULE(CarryLookaheadAdder16) {
         Sum.write(s);
     }
 
-    void print_report() {
+    void print_report(unsigned int number_of_errors) {
         unsigned int total=0;
+        for(int i=0;i<4;i++) total+=blk[i]->total_block_switches();
+
         std::cout << "\n=======================================================\n";
-        std::cout << "      16-BIT CARRY LOOKAHEAD ADDER SWITCH REPORT      \n";
-        std::cout << "=======================================================\n";
-        for(int i=0;i<4;i++){
-            unsigned int bsw=blk[i]->total_block_switches();
-            std::cout << " BLK" << i << " (bits " << std::setw(2) << (i*4)
-                      << "-" << std::setw(2) << (i*4+3)
-                      << ") | switches: " << std::setw(8) << bsw << "\n";
-            total+=bsw;
-        }
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " GESAMTSUMME ALLER SWITCHES IM 16-BIT CLA: " << total << "\n";
+        std::cout << " 16-BIT CARRY LOOKAHEAD ADDER\n";
         std::cout << " GATES: 152\n";
+        std::cout << " SWITCHES: " << total << "\n";
+        std::cout << " ERRORS: " << number_of_errors << "\n";
         std::cout << "=======================================================\n";
     }
 
@@ -232,21 +226,13 @@ SC_MODULE(Testbench) {
 
     CarryLookaheadAdder16* cla_ptr;
 
-    unsigned int number_of_additions;
-    unsigned long long accumulated_expected_results;
-    unsigned long long accumulated_actual_results;
     unsigned int number_of_errors;
 
     SC_CTOR(Testbench)
-        : cla_ptr(nullptr), number_of_additions(0),
-          accumulated_expected_results(0), accumulated_actual_results(0), number_of_errors(0)
+        : cla_ptr(nullptr), number_of_errors(0)
     { SC_THREAD(stimulus); }
 
     void stimulus() {
-        std::cout << "\n=======================================================\n";
-        std::cout << "   MONTE CARLO SIMULATION - 16-BIT CLA ADDER          \n";
-        std::cout << "=======================================================\n";
-
         unsigned int boundary_values[] = {0U, 1U, 32767U, 32768U, 65535U};
         for (unsigned int a_val : boundary_values)
             for (unsigned int b_val : boundary_values)
@@ -258,14 +244,7 @@ SC_MODULE(Testbench) {
         for (unsigned int i = 0; i < number_of_random_tests; i++)
             apply_test(dist(rng), dist(rng));
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " Anzahl getesteter 16-Bit-Additionen: " << number_of_additions << "\n";
-        std::cout << " Summe aller erwarteten Ergebniswerte: " << accumulated_expected_results << "\n";
-        std::cout << " Summe aller tatsaechlichen Ergebniswerte: " << accumulated_actual_results << "\n";
-        std::cout << " Anzahl Fehler: " << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
-
-        cla_ptr->print_report();
+        cla_ptr->print_report(number_of_errors);
         sc_stop();
     }
 
@@ -277,12 +256,7 @@ SC_MODULE(Testbench) {
         unsigned int expected_result = a_value + b_value;
         unsigned int actual_sum      = to_unsigned_16bit(Sum.read());
         unsigned int actual_result   = actual_sum + (Cout.read() ? 65536U : 0U);
-        bool is_correct = expected_result == actual_result;
-
-        number_of_additions++;
-        accumulated_expected_results += expected_result;
-        accumulated_actual_results   += actual_result;
-        if (!is_correct) number_of_errors++;
+        if (expected_result != actual_result) number_of_errors++;
     }
 };
 

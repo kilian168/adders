@@ -294,13 +294,8 @@ SC_MODULE(BalancedTernaryAdder16) {
 
     void print_report() {
         unsigned int total_switches = 0;
-
-        std::cout << "\n=======================================================\n";
-        std::cout << "       16-TRIT BALANCED TERNARY ADDER SWITCH REPORT    \n";
-        std::cout << "=======================================================\n";
-
         for (int i = 0; i < 16; i++) {
-            unsigned int stage1_switches =
+            total_switches +=
                 stage1_adders[i]->xor1_switches +
                 stage1_adders[i]->xor2_switches +
                 stage1_adders[i]->and1_switches +
@@ -308,42 +303,19 @@ SC_MODULE(BalancedTernaryAdder16) {
                 stage1_adders[i]->and3_switches +
                 stage1_adders[i]->or1_switches;
 
-            std::cout << " S1_FA" << (i + 1)
-                      << " | XOR1 SW: " << std::setw(6) << stage1_adders[i]->xor1_switches
-                      << " | XOR2 SW: " << std::setw(6) << stage1_adders[i]->xor2_switches
-                      << " | AND1 SW: " << std::setw(6) << stage1_adders[i]->and1_switches
-                      << " | AND2 SW: " << std::setw(6) << stage1_adders[i]->and2_switches
-                      << " | AND3 SW: " << std::setw(6) << stage1_adders[i]->and3_switches
-                      << " | OR1 SW: " << std::setw(6) << stage1_adders[i]->or1_switches
-                      << " | TOTAL: " << std::setw(7) << stage1_switches
-                      << "\n";
-
-            total_switches += stage1_switches;
-
-            unsigned int stage2_switches =
+            total_switches +=
                 stage2_adders[i]->xor1_switches +
                 stage2_adders[i]->xor2_switches +
                 stage2_adders[i]->and1_switches +
                 stage2_adders[i]->and2_switches +
                 stage2_adders[i]->and3_switches +
                 stage2_adders[i]->or1_switches;
-
-            std::cout << " S2_FA" << (i + 1)
-                      << " | XOR1 SW: " << std::setw(6) << stage2_adders[i]->xor1_switches
-                      << " | XOR2 SW: " << std::setw(6) << stage2_adders[i]->xor2_switches
-                      << " | AND1 SW: " << std::setw(6) << stage2_adders[i]->and1_switches
-                      << " | AND2 SW: " << std::setw(6) << stage2_adders[i]->and2_switches
-                      << " | AND3 SW: " << std::setw(6) << stage2_adders[i]->and3_switches
-                      << " | OR1 SW: " << std::setw(6) << stage2_adders[i]->or1_switches
-                      << " | TOTAL: " << std::setw(7) << stage2_switches
-                      << "\n";
-
-            total_switches += stage2_switches;
         }
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " GESAMTSUMME ALLER SWITCHES IM 16-TRIT BALANCED ADDER: "
-                  << total_switches << "\n";
+        std::cout << "\n=======================================================\n";
+        std::cout << " 16-TRIT BALANCED TERNARY ADDER\n";
+        std::cout << " GATES: 192\n";
+        std::cout << " SWITCHES: " << total_switches << "\n";
         std::cout << "=======================================================\n";
     }
 
@@ -364,13 +336,8 @@ SC_MODULE(Testbench) {
 
     BalancedTernaryAdder16* design_ptr;
 
-    unsigned int number_of_additions;
-    unsigned long long accumulated_expected_results;
-
     SC_CTOR(Testbench)
-        : design_ptr(nullptr),
-          number_of_additions(0),
-          accumulated_expected_results(0)
+        : design_ptr(nullptr)
     {
         SC_THREAD(stimulus);
     }
@@ -386,10 +353,6 @@ SC_MODULE(Testbench) {
         wait(20, SC_NS);
 
         design_ptr->reset_counters();
-
-        std::cout << "\n=======================================================\n";
-        std::cout << "    MONTE CARLO SIMULATION - 16-TRIT TERNARY ADDER     \n";
-        std::cout << "=======================================================\n";
 
         // Volle 16-Trit-Abdeckung (4.3 Mrd. Kombinationen) ist nicht praktikabel.
         // Stattdessen: dieselben Randwerte + dieselbe Monte-Carlo-Stichprobe wie
@@ -413,13 +376,6 @@ SC_MODULE(Testbench) {
             apply_test(a_value, b_value);
         }
 
-        std::cout << "-------------------------------------------------------\n";
-        std::cout << " Anzahl getesteter Additionen: "
-                  << number_of_additions << "\n";
-        std::cout << " Summe aller erwarteten Ergebniswerte: "
-                  << accumulated_expected_results << "\n";
-        std::cout << "=======================================================\n";
-
         design_ptr->print_report();
 
         sc_stop();
@@ -435,11 +391,6 @@ SC_MODULE(Testbench) {
         B_b.write(encoded_b.rail_b);
 
         wait(20, SC_NS);
-
-        unsigned int expected_result = a_value + b_value;
-
-        number_of_additions++;
-        accumulated_expected_results += expected_result;
     }
 };
 
