@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <string>
 #include <random>
+#include <cassert>
 
 // ==========================================
 // Helper functions
@@ -197,16 +198,10 @@ SC_MODULE(CarryLookaheadAdder12) {
         Sum.write(s);
     }
 
-    void print_report(unsigned int number_of_errors) {
+    void print_report() {
         unsigned int total=0;
         for(int i=0;i<3;i++) total+=blk[i]->total_block_switches();
-
-        std::cout << "\n=======================================================\n";
-        std::cout << " 12-BIT CARRY LOOKAHEAD ADDER\n";
-        std::cout << " GATES: 114\n";
-        std::cout << " SWITCHES: " << total << "\n";
-        std::cout << " ERRORS: " << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
+        std::cout << "CLA-12: GATES=114 SWITCHES=" << total << " DELAY=6ns\n";
     }
 
     ~CarryLookaheadAdder12() { for(int i=0;i<3;i++) delete blk[i]; }
@@ -237,7 +232,8 @@ SC_MODULE(Testbench) {
             apply_test(dist(rng), dist(rng));
         }
 
-        cla_ptr->print_report(number_of_errors);
+        assert(number_of_errors == 0);
+        cla_ptr->print_report();
         sc_stop();
     }
 

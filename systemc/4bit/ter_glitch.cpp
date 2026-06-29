@@ -355,11 +355,7 @@ SC_MODULE(BalancedTernaryAdder) {
             );
         }
 
-        std::cout << "\n=======================================================\n";
-        std::cout << " 4-TRIT BALANCED TERNARY ADDER\n";
-        std::cout << " GATES: 48\n";
-        std::cout << " SWITCHES: " << total_sw << "\n";
-        std::cout << "=======================================================\n";
+        std::cout << "TER-4: GATES=48 SWITCHES=" << total_sw << " DELAY=4ns\n";
     }
 
     ~BalancedTernaryAdder() {

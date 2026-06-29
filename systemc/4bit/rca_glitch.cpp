@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <cassert>
 
 // ==========================================
 // Helper functions
@@ -31,8 +32,9 @@ SC_MODULE(FullAdder) {
     sc_in<bool> a, b, cin;
     sc_out<bool> sum, cout;
 
-    // Internal signals act as wires with physical delays
-    sc_signal<bool> s1, c1, c2;
+    sc_event ev_tier2, ev_tier3;
+
+    bool s1_val, c1_val, c2_val;
 
     // Persistent state copies to detect changes
     bool xor1_old, xor2_old, and1_old, and2_old, or1_old;
@@ -45,23 +47,26 @@ SC_MODULE(FullAdder) {
     unsigned int or1_calls,  or1_switches;
 
     SC_CTOR(FullAdder) :
+        s1_val(false), c1_val(false), c2_val(false),
         xor1_old(false), xor2_old(false), and1_old(false), and2_old(false), or1_old(false),
         xor1_calls(0), xor1_switches(0), xor2_calls(0), xor2_switches(0),
         and1_calls(0), and1_switches(0), and2_calls(0), and2_switches(0),
         or1_calls(0),  or1_switches(0)
     {
-        // Separate methods for each gate tier to allow glitches to propagate naturally!
+        // cin is included here (though unused below) purely so that an
+        // upstream carry change re-enters this 1ns-per-tier delay chain,
+        // matching the explicit gate-delay model used by the CLA/ternary adders.
         SC_METHOD(process_tier1);
         dont_initialize();
-        sensitive << a << b;
+        sensitive << a << b << cin;
 
         SC_METHOD(process_tier2);
         dont_initialize();
-        sensitive << s1 << cin;
+        sensitive << ev_tier2;
 
         SC_METHOD(process_tier3);
         dont_initialize();
-        sensitive << c1 << c2;
+        sensitive << ev_tier3;
     }
 
     // Tier 1: Reacts to raw inputs (XOR1 and AND1)
@@ -71,7 +76,7 @@ SC_MODULE(FullAdder) {
         if (next_xor1 != xor1_old) {
             xor1_old = next_xor1;
             xor1_switches++;
-            s1.write(next_xor1); // This will wake up Tier 2 on the NEXT delta cycle
+            s1_val = next_xor1;
         }
 
         and1_calls++;
@@ -79,14 +84,18 @@ SC_MODULE(FullAdder) {
         if (next_and1 != and1_old) {
             and1_old = next_and1;
             and1_switches++;
-            c1.write(next_and1); // Wakes up Tier 3 later
+            c1_val = next_and1;
         }
+
+        ev_tier2.notify(1, SC_NS);
     }
 
     // Tier 2: Reacts to Tier 1 outputs and Carry In (XOR2 and AND2)
     void process_tier2() {
+        bool value_cin = cin.read();
+
         xor2_calls++;
-        bool next_xor2 = s1.read() ^ cin.read();
+        bool next_xor2 = s1_val ^ value_cin;
         if (next_xor2 != xor2_old) {
             xor2_old = next_xor2;
             xor2_switches++;
@@ -94,18 +103,20 @@ SC_MODULE(FullAdder) {
         }
 
         and2_calls++;
-        bool next_and2 = s1.read() & cin.read();
+        bool next_and2 = s1_val & value_cin;
         if (next_and2 != and2_old) {
             and2_old = next_and2;
             and2_switches++;
-            c2.write(next_and2); // Wakes up Tier 3
+            c2_val = next_and2;
         }
+
+        ev_tier3.notify(1, SC_NS);
     }
 
     // Tier 3: Final Output Gate (OR1)
     void process_tier3() {
         or1_calls++;
-        bool next_or1 = c1.read() | c2.read();
+        bool next_or1 = c1_val | c2_val;
         if (next_or1 != or1_old) {
             or1_old = next_or1;
             or1_switches++;
@@ -188,17 +199,12 @@ SC_MODULE(RippleCarryAdder4) {
         Cout.write(c[3].read());
     }
 
-    void print_report(unsigned int number_of_errors) {
+    void print_report() {
         unsigned int total_sw = 0;
         for (int i = 0; i < 4; i++) {
             total_sw += (fa[i]->xor1_switches + fa[i]->xor2_switches + fa[i]->and1_switches + fa[i]->and2_switches + fa[i]->or1_switches);
         }
-        std::cout << "\n=======================================================\n";
-        std::cout << " 4-BIT RIPPLE CARRY ADDER\n";
-        std::cout << " GATES: 20\n";
-        std::cout << " SWITCHES: " << total_sw << "\n";
-        std::cout << " ERRORS: " << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
+        std::cout << "RCA-4: GATES=20 SWITCHES=" << total_sw << " DELAY=8ns\n";
     }
 
 
@@ -233,7 +239,8 @@ SC_MODULE(Testbench) {
             }
         }
 
-        rca_ptr->print_report(number_of_errors);
+        assert(number_of_errors == 0);
+        rca_ptr->print_report();
         sc_stop();
     }
 
@@ -242,7 +249,7 @@ SC_MODULE(Testbench) {
         A.write(make_4bit_vector(a_value));
         B.write(make_4bit_vector(b_value));
 
-        wait(10, SC_NS);
+        wait(200, SC_NS);
 
         unsigned int expected_result = a_value + b_value;
         unsigned int actual_sum = to_unsigned_4bit(Sum.read());

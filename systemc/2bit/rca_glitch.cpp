@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <cassert>
 
 // ==========================================
 // Helper functions
@@ -39,9 +40,12 @@ SC_MODULE(FullAdder) {
     sc_out<bool> sum;
     sc_out<bool> cout;
 
-    sc_signal<bool> s1;
-    sc_signal<bool> c1;
-    sc_signal<bool> c2;
+    sc_event ev_tier2;
+    sc_event ev_tier3;
+
+    bool s1_val;
+    bool c1_val;
+    bool c2_val;
 
     bool xor1_old;
     bool xor2_old;
@@ -61,7 +65,10 @@ SC_MODULE(FullAdder) {
     unsigned int or1_switches;
 
     SC_CTOR(FullAdder)
-        : xor1_old(false),
+        : s1_val(false),
+          c1_val(false),
+          c2_val(false),
+          xor1_old(false),
           xor2_old(false),
           and1_old(false),
           and2_old(false),
@@ -77,17 +84,20 @@ SC_MODULE(FullAdder) {
           or1_calls(0),
           or1_switches(0)
     {
+        // cin is included here (though unused below) purely so that an
+        // upstream carry change re-enters this 1ns-per-tier delay chain,
+        // matching the explicit gate-delay model used by the CLA/ternary adders.
         SC_METHOD(process_tier1);
         dont_initialize();
-        sensitive << a << b;
+        sensitive << a << b << cin;
 
         SC_METHOD(process_tier2);
         dont_initialize();
-        sensitive << s1 << cin;
+        sensitive << ev_tier2;
 
         SC_METHOD(process_tier3);
         dont_initialize();
-        sensitive << c1 << c2;
+        sensitive << ev_tier3;
     }
 
     void process_tier1() {
@@ -99,7 +109,7 @@ SC_MODULE(FullAdder) {
         if (next_xor1 != xor1_old) {
             xor1_old = next_xor1;
             xor1_switches++;
-            s1.write(next_xor1);
+            s1_val = next_xor1;
         }
 
         and1_calls++;
@@ -107,16 +117,17 @@ SC_MODULE(FullAdder) {
         if (next_and1 != and1_old) {
             and1_old = next_and1;
             and1_switches++;
-            c1.write(next_and1);
+            c1_val = next_and1;
         }
+
+        ev_tier2.notify(1, SC_NS);
     }
 
     void process_tier2() {
-        bool value_s1 = s1.read();
         bool value_cin = cin.read();
 
         xor2_calls++;
-        bool next_xor2 = value_s1 ^ value_cin;
+        bool next_xor2 = s1_val ^ value_cin;
         if (next_xor2 != xor2_old) {
             xor2_old = next_xor2;
             xor2_switches++;
@@ -124,20 +135,19 @@ SC_MODULE(FullAdder) {
         }
 
         and2_calls++;
-        bool next_and2 = value_s1 & value_cin;
+        bool next_and2 = s1_val & value_cin;
         if (next_and2 != and2_old) {
             and2_old = next_and2;
             and2_switches++;
-            c2.write(next_and2);
+            c2_val = next_and2;
         }
+
+        ev_tier3.notify(1, SC_NS);
     }
 
     void process_tier3() {
-        bool value_c1 = c1.read();
-        bool value_c2 = c2.read();
-
         or1_calls++;
-        bool next_or1 = value_c1 | value_c2;
+        bool next_or1 = c1_val | c2_val;
         if (next_or1 != or1_old) {
             or1_old = next_or1;
             or1_switches++;
@@ -209,7 +219,7 @@ SC_MODULE(RippleCarryAdder2) {
         Cout.write(c[1].read());
     }
 
-    void print_report(unsigned int number_of_errors) {
+    void print_report() {
         unsigned int total_switches = 0;
 
         for (int i = 0; i < 2; i++) {
@@ -221,12 +231,7 @@ SC_MODULE(RippleCarryAdder2) {
                 fa[i]->or1_switches;
         }
 
-        std::cout << "\n=======================================================\n";
-        std::cout << " 2-BIT RIPPLE CARRY ADDER\n";
-        std::cout << " GATES: 10\n";
-        std::cout << " SWITCHES: " << total_switches << "\n";
-        std::cout << " ERRORS: " << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
+        std::cout << "RCA-2: GATES=10 SWITCHES=" << total_switches << " DELAY=4ns\n";
     }
 
     ~RippleCarryAdder2() {
@@ -264,7 +269,8 @@ SC_MODULE(Testbench) {
             }
         }
 
-        rca_ptr->print_report(number_of_errors);
+        assert(number_of_errors == 0);
+        rca_ptr->print_report();
 
         sc_stop();
     }
@@ -273,7 +279,7 @@ SC_MODULE(Testbench) {
         A.write(make_two_bit_vector(a_value));
         B.write(make_two_bit_vector(b_value));
 
-        wait(10, SC_NS);
+        wait(200, SC_NS);
 
         unsigned int expected_result = a_value + b_value;
         unsigned int actual_sum = to_unsigned_2bit(Sum.read());

@@ -344,11 +344,7 @@ SC_MODULE(BalancedTernaryAdder2) {
                 stage2_adders[i]->or1_switches;
         }
 
-        std::cout << "\n=======================================================\n";
-        std::cout << " 2-TRIT BALANCED TERNARY ADDER\n";
-        std::cout << " GATES: 24\n";
-        std::cout << " SWITCHES: " << total_switches << "\n";
-        std::cout << "=======================================================\n";
+        std::cout << "TER-2: GATES=24 SWITCHES=" << total_switches << " DELAY=4ns\n";
     }
 
     ~BalancedTernaryAdder2() {

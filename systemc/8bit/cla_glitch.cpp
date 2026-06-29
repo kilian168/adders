@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <cassert>
 
 // ==========================================
 // Helper functions
@@ -187,16 +188,10 @@ SC_MODULE(CarryLookaheadAdder8) {
         Sum.write(s);
     }
 
-    void print_report(unsigned int number_of_errors) {
+    void print_report() {
         unsigned int total=0;
         for(int i=0;i<2;i++) total+=blk[i]->total_block_switches();
-
-        std::cout << "\n=======================================================\n";
-        std::cout << " 8-BIT CARRY LOOKAHEAD ADDER\n";
-        std::cout << " GATES: 76\n";
-        std::cout << " SWITCHES: " << total << "\n";
-        std::cout << " ERRORS: " << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
+        std::cout << "CLA-8: GATES=76 SWITCHES=" << total << " DELAY=4ns\n";
     }
 
     ~CarryLookaheadAdder8() { delete blk[0]; delete blk[1]; }
@@ -225,7 +220,8 @@ SC_MODULE(Testbench) {
             }
         }
 
-        cla_ptr->print_report(number_of_errors);
+        assert(number_of_errors == 0);
+        cla_ptr->print_report();
         sc_stop();
     }
 

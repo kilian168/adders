@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <cassert>
 
 // ==========================================
 // Helper functions
@@ -122,13 +123,8 @@ SC_MODULE(CarryLookaheadAdder2) {
         return t;
     }
 
-    void print_report(unsigned int number_of_errors) {
-        std::cout << "\n=======================================================\n";
-        std::cout << " 2-BIT CARRY LOOKAHEAD ADDER\n";
-        std::cout << " GATES: 13\n";
-        std::cout << " SWITCHES: " << total_switches() << "\n";
-        std::cout << " ERRORS: " << number_of_errors << "\n";
-        std::cout << "=======================================================\n";
+    void print_report() {
+        std::cout << "CLA-2: GATES=13 SWITCHES=" << total_switches() << " DELAY=2ns\n";
     }
 };
 
@@ -155,7 +151,8 @@ SC_MODULE(Testbench) {
             }
         }
 
-        cla_ptr->print_report(number_of_errors);
+        assert(number_of_errors == 0);
+        cla_ptr->print_report();
         sc_stop();
     }
 
