@@ -26,108 +26,107 @@ static unsigned int to_unsigned_4bit(const sc_lv<4>& bits) {
 }
 
 // ==========================================
-// 1. GATE-LEVEL FULL ADDER MODULE
+// 1. GENERIC GATE-LEVEL PRIMITIVE
+//    Each instance is exactly one 2-input AND/OR/XOR gate.
+//    It is sensitive to each of its two inputs independently, so
+//    inputs arriving at different simulated times each trigger their
+//    own evaluation (and are counted as separate switches if the
+//    gate's output value changes), instead of being batched into one
+//    combined evaluation. Output commit is delayed by 1ns from the
+//    evaluation that caused the change, modeling real gate delay.
+// ==========================================
+enum GateOp { GATE_AND, GATE_OR, GATE_XOR };
+
+SC_MODULE(Gate) {
+    sc_in<bool> in1, in2;
+    sc_out<bool> out;
+
+    GateOp op;
+    sc_event ev_commit;
+    bool old_value;
+    bool pending_value;
+    unsigned int calls;
+    unsigned int switches;
+
+    SC_HAS_PROCESS(Gate);
+
+    Gate(sc_module_name name, GateOp gate_op)
+        : sc_module(name), op(gate_op), old_value(false), pending_value(false),
+          calls(0), switches(0)
+    {
+        SC_METHOD(eval);
+        dont_initialize();
+        sensitive << in1 << in2;
+
+        SC_METHOD(commit);
+        dont_initialize();
+        sensitive << ev_commit;
+    }
+
+    void eval() {
+        calls++;
+        bool value_a = in1.read();
+        bool value_b = in2.read();
+        bool next;
+        if (op == GATE_AND)      next = value_a & value_b;
+        else if (op == GATE_OR)  next = value_a | value_b;
+        else /* GATE_XOR */      next = value_a ^ value_b;
+
+        if (next != old_value) {
+            old_value = next;
+            switches++;
+            pending_value = next;
+            ev_commit.notify(1, SC_NS);
+        }
+    }
+
+    void commit() {
+        out.write(pending_value);
+    }
+};
+
+// ==========================================
+// 2. GATE-LEVEL FULL ADDER MODULE (5 gates)
+//    s1   = XOR(a,b)        c1  = AND(a,b)
+//    sum  = XOR(s1,cin)     c2  = AND(s1,cin)
+//    cout = OR(c1,c2)
 // ==========================================
 SC_MODULE(FullAdder) {
     sc_in<bool> a, b, cin;
     sc_out<bool> sum, cout;
 
-    sc_event ev_tier2, ev_tier3;
+    sc_signal<bool> s1, c1, c2;
 
-    bool s1_val, c1_val, c2_val;
+    Gate *g_xor1, *g_and1, *g_xor2, *g_and2, *g_or1;
 
-    // Persistent state copies to detect changes
-    bool xor1_old, xor2_old, and1_old, and2_old, or1_old;
+    SC_CTOR(FullAdder) {
+        g_xor1 = new Gate("XOR1", GATE_XOR);
+        g_xor1->in1(a); g_xor1->in2(b); g_xor1->out(s1);
 
-    // Per-gate counters
-    unsigned int xor1_calls, xor1_switches;
-    unsigned int xor2_calls, xor2_switches;
-    unsigned int and1_calls, and1_switches;
-    unsigned int and2_calls, and2_switches;
-    unsigned int or1_calls,  or1_switches;
+        g_and1 = new Gate("AND1", GATE_AND);
+        g_and1->in1(a); g_and1->in2(b); g_and1->out(c1);
 
-    SC_CTOR(FullAdder) :
-        s1_val(false), c1_val(false), c2_val(false),
-        xor1_old(false), xor2_old(false), and1_old(false), and2_old(false), or1_old(false),
-        xor1_calls(0), xor1_switches(0), xor2_calls(0), xor2_switches(0),
-        and1_calls(0), and1_switches(0), and2_calls(0), and2_switches(0),
-        or1_calls(0),  or1_switches(0)
-    {
-        // cin is included here (though unused below) purely so that an
-        // upstream carry change re-enters this 1ns-per-tier delay chain,
-        // matching the explicit gate-delay model used by the CLA/ternary adders.
-        SC_METHOD(process_tier1);
-        dont_initialize();
-        sensitive << a << b << cin;
+        g_xor2 = new Gate("XOR2", GATE_XOR);
+        g_xor2->in1(s1); g_xor2->in2(cin); g_xor2->out(sum);
 
-        SC_METHOD(process_tier2);
-        dont_initialize();
-        sensitive << ev_tier2;
+        g_and2 = new Gate("AND2", GATE_AND);
+        g_and2->in1(s1); g_and2->in2(cin); g_and2->out(c2);
 
-        SC_METHOD(process_tier3);
-        dont_initialize();
-        sensitive << ev_tier3;
+        g_or1 = new Gate("OR1", GATE_OR);
+        g_or1->in1(c1); g_or1->in2(c2); g_or1->out(cout);
     }
 
-    // Tier 1: Reacts to raw inputs (XOR1 and AND1)
-    void process_tier1() {
-        xor1_calls++;
-        bool next_xor1 = a.read() ^ b.read();
-        if (next_xor1 != xor1_old) {
-            xor1_old = next_xor1;
-            xor1_switches++;
-            s1_val = next_xor1;
-        }
-
-        and1_calls++;
-        bool next_and1 = a.read() & b.read();
-        if (next_and1 != and1_old) {
-            and1_old = next_and1;
-            and1_switches++;
-            c1_val = next_and1;
-        }
-
-        ev_tier2.notify(1, SC_NS);
+    unsigned int total_switches() const {
+        return g_xor1->switches + g_and1->switches + g_xor2->switches + g_and2->switches + g_or1->switches;
     }
 
-    // Tier 2: Reacts to Tier 1 outputs and Carry In (XOR2 and AND2)
-    void process_tier2() {
-        bool value_cin = cin.read();
-
-        xor2_calls++;
-        bool next_xor2 = s1_val ^ value_cin;
-        if (next_xor2 != xor2_old) {
-            xor2_old = next_xor2;
-            xor2_switches++;
-            sum.write(next_xor2);
-        }
-
-        and2_calls++;
-        bool next_and2 = s1_val & value_cin;
-        if (next_and2 != and2_old) {
-            and2_old = next_and2;
-            and2_switches++;
-            c2_val = next_and2;
-        }
-
-        ev_tier3.notify(1, SC_NS);
-    }
-
-    // Tier 3: Final Output Gate (OR1)
-    void process_tier3() {
-        or1_calls++;
-        bool next_or1 = c1_val | c2_val;
-        if (next_or1 != or1_old) {
-            or1_old = next_or1;
-            or1_switches++;
-            cout.write(next_or1);
-        }
+    ~FullAdder() {
+        delete g_xor1; delete g_and1; delete g_xor2; delete g_and2; delete g_or1;
     }
 };
 
-
 // ==========================================
-// 2. 4-BIT RIPPLE CARRY ADDER
+// 3. 4-BIT RIPPLE CARRY ADDER
 // ==========================================
 SC_MODULE(RippleCarryAdder4) {
     sc_in<sc_lv<4>> A, B;
@@ -136,7 +135,7 @@ SC_MODULE(RippleCarryAdder4) {
 
     sc_signal<bool> a[4], b[4], s[4], c[4];
     sc_signal<bool> const_zero;
-    FullAdder* fa[4]; // Array of pointers to track individual instances
+    FullAdder* fa[4];
 
     SC_CTOR(RippleCarryAdder4) {
         for (int i = 0; i < 4; i++) {
@@ -147,11 +146,10 @@ SC_MODULE(RippleCarryAdder4) {
             fa[i]->sum(s[i]);
             fa[i]->cout(c[i]);
 
-            // Explicitly separate port binding to avoid compiler confusion
             if (i == 0) {
-                fa[i]->cin(const_zero); // Bind the first adder's carry-in to a fixed 0
+                fa[i]->cin(const_zero);
             } else {
-                fa[i]->cin(c[i-1]); // Bind subsequent adders to the previous internal carry signal
+                fa[i]->cin(c[i-1]);
             }
         }
 
@@ -162,35 +160,20 @@ SC_MODULE(RippleCarryAdder4) {
         sensitive << s[0] << s[1] << s[2] << s[3] << c[3];
     }
 
-    void reset_counters() {
-    	for (int i = 0; i < 4; i++) {
-            fa[i]->xor1_calls = 0; fa[i]->xor1_switches = 0;
-            fa[i]->xor2_calls = 0; fa[i]->xor2_switches = 0;
-            fa[i]->and1_calls = 0; fa[i]->and1_switches = 0;
-            fa[i]->and2_calls = 0; fa[i]->and2_switches = 0;
-            fa[i]->or1_calls  = 0; fa[i]->or1_switches  = 0;
-        }
-    }
-
-
     void split_inputs() {
         sc_lv<4> val_A = A.read();
         sc_lv<4> val_B = B.read();
 
-        // Loop through each bit
         for (int i = 0; i < 4; i++) {
-            // Only read if the signal has a valid logic 0 or 1 value
             if (val_A[i].is_01() && val_B[i].is_01()) {
                 a[i].write(val_A[i].to_bool());
                 b[i].write(val_B[i].to_bool());
             } else {
-                // Default fallback initialization to prevent 'X' conversion crash
                 a[i].write(false);
                 b[i].write(false);
             }
         }
     }
-
 
     void combine_outputs() {
         sc_lv<4> val_Sum;
@@ -202,11 +185,10 @@ SC_MODULE(RippleCarryAdder4) {
     void print_report() {
         unsigned int total_sw = 0;
         for (int i = 0; i < 4; i++) {
-            total_sw += (fa[i]->xor1_switches + fa[i]->xor2_switches + fa[i]->and1_switches + fa[i]->and2_switches + fa[i]->or1_switches);
+            total_sw += fa[i]->total_switches();
         }
         std::cout << "RCA-4: GATES=20 SWITCHES=" << total_sw << " DELAY=8ns\n";
     }
-
 
     ~RippleCarryAdder4() {
         for (int i = 0; i < 4; i++) delete fa[i];
@@ -214,14 +196,14 @@ SC_MODULE(RippleCarryAdder4) {
 };
 
 // ==========================================
-// 3. TESTBENCH
+// 4. TESTBENCH
 // ==========================================
 SC_MODULE(Testbench) {
     sc_out<sc_lv<4>> A, B;
     sc_in<sc_lv<4>> Sum;
     sc_in<bool> Cout;
 
-    RippleCarryAdder4* rca_ptr; // Pointer to access printing function
+    RippleCarryAdder4* rca_ptr;
 
     unsigned int number_of_errors;
 
@@ -244,7 +226,6 @@ SC_MODULE(Testbench) {
         sc_stop();
     }
 
-
     void apply_test(unsigned int a_value, unsigned int b_value) {
         A.write(make_4bit_vector(a_value));
         B.write(make_4bit_vector(b_value));
@@ -262,7 +243,7 @@ SC_MODULE(Testbench) {
 };
 
 // ==========================================
-// 4. MAIN ENTRY
+// 5. MAIN ENTRY
 // ==========================================
 int sc_main(int argc, char* argv[]) {
     sc_signal<sc_lv<4>> A, B, Sum;
@@ -270,7 +251,7 @@ int sc_main(int argc, char* argv[]) {
 
     RippleCarryAdder4 rca("RCA4");
     Testbench tb("TB");
-    tb.rca_ptr = &rca; // Pass pointer to testbench for reporting
+    tb.rca_ptr = &rca;
 
     rca.A(A); rca.B(B); rca.Sum(Sum); rca.Cout(Cout);
     tb.A(A); tb.B(B); tb.Sum(Sum); tb.Cout(Cout);

@@ -23,6 +23,62 @@ static unsigned int to_unsigned_2bit(const sc_lv<2>& bits) {
 }
 
 // ==========================================
+// 0b. GENERIC GATE-LEVEL PRIMITIVE
+//     Independently sensitive to each input, with a 1ns delay between
+//     evaluation and output commit, so every transient glitch from
+//     asynchronously-arriving inputs is counted as a separate switch.
+// ==========================================
+enum GateOp { GATE_AND, GATE_OR, GATE_XOR };
+
+SC_MODULE(Gate) {
+    sc_in<bool> in1, in2;
+    sc_out<bool> out;
+
+    GateOp op;
+    sc_event ev_commit;
+    bool old_value;
+    bool pending_value;
+    unsigned int calls;
+    unsigned int switches;
+
+    SC_HAS_PROCESS(Gate);
+
+    Gate(sc_module_name name, GateOp gate_op)
+        : sc_module(name), op(gate_op), old_value(false), pending_value(false),
+          calls(0), switches(0)
+    {
+        SC_METHOD(eval);
+        dont_initialize();
+        sensitive << in1 << in2;
+
+        SC_METHOD(commit);
+        dont_initialize();
+        sensitive << ev_commit;
+    }
+
+    void eval() {
+        calls++;
+        bool value_a = in1.read();
+        bool value_b = in2.read();
+        bool next;
+        if (op == GATE_AND)      next = value_a & value_b;
+        else if (op == GATE_OR)  next = value_a | value_b;
+        else /* GATE_XOR */      next = value_a ^ value_b;
+
+        if (next != old_value) {
+            old_value = next;
+            switches++;
+            pending_value = next;
+            ev_commit.notify(1, SC_NS);
+        }
+    }
+
+    void commit() {
+        out.write(pending_value);
+    }
+};
+
+// ==========================================
 // 1. 2-BIT CARRY LOOKAHEAD ADDER MODULE
 //    Gate count: 13
 //    PG tier : 2 XOR (P) + 2 AND (G)          =  4 gates
@@ -30,101 +86,88 @@ static unsigned int to_unsigned_2bit(const sc_lv<2>& bits) {
 //    C2 logic: 3 AND + 2 OR (Cout)             =  5 gates
 //    Sum tier: 2 XOR (S0=P0^Cin, S1=P1^C1)    =  2 gates
 //    Cin is hardwired 0 for top-level adder.
+//    Wired as real per-gate dependencies (not batched tiers).
 // ==========================================
 SC_MODULE(CarryLookaheadAdder2) {
     sc_in<sc_lv<2>>  A, B;
     sc_out<sc_lv<2>> Sum;
     sc_out<bool>     Cout;
 
-    sc_event ev_carry, ev_sum;
+    sc_signal<bool> a_bit[2], b_bit[2];
+    sc_signal<bool> p[2], g[2];
+    sc_signal<bool> const_zero;
+    sc_signal<bool> c1a, c1o;
+    sc_signal<bool> c2a1, c2a2, c2a3, c2o1, c2o2;
+    sc_signal<bool> s[2];
 
-    // Tier 1: PG gates
-    bool p[2], g[2], p_old[2], g_old[2];
-    unsigned int p_sw[2], g_sw[2];
-
-    // Tier 2: Carry logic
-    // C1 = G[0] | (P[0] & Cin),  Cin=0 => c1a always 0
-    bool c1a, c1o, c1a_old, c1o_old;
-    unsigned int c1a_sw, c1o_sw;
-    // C2 = G[1] | (P[1]&G[0]) | (P[1]&P[0]&Cin),  Cin=0 => c2a3 always 0
-    bool c2a1, c2a2, c2a3, c2o1, c2o2;
-    bool c2a1_old, c2a2_old, c2a3_old, c2o1_old, c2o2_old;
-    unsigned int c2a1_sw, c2a2_sw, c2a3_sw, c2o1_sw, c2o2_sw;
-
-    // Tier 3: Sum gates
-    bool s[2], s_old[2];
-    unsigned int s_sw[2];
+    Gate *g_p[2], *g_g[2], *g_s[2];
+    Gate *g_c1a, *g_c1o;
+    Gate *g_c2a1, *g_c2a2, *g_c2a3, *g_c2o1, *g_c2o2;
 
     SC_CTOR(CarryLookaheadAdder2) {
-        for (int i = 0; i < 2; i++) {
-            p[i] = g[i] = p_old[i] = g_old[i] = s[i] = s_old[i] = false;
-            p_sw[i] = g_sw[i] = s_sw[i] = 0;
-        }
-        c1a = c1o = c1a_old = c1o_old = false;
-        c1a_sw = c1o_sw = 0;
-        c2a1 = c2a2 = c2a3 = c2o1 = c2o2 = false;
-        c2a1_old = c2a2_old = c2a3_old = c2o1_old = c2o2_old = false;
-        c2a1_sw = c2a2_sw = c2a3_sw = c2o1_sw = c2o2_sw = 0;
+        SC_METHOD(unpack_inputs);
+        dont_initialize();
+        sensitive << A << B;
 
-        SC_METHOD(tier1_pg);    dont_initialize(); sensitive << A << B;
-        SC_METHOD(tier2_carry); dont_initialize(); sensitive << ev_carry;
-        SC_METHOD(tier3_sum);   dont_initialize(); sensitive << ev_sum;
+        SC_METHOD(pack_outputs);
+        dont_initialize();
+        sensitive << s[0] << s[1] << c2o2;
+
+        for (int i = 0; i < 2; i++) {
+            std::string pn = "P" + std::to_string(i);
+            g_p[i] = new Gate(pn.c_str(), GATE_XOR);
+            g_p[i]->in1(a_bit[i]); g_p[i]->in2(b_bit[i]); g_p[i]->out(p[i]);
+
+            std::string gn = "G" + std::to_string(i);
+            g_g[i] = new Gate(gn.c_str(), GATE_AND);
+            g_g[i]->in1(a_bit[i]); g_g[i]->in2(b_bit[i]); g_g[i]->out(g[i]);
+        }
+
+        g_c1a = new Gate("C1A", GATE_AND); g_c1a->in1(p[0]); g_c1a->in2(const_zero); g_c1a->out(c1a);
+        g_c1o = new Gate("C1O", GATE_OR);  g_c1o->in1(g[0]); g_c1o->in2(c1a);        g_c1o->out(c1o);
+
+        g_c2a1 = new Gate("C2A1", GATE_AND); g_c2a1->in1(p[1]);  g_c2a1->in2(g[0]);        g_c2a1->out(c2a1);
+        g_c2a2 = new Gate("C2A2", GATE_AND); g_c2a2->in1(p[1]);  g_c2a2->in2(p[0]);        g_c2a2->out(c2a2);
+        g_c2a3 = new Gate("C2A3", GATE_AND); g_c2a3->in1(c2a2);  g_c2a3->in2(const_zero);  g_c2a3->out(c2a3);
+        g_c2o1 = new Gate("C2O1", GATE_OR);  g_c2o1->in1(g[1]);  g_c2o1->in2(c2a1);        g_c2o1->out(c2o1);
+        g_c2o2 = new Gate("C2O2", GATE_OR);  g_c2o2->in1(c2o1);  g_c2o2->in2(c2a3);        g_c2o2->out(c2o2);
+
+        g_s[0] = new Gate("S0", GATE_XOR); g_s[0]->in1(p[0]); g_s[0]->in2(const_zero); g_s[0]->out(s[0]);
+        g_s[1] = new Gate("S1", GATE_XOR); g_s[1]->in1(p[1]); g_s[1]->in2(c1o);        g_s[1]->out(s[1]);
     }
 
-    void tier1_pg() {
+    void unpack_inputs() {
         sc_lv<2> va = A.read(), vb = B.read();
         for (int i = 0; i < 2; i++) {
-            bool ai = va[i].is_01() ? va[i].to_bool() : false;
-            bool bi = vb[i].is_01() ? vb[i].to_bool() : false;
-            bool np = ai ^ bi;
-            if (np != p_old[i]) { p_old[i] = np; p[i] = np; p_sw[i]++; }
-            bool ng = ai & bi;
-            if (ng != g_old[i]) { g_old[i] = ng; g[i] = ng; g_sw[i]++; }
+            a_bit[i].write(va[i].is_01() ? va[i].to_bool() : false);
+            b_bit[i].write(vb[i].is_01() ? vb[i].to_bool() : false);
         }
-        ev_carry.notify(1, SC_NS);
     }
 
-    void tier2_carry() {
-        const bool cin = false;
-        // C1
-        bool nc1a = p[0] & cin;
-        if (nc1a != c1a_old) { c1a_old = nc1a; c1a = nc1a; c1a_sw++; }
-        bool nc1o = g[0] | c1a;
-        if (nc1o != c1o_old) { c1o_old = nc1o; c1o = nc1o; c1o_sw++; }
-        // C2 (Cout)
-        bool nc2a1 = p[1] & g[0];
-        if (nc2a1 != c2a1_old) { c2a1_old = nc2a1; c2a1 = nc2a1; c2a1_sw++; }
-        bool nc2a2 = p[1] & p[0];
-        if (nc2a2 != c2a2_old) { c2a2_old = nc2a2; c2a2 = nc2a2; c2a2_sw++; }
-        bool nc2a3 = c2a2 & cin;
-        if (nc2a3 != c2a3_old) { c2a3_old = nc2a3; c2a3 = nc2a3; c2a3_sw++; }
-        bool nc2o1 = g[1] | c2a1;
-        if (nc2o1 != c2o1_old) { c2o1_old = nc2o1; c2o1 = nc2o1; c2o1_sw++; }
-        bool nc2o2 = c2o1 | c2a3;
-        if (nc2o2 != c2o2_old) { c2o2_old = nc2o2; c2o2 = nc2o2; c2o2_sw++; }
-        ev_sum.notify(1, SC_NS);
-    }
-
-    void tier3_sum() {
-        const bool cin = false;
-        bool ns0 = p[0] ^ cin;
-        if (ns0 != s_old[0]) { s_old[0] = ns0; s[0] = ns0; s_sw[0]++; }
-        bool ns1 = p[1] ^ c1o;
-        if (ns1 != s_old[1]) { s_old[1] = ns1; s[1] = ns1; s_sw[1]++; }
-        sc_lv<2> out; out[0] = s[0]; out[1] = s[1];
+    void pack_outputs() {
+        sc_lv<2> out;
+        out[0] = s[0].read();
+        out[1] = s[1].read();
         Sum.write(out);
-        Cout.write(c2o2);
+        Cout.write(c2o2.read());
     }
 
-    unsigned int total_switches() {
+    unsigned int total_switches() const {
         unsigned int t = 0;
-        for (int i = 0; i < 2; i++) t += p_sw[i] + g_sw[i] + s_sw[i];
-        t += c1a_sw + c1o_sw + c2a1_sw + c2a2_sw + c2a3_sw + c2o1_sw + c2o2_sw;
+        for (int i = 0; i < 2; i++) t += g_p[i]->switches + g_g[i]->switches + g_s[i]->switches;
+        t += g_c1a->switches + g_c1o->switches;
+        t += g_c2a1->switches + g_c2a2->switches + g_c2a3->switches + g_c2o1->switches + g_c2o2->switches;
         return t;
     }
 
     void print_report() {
         std::cout << "CLA-2: GATES=13 SWITCHES=" << total_switches() << " DELAY=2ns\n";
+    }
+
+    ~CarryLookaheadAdder2() {
+        for (int i = 0; i < 2; i++) { delete g_p[i]; delete g_g[i]; delete g_s[i]; }
+        delete g_c1a; delete g_c1o;
+        delete g_c2a1; delete g_c2a2; delete g_c2a3; delete g_c2o1; delete g_c2o2;
     }
 };
 
@@ -159,7 +202,7 @@ SC_MODULE(Testbench) {
     void apply_test(unsigned int a_value, unsigned int b_value) {
         A.write(make_2bit_vector(a_value));
         B.write(make_2bit_vector(b_value));
-        wait(10, SC_NS);
+        wait(50, SC_NS);
 
         unsigned int expected_result = a_value + b_value;
         unsigned int actual_sum      = to_unsigned_2bit(Sum.read());

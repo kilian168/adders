@@ -22,11 +22,70 @@ static unsigned int to_unsigned_4bit(const sc_lv<4>& bits) {
 }
 
 // ==========================================
+// 0b. GENERIC GATE-LEVEL PRIMITIVE
+//     Independently sensitive to each input, with a 1ns delay between
+//     evaluation and output commit, so every transient glitch from
+//     asynchronously-arriving inputs is counted as a separate switch.
+// ==========================================
+enum GateOp { GATE_AND, GATE_OR, GATE_XOR };
+
+SC_MODULE(Gate) {
+    sc_in<bool> in1, in2;
+    sc_out<bool> out;
+
+    GateOp op;
+    sc_event ev_commit;
+    bool old_value;
+    bool pending_value;
+    unsigned int calls;
+    unsigned int switches;
+
+    SC_HAS_PROCESS(Gate);
+
+    Gate(sc_module_name name, GateOp gate_op)
+        : sc_module(name), op(gate_op), old_value(false), pending_value(false),
+          calls(0), switches(0)
+    {
+        SC_METHOD(eval);
+        dont_initialize();
+        sensitive << in1 << in2;
+
+        SC_METHOD(commit);
+        dont_initialize();
+        sensitive << ev_commit;
+    }
+
+    void eval() {
+        calls++;
+        bool value_a = in1.read();
+        bool value_b = in2.read();
+        bool next;
+        if (op == GATE_AND)      next = value_a & value_b;
+        else if (op == GATE_OR)  next = value_a | value_b;
+        else /* GATE_XOR */      next = value_a ^ value_b;
+
+        if (next != old_value) {
+            old_value = next;
+            switches++;
+            pending_value = next;
+            ev_commit.notify(1, SC_NS);
+        }
+    }
+
+    void commit() {
+        out.write(pending_value);
+    }
+};
+
+// ==========================================
 // 1. 4-BIT CLA BLOCK MODULE (single lookahead block)
 //    Gate count: 38
 //    PG tier : 4 XOR + 4 AND              =  8 gates
 //    Carry   : C1(2) + C2(5) + C3(8) + C4(11) = 26 gates
 //    Sum tier: 4 XOR                      =  4 gates
+//    Wired as real per-gate dependencies (not batched tiers), so the
+//    carry-lookahead tree's genuine internal gate-to-gate depth is
+//    reflected in both timing and glitch counting.
 // ==========================================
 SC_MODULE(ClaBlock4) {
     sc_in<sc_lv<4>>  A, B;
@@ -34,128 +93,113 @@ SC_MODULE(ClaBlock4) {
     sc_out<sc_lv<4>> Sum;
     sc_out<bool>     Cout;
 
-    sc_event ev_carry, ev_sum;
+    sc_signal<bool> a_bit[4], b_bit[4];
+    sc_signal<bool> p[4], g[4];
+    sc_signal<bool> c1a, c1o;
+    sc_signal<bool> c2a1, c2a2, c2a3, c2o1, c2o2;
+    sc_signal<bool> c3a1, c3a2, c3a3, c3a4, c3a5, c3o1, c3o2, c3o3;
+    sc_signal<bool> c4a1, c4a2, c4a3, c4a4, c4a5, c4a6, c4a7;
+    sc_signal<bool> c4o1, c4o2, c4o3, c4o4;
+    sc_signal<bool> s[4];
 
-    // Tier 1: PG
-    bool p[4], g[4], p_old[4], g_old[4];
-    unsigned int p_sw[4], g_sw[4];
-
-    // Tier 2: Carry lookahead (26 gates)
-    // C1 = G[0]|(P[0]&Cin)
-    bool c1a, c1o, c1a_old, c1o_old;
-    unsigned int c1a_sw, c1o_sw;
-    // C2 = G[1]|(P[1]&G[0])|(P[1]&P[0]&Cin)
-    bool c2a1, c2a2, c2a3, c2o1, c2o2;
-    bool c2a1_old, c2a2_old, c2a3_old, c2o1_old, c2o2_old;
-    unsigned int c2a1_sw, c2a2_sw, c2a3_sw, c2o1_sw, c2o2_sw;
-    // C3 = G[2]|(P[2]&G[1])|(P[2]&P[1]&G[0])|(P[2]&P[1]&P[0]&Cin)
-    bool c3a1, c3a2, c3a3, c3a4, c3a5, c3o1, c3o2, c3o3;
-    bool c3a1_old, c3a2_old, c3a3_old, c3a4_old, c3a5_old, c3o1_old, c3o2_old, c3o3_old;
-    unsigned int c3a1_sw, c3a2_sw, c3a3_sw, c3a4_sw, c3a5_sw, c3o1_sw, c3o2_sw, c3o3_sw;
-    // C4(Cout) = G[3]|(P[3]&G[2])|(P[3]&P[2]&G[1])|(P[3]&P[2]&P[1]&G[0])|(P[3]&P[2]&P[1]&P[0]&Cin)
-    bool c4a1, c4a2, c4a3, c4a4, c4a5, c4a6, c4a7;
-    bool c4o1, c4o2, c4o3, c4o4;
-    bool c4a1_old, c4a2_old, c4a3_old, c4a4_old, c4a5_old, c4a6_old, c4a7_old;
-    bool c4o1_old, c4o2_old, c4o3_old, c4o4_old;
-    unsigned int c4a1_sw, c4a2_sw, c4a3_sw, c4a4_sw, c4a5_sw, c4a6_sw, c4a7_sw;
-    unsigned int c4o1_sw, c4o2_sw, c4o3_sw, c4o4_sw;
-
-    // Tier 3: Sum (S[0]=P[0]^Cin, S[1]=P[1]^C1, S[2]=P[2]^C2, S[3]=P[3]^C3)
-    bool s[4], s_old[4];
-    unsigned int s_sw[4];
+    Gate *g_p[4], *g_g[4], *g_s[4];
+    Gate *g_c1a, *g_c1o;
+    Gate *g_c2a1, *g_c2a2, *g_c2a3, *g_c2o1, *g_c2o2;
+    Gate *g_c3a1, *g_c3a2, *g_c3a3, *g_c3a4, *g_c3a5, *g_c3o1, *g_c3o2, *g_c3o3;
+    Gate *g_c4a1, *g_c4a2, *g_c4a3, *g_c4a4, *g_c4a5, *g_c4a6, *g_c4a7;
+    Gate *g_c4o1, *g_c4o2, *g_c4o3, *g_c4o4;
 
     SC_CTOR(ClaBlock4) {
-        for (int i = 0; i < 4; i++) {
-            p[i]=g[i]=p_old[i]=g_old[i]=s[i]=s_old[i]=false;
-            p_sw[i]=g_sw[i]=s_sw[i]=0;
-        }
-        c1a=c1o=c1a_old=c1o_old=false; c1a_sw=c1o_sw=0;
-        c2a1=c2a2=c2a3=c2o1=c2o2=false;
-        c2a1_old=c2a2_old=c2a3_old=c2o1_old=c2o2_old=false;
-        c2a1_sw=c2a2_sw=c2a3_sw=c2o1_sw=c2o2_sw=0;
-        c3a1=c3a2=c3a3=c3a4=c3a5=c3o1=c3o2=c3o3=false;
-        c3a1_old=c3a2_old=c3a3_old=c3a4_old=c3a5_old=c3o1_old=c3o2_old=c3o3_old=false;
-        c3a1_sw=c3a2_sw=c3a3_sw=c3a4_sw=c3a5_sw=c3o1_sw=c3o2_sw=c3o3_sw=0;
-        c4a1=c4a2=c4a3=c4a4=c4a5=c4a6=c4a7=false;
-        c4o1=c4o2=c4o3=c4o4=false;
-        c4a1_old=c4a2_old=c4a3_old=c4a4_old=c4a5_old=c4a6_old=c4a7_old=false;
-        c4o1_old=c4o2_old=c4o3_old=c4o4_old=false;
-        c4a1_sw=c4a2_sw=c4a3_sw=c4a4_sw=c4a5_sw=c4a6_sw=c4a7_sw=0;
-        c4o1_sw=c4o2_sw=c4o3_sw=c4o4_sw=0;
+        SC_METHOD(unpack_inputs);
+        dont_initialize();
+        sensitive << A << B;
 
-        SC_METHOD(tier1_pg);    dont_initialize(); sensitive << A << B << Cin;
-        SC_METHOD(tier2_carry); dont_initialize(); sensitive << ev_carry;
-        SC_METHOD(tier3_sum);   dont_initialize(); sensitive << ev_sum;
+        SC_METHOD(pack_outputs);
+        dont_initialize();
+        for (int i = 0; i < 4; i++) sensitive << s[i];
+        sensitive << c4o4;
+
+        for (int i = 0; i < 4; i++) {
+            std::string pn = "P" + std::to_string(i);
+            g_p[i] = new Gate(pn.c_str(), GATE_XOR);
+            g_p[i]->in1(a_bit[i]); g_p[i]->in2(b_bit[i]); g_p[i]->out(p[i]);
+
+            std::string gn = "G" + std::to_string(i);
+            g_g[i] = new Gate(gn.c_str(), GATE_AND);
+            g_g[i]->in1(a_bit[i]); g_g[i]->in2(b_bit[i]); g_g[i]->out(g[i]);
+        }
+
+        g_c1a = new Gate("C1A", GATE_AND); g_c1a->in1(p[0]); g_c1a->in2(Cin); g_c1a->out(c1a);
+        g_c1o = new Gate("C1O", GATE_OR);  g_c1o->in1(g[0]); g_c1o->in2(c1a); g_c1o->out(c1o);
+
+        g_c2a1 = new Gate("C2A1", GATE_AND); g_c2a1->in1(p[1]);  g_c2a1->in2(g[0]);  g_c2a1->out(c2a1);
+        g_c2a2 = new Gate("C2A2", GATE_AND); g_c2a2->in1(p[1]);  g_c2a2->in2(p[0]);  g_c2a2->out(c2a2);
+        g_c2a3 = new Gate("C2A3", GATE_AND); g_c2a3->in1(c2a2);  g_c2a3->in2(Cin);   g_c2a3->out(c2a3);
+        g_c2o1 = new Gate("C2O1", GATE_OR);  g_c2o1->in1(g[1]);  g_c2o1->in2(c2a1);  g_c2o1->out(c2o1);
+        g_c2o2 = new Gate("C2O2", GATE_OR);  g_c2o2->in1(c2o1);  g_c2o2->in2(c2a3);  g_c2o2->out(c2o2);
+
+        g_c3a1 = new Gate("C3A1", GATE_AND); g_c3a1->in1(p[2]);  g_c3a1->in2(g[1]);  g_c3a1->out(c3a1);
+        g_c3a2 = new Gate("C3A2", GATE_AND); g_c3a2->in1(p[2]);  g_c3a2->in2(p[1]);  g_c3a2->out(c3a2);
+        g_c3a3 = new Gate("C3A3", GATE_AND); g_c3a3->in1(c3a2);  g_c3a3->in2(g[0]);  g_c3a3->out(c3a3);
+        g_c3a4 = new Gate("C3A4", GATE_AND); g_c3a4->in1(c3a2);  g_c3a4->in2(p[0]);  g_c3a4->out(c3a4);
+        g_c3a5 = new Gate("C3A5", GATE_AND); g_c3a5->in1(c3a4);  g_c3a5->in2(Cin);   g_c3a5->out(c3a5);
+        g_c3o1 = new Gate("C3O1", GATE_OR);  g_c3o1->in1(g[2]);  g_c3o1->in2(c3a1);  g_c3o1->out(c3o1);
+        g_c3o2 = new Gate("C3O2", GATE_OR);  g_c3o2->in1(c3o1);  g_c3o2->in2(c3a3);  g_c3o2->out(c3o2);
+        g_c3o3 = new Gate("C3O3", GATE_OR);  g_c3o3->in1(c3o2);  g_c3o3->in2(c3a5);  g_c3o3->out(c3o3);
+
+        g_c4a1 = new Gate("C4A1", GATE_AND); g_c4a1->in1(p[3]);  g_c4a1->in2(g[2]);  g_c4a1->out(c4a1);
+        g_c4a2 = new Gate("C4A2", GATE_AND); g_c4a2->in1(p[3]);  g_c4a2->in2(p[2]);  g_c4a2->out(c4a2);
+        g_c4a3 = new Gate("C4A3", GATE_AND); g_c4a3->in1(c4a2);  g_c4a3->in2(g[1]);  g_c4a3->out(c4a3);
+        g_c4a4 = new Gate("C4A4", GATE_AND); g_c4a4->in1(c4a2);  g_c4a4->in2(p[1]);  g_c4a4->out(c4a4);
+        g_c4a5 = new Gate("C4A5", GATE_AND); g_c4a5->in1(c4a4);  g_c4a5->in2(g[0]);  g_c4a5->out(c4a5);
+        g_c4a6 = new Gate("C4A6", GATE_AND); g_c4a6->in1(c4a4);  g_c4a6->in2(p[0]);  g_c4a6->out(c4a6);
+        g_c4a7 = new Gate("C4A7", GATE_AND); g_c4a7->in1(c4a6);  g_c4a7->in2(Cin);   g_c4a7->out(c4a7);
+        g_c4o1 = new Gate("C4O1", GATE_OR);  g_c4o1->in1(g[3]);  g_c4o1->in2(c4a1);  g_c4o1->out(c4o1);
+        g_c4o2 = new Gate("C4O2", GATE_OR);  g_c4o2->in1(c4o1);  g_c4o2->in2(c4a3);  g_c4o2->out(c4o2);
+        g_c4o3 = new Gate("C4O3", GATE_OR);  g_c4o3->in1(c4o2);  g_c4o3->in2(c4a5);  g_c4o3->out(c4o3);
+        g_c4o4 = new Gate("C4O4", GATE_OR);  g_c4o4->in1(c4o3);  g_c4o4->in2(c4a7);  g_c4o4->out(c4o4);
+
+        g_s[0] = new Gate("S0", GATE_XOR); g_s[0]->in1(p[0]); g_s[0]->in2(Cin);  g_s[0]->out(s[0]);
+        g_s[1] = new Gate("S1", GATE_XOR); g_s[1]->in1(p[1]); g_s[1]->in2(c1o);  g_s[1]->out(s[1]);
+        g_s[2] = new Gate("S2", GATE_XOR); g_s[2]->in1(p[2]); g_s[2]->in2(c2o2); g_s[2]->out(s[2]);
+        g_s[3] = new Gate("S3", GATE_XOR); g_s[3]->in1(p[3]); g_s[3]->in2(c3o3); g_s[3]->out(s[3]);
     }
 
-    void tier1_pg() {
+    void unpack_inputs() {
         sc_lv<4> va = A.read(), vb = B.read();
         for (int i = 0; i < 4; i++) {
-            bool ai = va[i].is_01() ? va[i].to_bool() : false;
-            bool bi = vb[i].is_01() ? vb[i].to_bool() : false;
-            bool np = ai ^ bi;
-            if (np != p_old[i]) { p_old[i]=np; p[i]=np; p_sw[i]++; }
-            bool ng = ai & bi;
-            if (ng != g_old[i]) { g_old[i]=ng; g[i]=ng; g_sw[i]++; }
+            a_bit[i].write(va[i].is_01() ? va[i].to_bool() : false);
+            b_bit[i].write(vb[i].is_01() ? vb[i].to_bool() : false);
         }
-        ev_carry.notify(1, SC_NS);
     }
 
-    void tier2_carry() {
-        bool cin = Cin.read();
-        // C1
-        bool nc1a=p[0]&cin;   if(nc1a!=c1a_old){c1a_old=nc1a;c1a=nc1a;c1a_sw++;}
-        bool nc1o=g[0]|c1a;   if(nc1o!=c1o_old){c1o_old=nc1o;c1o=nc1o;c1o_sw++;}
-        // C2
-        bool nc2a1=p[1]&g[0]; if(nc2a1!=c2a1_old){c2a1_old=nc2a1;c2a1=nc2a1;c2a1_sw++;}
-        bool nc2a2=p[1]&p[0]; if(nc2a2!=c2a2_old){c2a2_old=nc2a2;c2a2=nc2a2;c2a2_sw++;}
-        bool nc2a3=c2a2&cin;  if(nc2a3!=c2a3_old){c2a3_old=nc2a3;c2a3=nc2a3;c2a3_sw++;}
-        bool nc2o1=g[1]|c2a1; if(nc2o1!=c2o1_old){c2o1_old=nc2o1;c2o1=nc2o1;c2o1_sw++;}
-        bool nc2o2=c2o1|c2a3; if(nc2o2!=c2o2_old){c2o2_old=nc2o2;c2o2=nc2o2;c2o2_sw++;}
-        // C3
-        bool nc3a1=p[2]&g[1]; if(nc3a1!=c3a1_old){c3a1_old=nc3a1;c3a1=nc3a1;c3a1_sw++;}
-        bool nc3a2=p[2]&p[1]; if(nc3a2!=c3a2_old){c3a2_old=nc3a2;c3a2=nc3a2;c3a2_sw++;}
-        bool nc3a3=c3a2&g[0]; if(nc3a3!=c3a3_old){c3a3_old=nc3a3;c3a3=nc3a3;c3a3_sw++;}
-        bool nc3a4=c3a2&p[0]; if(nc3a4!=c3a4_old){c3a4_old=nc3a4;c3a4=nc3a4;c3a4_sw++;}
-        bool nc3a5=c3a4&cin;  if(nc3a5!=c3a5_old){c3a5_old=nc3a5;c3a5=nc3a5;c3a5_sw++;}
-        bool nc3o1=g[2]|c3a1; if(nc3o1!=c3o1_old){c3o1_old=nc3o1;c3o1=nc3o1;c3o1_sw++;}
-        bool nc3o2=c3o1|c3a3; if(nc3o2!=c3o2_old){c3o2_old=nc3o2;c3o2=nc3o2;c3o2_sw++;}
-        bool nc3o3=c3o2|c3a5; if(nc3o3!=c3o3_old){c3o3_old=nc3o3;c3o3=nc3o3;c3o3_sw++;}
-        // C4 (Cout)
-        bool nc4a1=p[3]&g[2]; if(nc4a1!=c4a1_old){c4a1_old=nc4a1;c4a1=nc4a1;c4a1_sw++;}
-        bool nc4a2=p[3]&p[2]; if(nc4a2!=c4a2_old){c4a2_old=nc4a2;c4a2=nc4a2;c4a2_sw++;}
-        bool nc4a3=c4a2&g[1]; if(nc4a3!=c4a3_old){c4a3_old=nc4a3;c4a3=nc4a3;c4a3_sw++;}
-        bool nc4a4=c4a2&p[1]; if(nc4a4!=c4a4_old){c4a4_old=nc4a4;c4a4=nc4a4;c4a4_sw++;}
-        bool nc4a5=c4a4&g[0]; if(nc4a5!=c4a5_old){c4a5_old=nc4a5;c4a5=nc4a5;c4a5_sw++;}
-        bool nc4a6=c4a4&p[0]; if(nc4a6!=c4a6_old){c4a6_old=nc4a6;c4a6=nc4a6;c4a6_sw++;}
-        bool nc4a7=c4a6&cin;  if(nc4a7!=c4a7_old){c4a7_old=nc4a7;c4a7=nc4a7;c4a7_sw++;}
-        bool nc4o1=g[3]|c4a1; if(nc4o1!=c4o1_old){c4o1_old=nc4o1;c4o1=nc4o1;c4o1_sw++;}
-        bool nc4o2=c4o1|c4a3; if(nc4o2!=c4o2_old){c4o2_old=nc4o2;c4o2=nc4o2;c4o2_sw++;}
-        bool nc4o3=c4o2|c4a5; if(nc4o3!=c4o3_old){c4o3_old=nc4o3;c4o3=nc4o3;c4o3_sw++;}
-        bool nc4o4=c4o3|c4a7; if(nc4o4!=c4o4_old){c4o4_old=nc4o4;c4o4=nc4o4;c4o4_sw++;}
-        ev_sum.notify(1, SC_NS);
-    }
-
-    void tier3_sum() {
-        bool cin = Cin.read();
-        bool ns0=p[0]^cin;  if(ns0!=s_old[0]){s_old[0]=ns0;s[0]=ns0;s_sw[0]++;}
-        bool ns1=p[1]^c1o;  if(ns1!=s_old[1]){s_old[1]=ns1;s[1]=ns1;s_sw[1]++;}
-        bool ns2=p[2]^c2o2; if(ns2!=s_old[2]){s_old[2]=ns2;s[2]=ns2;s_sw[2]++;}
-        bool ns3=p[3]^c3o3; if(ns3!=s_old[3]){s_old[3]=ns3;s[3]=ns3;s_sw[3]++;}
-        sc_lv<4> out; for(int i=0;i<4;i++) out[i]=s[i];
+    void pack_outputs() {
+        sc_lv<4> out;
+        for (int i = 0; i < 4; i++) out[i] = s[i].read();
         Sum.write(out);
-        Cout.write(c4o4);
+        Cout.write(c4o4.read());
     }
 
-    unsigned int total_block_switches() {
+    unsigned int total_block_switches() const {
         unsigned int t = 0;
-        for (int i = 0; i < 4; i++) t += p_sw[i] + g_sw[i] + s_sw[i];
-        t += c1a_sw + c1o_sw;
-        t += c2a1_sw + c2a2_sw + c2a3_sw + c2o1_sw + c2o2_sw;
-        t += c3a1_sw + c3a2_sw + c3a3_sw + c3a4_sw + c3a5_sw + c3o1_sw + c3o2_sw + c3o3_sw;
-        t += c4a1_sw + c4a2_sw + c4a3_sw + c4a4_sw + c4a5_sw + c4a6_sw + c4a7_sw;
-        t += c4o1_sw + c4o2_sw + c4o3_sw + c4o4_sw;
+        for (int i = 0; i < 4; i++) t += g_p[i]->switches + g_g[i]->switches + g_s[i]->switches;
+        t += g_c1a->switches + g_c1o->switches;
+        t += g_c2a1->switches + g_c2a2->switches + g_c2a3->switches + g_c2o1->switches + g_c2o2->switches;
+        t += g_c3a1->switches + g_c3a2->switches + g_c3a3->switches + g_c3a4->switches + g_c3a5->switches +
+             g_c3o1->switches + g_c3o2->switches + g_c3o3->switches;
+        t += g_c4a1->switches + g_c4a2->switches + g_c4a3->switches + g_c4a4->switches + g_c4a5->switches +
+             g_c4a6->switches + g_c4a7->switches;
+        t += g_c4o1->switches + g_c4o2->switches + g_c4o3->switches + g_c4o4->switches;
         return t;
+    }
+
+    ~ClaBlock4() {
+        for (int i = 0; i < 4; i++) { delete g_p[i]; delete g_g[i]; delete g_s[i]; }
+        delete g_c1a; delete g_c1o;
+        delete g_c2a1; delete g_c2a2; delete g_c2a3; delete g_c2o1; delete g_c2o2;
+        delete g_c3a1; delete g_c3a2; delete g_c3a3; delete g_c3a4; delete g_c3a5; delete g_c3o1; delete g_c3o2; delete g_c3o3;
+        delete g_c4a1; delete g_c4a2; delete g_c4a3; delete g_c4a4; delete g_c4a5; delete g_c4a6; delete g_c4a7;
+        delete g_c4o1; delete g_c4o2; delete g_c4o3; delete g_c4o4;
     }
 };
 
@@ -214,7 +258,7 @@ SC_MODULE(Testbench) {
     void apply_test(unsigned int a_value, unsigned int b_value) {
         A.write(make_4bit_vector(a_value));
         B.write(make_4bit_vector(b_value));
-        wait(10, SC_NS);
+        wait(50, SC_NS);
 
         unsigned int expected_result = a_value + b_value;
         unsigned int actual_sum      = to_unsigned_4bit(Sum.read());

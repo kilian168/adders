@@ -56,7 +56,113 @@ static DualRail2 encode_unsigned_to_balanced_ternary_2(unsigned int value) {
 }
 
 // ============================================================================
-// 1. GATE-LEVEL BINARY FULL ADDER WITH DELAY & COUNTERS
+// 1. GENERIC GATE-LEVEL PRIMITIVES
+//    Each instance is exactly one logic gate, independently sensitive to
+//    each of its inputs (so inputs arriving at different simulated times
+//    each trigger their own evaluation and are counted as separate
+//    switches), with a 1ns delay between evaluation and output commit.
+// ============================================================================
+enum GateOp { GATE_AND, GATE_OR, GATE_XOR };
+
+SC_MODULE(Gate) {
+    sc_in<bool> in1, in2;
+    sc_out<bool> out;
+
+    GateOp op;
+    sc_event ev_commit;
+    bool old_value;
+    bool pending_value;
+    unsigned int calls;
+    unsigned int switches;
+
+    SC_HAS_PROCESS(Gate);
+
+    Gate(sc_module_name name, GateOp gate_op)
+        : sc_module(name), op(gate_op), old_value(false), pending_value(false),
+          calls(0), switches(0)
+    {
+        SC_METHOD(eval);
+        dont_initialize();
+        sensitive << in1 << in2;
+
+        SC_METHOD(commit);
+        dont_initialize();
+        sensitive << ev_commit;
+    }
+
+    void eval() {
+        calls++;
+        bool value_a = in1.read();
+        bool value_b = in2.read();
+        bool next;
+        if (op == GATE_AND)      next = value_a & value_b;
+        else if (op == GATE_OR)  next = value_a | value_b;
+        else /* GATE_XOR */      next = value_a ^ value_b;
+
+        if (next != old_value) {
+            old_value = next;
+            switches++;
+            pending_value = next;
+            ev_commit.notify(1, SC_NS);
+        }
+    }
+
+    void commit() {
+        out.write(pending_value);
+    }
+
+    void reset_counters() {
+        calls = 0;
+        switches = 0;
+    }
+};
+
+SC_MODULE(Gate3Or) {
+    sc_in<bool> in1, in2, in3;
+    sc_out<bool> out;
+
+    sc_event ev_commit;
+    bool old_value;
+    bool pending_value;
+    unsigned int calls;
+    unsigned int switches;
+
+    SC_CTOR(Gate3Or) : old_value(false), pending_value(false), calls(0), switches(0) {
+        SC_METHOD(eval);
+        dont_initialize();
+        sensitive << in1 << in2 << in3;
+
+        SC_METHOD(commit);
+        dont_initialize();
+        sensitive << ev_commit;
+    }
+
+    void eval() {
+        calls++;
+        bool next = in1.read() | in2.read() | in3.read();
+        if (next != old_value) {
+            old_value = next;
+            switches++;
+            pending_value = next;
+            ev_commit.notify(1, SC_NS);
+        }
+    }
+
+    void commit() {
+        out.write(pending_value);
+    }
+
+    void reset_counters() {
+        calls = 0;
+        switches = 0;
+    }
+};
+
+// ============================================================================
+// 2. GATE-LEVEL BINARY FULL ADDER (6 gates)
+//    xor1 = XOR(a,b)        and1 = AND(a,b)
+//    and2 = AND(a,c)        and3 = AND(b,c)
+//    sum  = XOR(xor1,c)     carry = OR3(and1,and2,and3)
 // ============================================================================
 SC_MODULE(BsdBinaryFullAdder) {
     sc_in<bool> input_a;
@@ -66,155 +172,48 @@ SC_MODULE(BsdBinaryFullAdder) {
     sc_out<bool> sum_out;
     sc_out<bool> carry_out;
 
-    bool xor1_val;
-    bool and1_val;
-    bool and2_val;
-    bool and3_val;
-    bool sum_val;
-    bool carry_val;
+    sc_signal<bool> xor1_sig, and1_sig, and2_sig, and3_sig;
 
-    bool xor1_old;
-    bool xor2_old;
-    bool and1_old;
-    bool and2_old;
-    bool and3_old;
-    bool or_old;
+    Gate *g_xor1, *g_and1, *g_and2, *g_and3, *g_xor2;
+    Gate3Or *g_or1;
 
-    sc_event ev_tier2;
-    sc_event ev_tier3;
+    SC_CTOR(BsdBinaryFullAdder) {
+        g_xor1 = new Gate("XOR1", GATE_XOR);
+        g_xor1->in1(input_a); g_xor1->in2(input_b); g_xor1->out(xor1_sig);
 
-    unsigned int xor1_calls;
-    unsigned int xor1_switches;
-    unsigned int xor2_calls;
-    unsigned int xor2_switches;
-    unsigned int and1_calls;
-    unsigned int and1_switches;
-    unsigned int and2_calls;
-    unsigned int and2_switches;
-    unsigned int and3_calls;
-    unsigned int and3_switches;
-    unsigned int or1_calls;
-    unsigned int or1_switches;
+        g_and1 = new Gate("AND1", GATE_AND);
+        g_and1->in1(input_a); g_and1->in2(input_b); g_and1->out(and1_sig);
 
-    SC_CTOR(BsdBinaryFullAdder)
-        : xor1_val(false),
-          and1_val(false),
-          and2_val(false),
-          and3_val(false),
-          sum_val(false),
-          carry_val(false),
-          xor1_old(false),
-          xor2_old(false),
-          and1_old(false),
-          and2_old(false),
-          and3_old(false),
-          or_old(false),
-          xor1_calls(0),
-          xor1_switches(0),
-          xor2_calls(0),
-          xor2_switches(0),
-          and1_calls(0),
-          and1_switches(0),
-          and2_calls(0),
-          and2_switches(0),
-          and3_calls(0),
-          and3_switches(0),
-          or1_calls(0),
-          or1_switches(0)
-    {
-        SC_METHOD(process_tier1);
-        dont_initialize();
-        sensitive << input_a << input_b << input_c;
+        g_and2 = new Gate("AND2", GATE_AND);
+        g_and2->in1(input_a); g_and2->in2(input_c); g_and2->out(and2_sig);
 
-        SC_METHOD(process_tier2);
-        dont_initialize();
-        sensitive << ev_tier2;
+        g_and3 = new Gate("AND3", GATE_AND);
+        g_and3->in1(input_b); g_and3->in2(input_c); g_and3->out(and3_sig);
 
-        SC_METHOD(process_tier3);
-        dont_initialize();
-        sensitive << ev_tier3;
+        g_xor2 = new Gate("XOR2", GATE_XOR);
+        g_xor2->in1(xor1_sig); g_xor2->in2(input_c); g_xor2->out(sum_out);
+
+        g_or1 = new Gate3Or("OR1");
+        g_or1->in1(and1_sig); g_or1->in2(and2_sig); g_or1->in3(and3_sig); g_or1->out(carry_out);
     }
 
-    void process_tier1() {
-        bool value_a = input_a.read();
-        bool value_b = input_b.read();
-        bool value_c = input_c.read();
-
-        xor1_calls++;
-        bool next_xor1 = value_a ^ value_b;
-        if (next_xor1 != xor1_old) {
-            xor1_old = next_xor1;
-            xor1_switches++;
-            xor1_val = next_xor1;
-        }
-
-        and1_calls++;
-        bool next_and1 = value_a & value_b;
-        if (next_and1 != and1_old) {
-            and1_old = next_and1;
-            and1_switches++;
-            and1_val = next_and1;
-        }
-
-        and2_calls++;
-        bool next_and2 = value_a & value_c;
-        if (next_and2 != and2_old) {
-            and2_old = next_and2;
-            and2_switches++;
-            and2_val = next_and2;
-        }
-
-        and3_calls++;
-        bool next_and3 = value_b & value_c;
-        if (next_and3 != and3_old) {
-            and3_old = next_and3;
-            and3_switches++;
-            and3_val = next_and3;
-        }
-
-        ev_tier2.notify(1, SC_NS);
-    }
-
-    void process_tier2() {
-        bool value_c = input_c.read();
-
-        xor2_calls++;
-        bool next_xor2 = xor1_val ^ value_c;
-        if (next_xor2 != xor2_old) {
-            xor2_old = next_xor2;
-            xor2_switches++;
-            sum_val = next_xor2;
-        }
-
-        or1_calls++;
-        bool next_or = and1_val | and2_val | and3_val;
-        if (next_or != or_old) {
-            or_old = next_or;
-            or1_switches++;
-            carry_val = next_or;
-        }
-
-        ev_tier3.notify(1, SC_NS);
-    }
-
-    void process_tier3() {
-        sum_out.write(sum_val);
-        carry_out.write(carry_val);
+    unsigned int total_switches() const {
+        return g_xor1->switches + g_and1->switches + g_and2->switches +
+               g_and3->switches + g_xor2->switches + g_or1->switches;
     }
 
     void reset_counters() {
-        xor1_calls = 0;
-        xor1_switches = 0;
-        xor2_calls = 0;
-        xor2_switches = 0;
-        and1_calls = 0;
-        and1_switches = 0;
-        and2_calls = 0;
-        and2_switches = 0;
-        and3_calls = 0;
-        and3_switches = 0;
-        or1_calls = 0;
-        or1_switches = 0;
+        g_xor1->reset_counters();
+        g_and1->reset_counters();
+        g_and2->reset_counters();
+        g_and3->reset_counters();
+        g_xor2->reset_counters();
+        g_or1->reset_counters();
+    }
+
+    ~BsdBinaryFullAdder() {
+        delete g_xor1; delete g_and1; delete g_and2;
+        delete g_and3; delete g_xor2; delete g_or1;
     }
 };
 
@@ -327,21 +326,8 @@ SC_MODULE(BalancedTernaryAdder2) {
         unsigned int total_switches = 0;
 
         for (int i = 0; i < 2; i++) {
-            total_switches +=
-                stage1_adders[i]->xor1_switches +
-                stage1_adders[i]->xor2_switches +
-                stage1_adders[i]->and1_switches +
-                stage1_adders[i]->and2_switches +
-                stage1_adders[i]->and3_switches +
-                stage1_adders[i]->or1_switches;
-
-            total_switches +=
-                stage2_adders[i]->xor1_switches +
-                stage2_adders[i]->xor2_switches +
-                stage2_adders[i]->and1_switches +
-                stage2_adders[i]->and2_switches +
-                stage2_adders[i]->and3_switches +
-                stage2_adders[i]->or1_switches;
+            total_switches += stage1_adders[i]->total_switches();
+            total_switches += stage2_adders[i]->total_switches();
         }
 
         std::cout << "TER-2: GATES=24 SWITCHES=" << total_switches << " DELAY=4ns\n";
