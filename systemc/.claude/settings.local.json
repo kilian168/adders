@@ -44,7 +44,9 @@
       "Bash(echo \"TER4_RUN=$?\")",
       "Bash(grep \"GESAMTSUMME\" /tmp/rca2.txt /tmp/ter2.txt /tmp/rca4.txt /tmp/ter4.txt)",
       "Bash(wsl bash *)",
-      "Bash(cat > *)"
+      "Bash(cat > *)",
+      "Bash(wsl git *)",
+      "Bash(cd \"\\\\\\\\wsl.localhost\\\\ubuntu\\\\home\\\\alterhans\\\\projects\\\\bachelor\\\\systemc\")"
     ]
   }
 }
