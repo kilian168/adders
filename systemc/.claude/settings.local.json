@@ -46,7 +46,8 @@
       "Bash(wsl bash *)",
       "Bash(cat > *)",
       "Bash(wsl git *)",
-      "Bash(cd \"\\\\\\\\wsl.localhost\\\\ubuntu\\\\home\\\\alterhans\\\\projects\\\\bachelor\\\\systemc\")"
+      "Bash(cd \"\\\\\\\\wsl.localhost\\\\ubuntu\\\\home\\\\alterhans\\\\projects\\\\bachelor\\\\systemc\")",
+      "Bash(wsl cat *)"
     ]
   }
 }
