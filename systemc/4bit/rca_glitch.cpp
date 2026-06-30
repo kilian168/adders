@@ -207,15 +207,20 @@ SC_MODULE(Testbench) {
 
     unsigned int number_of_errors;
 
+    unsigned int a_start;
+    unsigned int a_end;
+
     SC_CTOR(Testbench)
         : rca_ptr(nullptr),
-          number_of_errors(0)
+          number_of_errors(0),
+          a_start(0),
+          a_end(16)
     {
         SC_THREAD(stimulus);
     }
 
     void stimulus() {
-        for (unsigned int a_value = 0; a_value < 16; a_value++) {
+        for (unsigned int a_value = a_start; a_value < a_end; a_value++) {
             for (unsigned int b_value = 0; b_value < 16; b_value++) {
                 apply_test(a_value, b_value);
             }
@@ -255,6 +260,17 @@ int sc_main(int argc, char* argv[]) {
 
     rca.A(A); rca.B(B); rca.Sum(Sum); rca.Cout(Cout);
     tb.A(A); tb.B(B); tb.Sum(Sum); tb.Cout(Cout);
+
+    // Optional partitioning: "rca_4bit <partition_index> <num_partitions>"
+    // restricts this process to a slice of the a-value range, so the
+    // exhaustive sweep can be split across parallel processes.
+    if (argc == 3) {
+        unsigned int partition_index = static_cast<unsigned int>(std::stoul(argv[1]));
+        unsigned int num_partitions = static_cast<unsigned int>(std::stoul(argv[2]));
+        unsigned int slice = 16U / num_partitions;
+        tb.a_start = partition_index * slice;
+        tb.a_end = (partition_index == num_partitions - 1) ? 16U : (partition_index + 1) * slice;
+    }
 
     sc_start();
     return 0;
