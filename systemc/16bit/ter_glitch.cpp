@@ -3,7 +3,6 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <random>
 
 // ============================================================================
 // 0. HELPER STRUCTS AND FUNCTIONS
@@ -359,26 +358,10 @@ SC_MODULE(Testbench) {
 
         design_ptr->reset_counters();
 
-        // Volle 16-Trit-Abdeckung (4.3 Mrd. Kombinationen) ist nicht praktikabel.
-        // Stattdessen: dieselben Randwerte + dieselbe Monte-Carlo-Stichprobe wie
-        // beim 16-Bit Ripple Carry Adder (mehr als 10x der 8-Bit-Additionen,
-        // 8-Bit: 65536 Faelle), fuer vergleichbare Switch-Statistiken.
-        unsigned int boundary_values[] = {0U, 1U, 32767U, 32768U, 65535U};
-
-        for (unsigned int a_value : boundary_values) {
-            for (unsigned int b_value : boundary_values) {
+        for (unsigned int a_value = 0; a_value < 65536; a_value++) {
+            for (unsigned int b_value = 0; b_value < 65536; b_value++) {
                 apply_test(a_value, b_value);
             }
-        }
-
-        std::mt19937 rng(12345);
-        std::uniform_int_distribution<unsigned int> dist(0U, 65535U);
-
-        const unsigned int number_of_random_tests = 1000000;
-        for (unsigned int i = 0; i < number_of_random_tests; i++) {
-            unsigned int a_value = dist(rng);
-            unsigned int b_value = dist(rng);
-            apply_test(a_value, b_value);
         }
 
         design_ptr->print_report();

@@ -3,7 +3,6 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <random>
 #include <cassert>
 
 // ==========================================
@@ -244,25 +243,10 @@ SC_MODULE(Testbench) {
     }
 
     void stimulus() {
-        // Volle 16-Bit-Abdeckung (4.3 Mrd. Kombinationen) ist nicht praktikabel.
-        // Stattdessen: feste Randwerte + Monte-Carlo-Stichprobe mit mehr als
-        // dem 10-fachen der 8-Bit-Additionen (8-Bit: 65536 Faelle).
-        unsigned int boundary_values[] = {0U, 1U, 32767U, 32768U, 65535U};
-
-        for (unsigned int a_value : boundary_values) {
-            for (unsigned int b_value : boundary_values) {
+        for (unsigned int a_value = 0; a_value < 65536; a_value++) {
+            for (unsigned int b_value = 0; b_value < 65536; b_value++) {
                 apply_test(a_value, b_value);
             }
-        }
-
-        std::mt19937 rng(12345);
-        std::uniform_int_distribution<unsigned int> dist(0U, 65535U);
-
-        const unsigned int number_of_random_tests = 1000000;
-        for (unsigned int i = 0; i < number_of_random_tests; i++) {
-            unsigned int a_value = dist(rng);
-            unsigned int b_value = dist(rng);
-            apply_test(a_value, b_value);
         }
 
         assert(number_of_errors == 0);

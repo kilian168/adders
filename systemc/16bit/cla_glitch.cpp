@@ -1,10 +1,9 @@
 // cla_glitch.cpp – 16-bit Carry Lookahead Adder, gate-level switching activity
-// Monte Carlo: boundary values + 1,000,000 random additions
+// Exhaustive: 65536 x 65536 = 4,294,967,296 additions
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <random>
 #include <cassert>
 
 // ==========================================
@@ -267,7 +266,7 @@ SC_MODULE(CarryLookaheadAdder16) {
 };
 
 // ==========================================
-// 3. TESTBENCH – Monte Carlo 16-bit test
+// 3. TESTBENCH – exhaustive 16-bit test (65536 x 65536 = 4,294,967,296 cases)
 // ==========================================
 SC_MODULE(Testbench) {
     sc_out<sc_lv<16>> A, B;
@@ -283,16 +282,11 @@ SC_MODULE(Testbench) {
     { SC_THREAD(stimulus); }
 
     void stimulus() {
-        unsigned int boundary_values[] = {0U, 1U, 32767U, 32768U, 65535U};
-        for (unsigned int a_val : boundary_values)
-            for (unsigned int b_val : boundary_values)
-                apply_test(a_val, b_val);
-
-        std::mt19937 rng(12345);
-        std::uniform_int_distribution<unsigned int> dist(0U, 65535U);
-        const unsigned int number_of_random_tests = 1000000;
-        for (unsigned int i = 0; i < number_of_random_tests; i++)
-            apply_test(dist(rng), dist(rng));
+        for (unsigned int a_value = 0; a_value < 65536; a_value++) {
+            for (unsigned int b_value = 0; b_value < 65536; b_value++) {
+                apply_test(a_value, b_value);
+            }
+        }
 
         assert(number_of_errors == 0);
         cla_ptr->print_report();

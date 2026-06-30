@@ -1,10 +1,9 @@
 // cla_glitch.cpp – 12-bit Carry Lookahead Adder, gate-level switching activity
-// Monte Carlo: 1,000,000 random additions (exhaustive = 16,777,216 tests, impractical)
+// Exhaustive: 4096 x 4096 = 16,777,216 additions
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <random>
 #include <cassert>
 
 // ==========================================
@@ -263,7 +262,7 @@ SC_MODULE(CarryLookaheadAdder12) {
 };
 
 // ==========================================
-// 3. TESTBENCH – Monte Carlo 12-bit test
+// 3. TESTBENCH – exhaustive 12-bit test (4096 x 4096 = 16,777,216 cases)
 // ==========================================
 SC_MODULE(Testbench) {
     sc_out<sc_lv<12>> A, B;
@@ -279,12 +278,10 @@ SC_MODULE(Testbench) {
     { SC_THREAD(stimulus); }
 
     void stimulus() {
-        std::mt19937 rng(12345);
-        std::uniform_int_distribution<unsigned int> dist(0U, 4095U);
-
-        const unsigned int number_of_random_tests = 1000000;
-        for (unsigned int i = 0; i < number_of_random_tests; i++) {
-            apply_test(dist(rng), dist(rng));
+        for (unsigned int a_value = 0; a_value < 4096; a_value++) {
+            for (unsigned int b_value = 0; b_value < 4096; b_value++) {
+                apply_test(a_value, b_value);
+            }
         }
 
         assert(number_of_errors == 0);
