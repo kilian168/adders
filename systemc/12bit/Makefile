@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -I$(SYSTEMC_HOME)/include
+CXXFLAGS = -I$(SYSTEMC_HOME)/include -O3
 LDFLAGS = -L$(SYSTEMC_HOME)/lib-linux64 -lsystemc
 
 all: run_rca run_ternary run_cla
