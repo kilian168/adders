@@ -1,29 +1,22 @@
-// cla_glitch.cpp – 16-bit Carry Lookahead Adder, gate-level switching activity
-// Exhaustive: 65536 x 65536 = 4,294,967,296 additions
+// cla_glitch.cpp – 4-bit Carry Lookahead Adder, gate-level switching activity
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <cassert>
-#include <algorithm>
-#include <cstdio>
-#include <thread>
-#include <vector>
-#include <sys/wait.h>
-#include <unistd.h>
 
 // ==========================================
 // Helper functions
 // ==========================================
-static sc_lv<16> make_16bit_vector(unsigned int value) {
-    sc_lv<16> bits;
-    for (int i = 0; i < 16; i++) bits[i] = ((value >> i) & 1U) != 0U;
+static sc_lv<4> make_4bit_vector(unsigned int value) {
+    sc_lv<4> bits;
+    for (int i = 0; i < 4; i++) bits[i] = ((value >> i) & 1U) != 0U;
     return bits;
 }
 
-static unsigned int to_unsigned_16bit(const sc_lv<16>& bits) {
+static unsigned int to_unsigned_4bit(const sc_lv<4>& bits) {
     unsigned int value = 0;
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 4; i++)
         if (bits[i].is_01() && bits[i].to_bool()) value += (1U << i);
     return value;
 }
@@ -85,8 +78,11 @@ SC_MODULE(Gate) {
 };
 
 // ==========================================
-// 1. 4-BIT CLA BLOCK MODULE (reusable)
-//    Gate count: 38 per block
+// 1. 4-BIT CLA BLOCK MODULE (single lookahead block)
+//    Gate count: 38
+//    PG tier : 4 XOR + 4 AND              =  8 gates
+//    Carry   : C1(2) + C2(5) + C3(8) + C4(11) = 26 gates
+//    Sum tier: 4 XOR                      =  4 gates
 //    Wired as real per-gate dependencies (not batched tiers), so the
 //    carry-lookahead tree's genuine internal gate-to-gate depth is
 //    reflected in both timing and glitch counting.
@@ -208,122 +204,68 @@ SC_MODULE(ClaBlock4) {
 };
 
 // ==========================================
-// 2. 16-BIT CARRY LOOKAHEAD ADDER (4 x 4-bit blocks)
-//    Total gates: 4 x 38 = 152
+// 2. 4-BIT CARRY LOOKAHEAD ADDER (1 block)
 // ==========================================
-SC_MODULE(CarryLookaheadAdder16) {
-    sc_in<sc_lv<16>>  A, B;
-    sc_out<sc_lv<16>> Sum;
-    sc_out<bool>      Cout;
+SC_MODULE(CarryLookaheadAdder4) {
+    sc_in<sc_lv<4>>  A, B;
+    sc_out<sc_lv<4>> Sum;
+    sc_out<bool>     Cout;
 
-    sc_signal<sc_lv<4>> a_slice[4], b_slice[4], s_slice[4];
-    sc_signal<bool>     c_between[3];
-    sc_signal<bool>     const_zero;
+    sc_signal<bool> const_zero;
+    ClaBlock4* blk;
 
-    ClaBlock4* blk[4];
-
-    SC_CTOR(CarryLookaheadAdder16) {
-        blk[0] = new ClaBlock4("BLK0");
-        blk[0]->A(a_slice[0]); blk[0]->B(b_slice[0]);
-        blk[0]->Cin(const_zero); blk[0]->Sum(s_slice[0]); blk[0]->Cout(c_between[0]);
-
-        blk[1] = new ClaBlock4("BLK1");
-        blk[1]->A(a_slice[1]); blk[1]->B(b_slice[1]);
-        blk[1]->Cin(c_between[0]); blk[1]->Sum(s_slice[1]); blk[1]->Cout(c_between[1]);
-
-        blk[2] = new ClaBlock4("BLK2");
-        blk[2]->A(a_slice[2]); blk[2]->B(b_slice[2]);
-        blk[2]->Cin(c_between[1]); blk[2]->Sum(s_slice[2]); blk[2]->Cout(c_between[2]);
-
-        blk[3] = new ClaBlock4("BLK3");
-        blk[3]->A(a_slice[3]); blk[3]->B(b_slice[3]);
-        blk[3]->Cin(c_between[2]); blk[3]->Sum(s_slice[3]); blk[3]->Cout(Cout);
-
-        SC_METHOD(split_inputs);    dont_initialize(); sensitive << A << B;
-        SC_METHOD(combine_outputs); dont_initialize();
-        sensitive << s_slice[0] << s_slice[1] << s_slice[2] << s_slice[3];
-    }
-
-    void split_inputs() {
-        sc_lv<16> va=A.read(), vb=B.read();
-        for (int blki=0; blki<4; blki++) {
-            sc_lv<4> a4, b4;
-            for (int i=0; i<4; i++) { a4[i]=va[blki*4+i]; b4[i]=vb[blki*4+i]; }
-            a_slice[blki].write(a4); b_slice[blki].write(b4);
-        }
-    }
-
-    void combine_outputs() {
-        sc_lv<16> s;
-        for (int blki=0; blki<4; blki++) {
-            sc_lv<4> s4=s_slice[blki].read();
-            for (int i=0; i<4; i++) s[blki*4+i]=s4[i];
-        }
-        Sum.write(s);
-    }
-
-    unsigned int total_switches() const {
-        unsigned int total=0;
-        for(int i=0;i<4;i++) total+=blk[i]->total_block_switches();
-        return total;
+    SC_CTOR(CarryLookaheadAdder4) {
+        blk = new ClaBlock4("BLK0");
+        blk->A(A); blk->B(B); blk->Cin(const_zero); blk->Sum(Sum); blk->Cout(Cout);
     }
 
     void print_report() {
-        std::cout << "CLA-16: GATES=152 SWITCHES=" << total_switches() << " DELAY=8ns\n";
+        unsigned int total = blk->total_block_switches();
+        std::cout << "CLA-4: GATES=38 SWITCHES=" << total << " DELAY=2ns\n";
     }
 
-    ~CarryLookaheadAdder16() { for(int i=0;i<4;i++) delete blk[i]; }
+    ~CarryLookaheadAdder4() { delete blk; }
 };
 
 // ==========================================
-// 3. TESTBENCH – exhaustive 16-bit test (65536 x 65536 = 4,294,967,296 cases)
+// 3. TESTBENCH – exhaustive 4-bit test
 // ==========================================
 SC_MODULE(Testbench) {
-    sc_out<sc_lv<16>> A, B;
-    sc_in<sc_lv<16>>  Sum;
-    sc_in<bool>       Cout;
+    sc_out<sc_lv<4>> A, B;
+    sc_in<sc_lv<4>>  Sum;
+    sc_in<bool>      Cout;
 
-    CarryLookaheadAdder16* cla_ptr;
+    CarryLookaheadAdder4* cla_ptr;
 
     unsigned int number_of_errors;
 
-    // Partition of the a-value range to cover. Defaults to the full
-    // range; sc_main() narrows this when run with partition arguments,
-    // so the exhaustive sweep can be split across parallel processes.
     unsigned int a_start;
     unsigned int a_end;
 
-    // When true, this process's slice was launched as one of several
-    // parallel workers (see run_slice() below), so it stays silent and
-    // lets the orchestrating parent print the combined report instead.
-    bool quiet;
-
     SC_CTOR(Testbench)
-        : cla_ptr(nullptr), number_of_errors(0), a_start(0), a_end(65536), quiet(false)
+        : cla_ptr(nullptr), number_of_errors(0), a_start(0), a_end(16)
     { SC_THREAD(stimulus); }
 
     void stimulus() {
         for (unsigned int a_value = a_start; a_value < a_end; a_value++) {
-            for (unsigned int b_value = 0; b_value < 65536; b_value++) {
+            for (unsigned int b_value = 0; b_value < 16; b_value++) {
                 apply_test(a_value, b_value);
             }
         }
 
         assert(number_of_errors == 0);
-        if (!quiet) {
-            cla_ptr->print_report();
-        }
+        cla_ptr->print_report();
         sc_stop();
     }
 
     void apply_test(unsigned int a_value, unsigned int b_value) {
-        A.write(make_16bit_vector(a_value));
-        B.write(make_16bit_vector(b_value));
+        A.write(make_4bit_vector(a_value));
+        B.write(make_4bit_vector(b_value));
         wait(50, SC_NS);
 
         unsigned int expected_result = a_value + b_value;
-        unsigned int actual_sum      = to_unsigned_16bit(Sum.read());
-        unsigned int actual_result   = actual_sum + (Cout.read() ? 65536U : 0U);
+        unsigned int actual_sum      = to_unsigned_4bit(Sum.read());
+        unsigned int actual_result   = actual_sum + (Cout.read() ? 16U : 0U);
         if (expected_result != actual_result) number_of_errors++;
     }
 };
@@ -331,103 +273,28 @@ SC_MODULE(Testbench) {
 // ==========================================
 // 4. MAIN
 // ==========================================
+int sc_main(int argc, char* argv[]) {
+    sc_signal<sc_lv<4>> A, B, Sum;
+    sc_signal<bool>     Cout;
 
-// Elaborates a fresh adder + testbench and simulates exactly one
-// a-value slice [partition_index, num_partitions) to completion in the
-// calling process. Used both for manual external partitioning (one
-// process, prints its own report) and as the body of each forked
-// worker in the auto-parallel default path (quiet, reports back via
-// out params instead of stdout).
-static void run_slice(unsigned int partition_index, unsigned int num_partitions,
-                       bool quiet, unsigned int& out_switches, unsigned int& out_errors) {
-    sc_signal<sc_lv<16>> A, B, Sum;
-    sc_signal<bool>      Cout;
-
-    CarryLookaheadAdder16 cla("CLA16");
+    CarryLookaheadAdder4 cla("CLA4");
     Testbench tb("TB");
     tb.cla_ptr = &cla;
 
     cla.A(A); cla.B(B); cla.Sum(Sum); cla.Cout(Cout);
     tb.A(A);  tb.B(B);  tb.Sum(Sum);  tb.Cout(Cout);
 
-    unsigned int slice = 65536U / num_partitions;
-    tb.a_start = partition_index * slice;
-    tb.a_end = (partition_index == num_partitions - 1) ? 65536U : (partition_index + 1) * slice;
-    tb.quiet = quiet;
-
-    sc_start();
-
-    out_switches = cla.total_switches();
-    out_errors = tb.number_of_errors;
-}
-
-int sc_main(int argc, char* argv[]) {
-    // Manual external partitioning: "cla_16bit <partition_index> <num_partitions>"
-    // runs exactly that slice in this single process and prints its own
-    // partial report, e.g. for hand-orchestrated multi-machine runs.
+    // Optional partitioning: "cla_4bit <partition_index> <num_partitions>"
+    // restricts this process to a slice of the a-value range, so the
+    // exhaustive sweep can be split across parallel processes.
     if (argc == 3) {
         unsigned int partition_index = static_cast<unsigned int>(std::stoul(argv[1]));
         unsigned int num_partitions = static_cast<unsigned int>(std::stoul(argv[2]));
-        unsigned int switches = 0, errors = 0;
-        run_slice(partition_index, num_partitions, /*quiet=*/false, switches, errors);
-        assert(errors == 0);
-        return 0;
+        unsigned int slice = 16U / num_partitions;
+        tb.a_start = partition_index * slice;
+        tb.a_end = (partition_index == num_partitions - 1) ? 16U : (partition_index + 1) * slice;
     }
 
-    // Default (no args): fan the exhaustive sweep out across every
-    // available CPU core. SystemC's kernel state (sc_curr_simcontext) is
-    // a single un-synchronized global, not thread-local, so one process
-    // cannot safely run more than one simulation concurrently via
-    // std::thread. Instead we fork() one worker process per core before
-    // any SystemC object is created; each child then elaborates and
-    // simulates its own independent slice in its own independent kernel,
-    // and reports its partial switch/error counts back through a pipe.
-    unsigned int num_workers = std::thread::hardware_concurrency();
-    if (num_workers == 0) num_workers = 1;
-    num_workers = std::min(num_workers, 65536U);
-
-    std::vector<int> read_fd(num_workers);
-    std::vector<pid_t> worker_pid(num_workers);
-
-    for (unsigned int i = 0; i < num_workers; i++) {
-        int fds[2];
-        if (pipe(fds) != 0) { perror("pipe"); return 1; }
-
-        pid_t child = fork();
-        if (child < 0) { perror("fork"); return 1; }
-
-        if (child == 0) {
-            close(fds[0]);
-            unsigned int switches = 0, errors = 0;
-            run_slice(i, num_workers, /*quiet=*/true, switches, errors);
-            unsigned int payload[2] = { switches, errors };
-            ssize_t written = write(fds[1], payload, sizeof(payload));
-            (void)written;
-            close(fds[1]);
-            _exit(0);
-        }
-
-        close(fds[1]);
-        read_fd[i] = fds[0];
-        worker_pid[i] = child;
-    }
-
-    unsigned int total_switches = 0;
-    unsigned int total_errors = 0;
-    for (unsigned int i = 0; i < num_workers; i++) {
-        unsigned int payload[2] = { 0, 0 };
-        ssize_t got = read(read_fd[i], payload, sizeof(payload));
-        if (got == static_cast<ssize_t>(sizeof(payload))) {
-            total_switches += payload[0];
-            total_errors += payload[1];
-        }
-        close(read_fd[i]);
-        int status = 0;
-        waitpid(worker_pid[i], &status, 0);
-    }
-
-    assert(total_errors == 0);
-    std::cout << "CLA-16: GATES=152 SWITCHES=" << total_switches << " DELAY=8ns\n";
-
+    sc_start();
     return 0;
 }

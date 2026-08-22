@@ -1,0 +1,11 @@
+
+        SystemC 3.0.2-Accellera --- Apr  2 2026 17:01:13
+        Copyright (c) 1996-2025 by all Contributors,
+        ALL RIGHTS RESERVED
+TER-12: GATES=144 SWITCHES=189089364 DELAY=4ns
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+real	1m44.089s
+user	1m43.715s
+sys	0m0.002s

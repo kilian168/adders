@@ -1,9 +1,9 @@
-// main.cpp
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <cassert>
+#include <random>
 #include <algorithm>
 #include <cstdio>
 #include <thread>
@@ -14,17 +14,17 @@
 // ==========================================
 // Helper functions
 // ==========================================
-static sc_lv<16> make_16bit_vector(unsigned int value) {
-    sc_lv<16> bits;
-    for (int i = 0; i < 16; i++) {
+static sc_lv<4> make_4bit_vector(unsigned int value) {
+    sc_lv<4> bits;
+    for (int i = 0; i < 4; i++) {
         bits[i] = ((value >> i) & 1U) != 0U;
     }
     return bits;
 }
 
-static unsigned int to_unsigned_16bit(const sc_lv<16>& bits) {
+static unsigned int to_unsigned_4bit(const sc_lv<4>& bits) {
     unsigned int value = 0;
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 4; i++) {
         if (bits[i].is_01() && bits[i].to_bool()) {
             value += (1U << i);
         }
@@ -99,12 +99,8 @@ SC_MODULE(Gate) {
 //    cout = OR(c1,c2)
 // ==========================================
 SC_MODULE(FullAdder) {
-    sc_in<bool> a;
-    sc_in<bool> b;
-    sc_in<bool> cin;
-
-    sc_out<bool> sum;
-    sc_out<bool> cout;
+    sc_in<bool> a, b, cin;
+    sc_out<bool> sum, cout;
 
     sc_signal<bool> s1, c1, c2;
 
@@ -137,28 +133,21 @@ SC_MODULE(FullAdder) {
 };
 
 // ==========================================
-// 2. 16-BIT RIPPLE CARRY ADDER
+// 3. 4-BIT RIPPLE CARRY ADDER
 // ==========================================
-SC_MODULE(RippleCarryAdder16) {
-    sc_in<sc_lv<16>> A;
-    sc_in<sc_lv<16>> B;
-
-    sc_out<sc_lv<16>> Sum;
+SC_MODULE(RippleCarryAdder4) {
+    sc_in<sc_lv<4>> A, B;
+    sc_out<sc_lv<4>> Sum;
     sc_out<bool> Cout;
 
-    sc_signal<bool> a[16];
-    sc_signal<bool> b[16];
-    sc_signal<bool> s[16];
-    sc_signal<bool> c[16];
+    sc_signal<bool> a[4], b[4], s[4], c[4];
     sc_signal<bool> const_zero;
+    FullAdder* fa[4];
 
-    FullAdder* fa[16];
-
-    SC_CTOR(RippleCarryAdder16) {
-        for (int i = 0; i < 16; i++) {
+    SC_CTOR(RippleCarryAdder4) {
+        for (int i = 0; i < 4; i++) {
             std::string name = "FA_" + std::to_string(i);
             fa[i] = new FullAdder(name.c_str());
-
             fa[i]->a(a[i]);
             fa[i]->b(b[i]);
             fa[i]->sum(s[i]);
@@ -167,7 +156,7 @@ SC_MODULE(RippleCarryAdder16) {
             if (i == 0) {
                 fa[i]->cin(const_zero);
             } else {
-                fa[i]->cin(c[i - 1]);
+                fa[i]->cin(c[i-1]);
             }
         }
 
@@ -175,120 +164,95 @@ SC_MODULE(RippleCarryAdder16) {
         sensitive << A << B;
 
         SC_METHOD(combine_outputs);
-        for (int i = 0; i < 16; i++) {
-            sensitive << s[i];
-        }
-        sensitive << c[15];
+        sensitive << s[0] << s[1] << s[2] << s[3] << c[3];
     }
 
     void split_inputs() {
-        sc_lv<16> value_a = A.read();
-        sc_lv<16> value_b = B.read();
+        sc_lv<4> val_A = A.read();
+        sc_lv<4> val_B = B.read();
 
-        for (int i = 0; i < 16; i++) {
-            if (value_a[i].is_01()) {
-                a[i].write(value_a[i].to_bool());
+        for (int i = 0; i < 4; i++) {
+            if (val_A[i].is_01() && val_B[i].is_01()) {
+                a[i].write(val_A[i].to_bool());
+                b[i].write(val_B[i].to_bool());
             } else {
                 a[i].write(false);
-            }
-
-            if (value_b[i].is_01()) {
-                b[i].write(value_b[i].to_bool());
-            } else {
                 b[i].write(false);
             }
         }
     }
 
     void combine_outputs() {
-        sc_lv<16> value_sum;
-
-        for (int i = 0; i < 16; i++) {
-            value_sum[i] = s[i].read();
-        }
-
-        Sum.write(value_sum);
-        Cout.write(c[15].read());
+        sc_lv<4> val_Sum;
+        for (int i = 0; i < 4; i++) { val_Sum[i] = s[i].read(); }
+        Sum.write(val_Sum);
+        Cout.write(c[3].read());
     }
 
     unsigned int total_switches() const {
         unsigned int total = 0;
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 4; i++) {
             total += fa[i]->total_switches();
         }
         return total;
     }
 
-    void print_report() {
-        std::cout << "RCA-16: GATES=80 SWITCHES=" << total_switches() << " DELAY=32ns\n";
-    }
-
-    ~RippleCarryAdder16() {
-        for (int i = 0; i < 16; i++) {
-            delete fa[i];
-        }
+    ~RippleCarryAdder4() {
+        for (int i = 0; i < 4; i++) delete fa[i];
     }
 };
 
 // ==========================================
-// 3. TESTBENCH
+// 4. TESTBENCH — Monte Carlo random sampling
+//    Draws num_samples uniformly random (a, b) pairs instead of
+//    exhaustively covering the whole input space, so the same
+//    methodology also works for widths where exhaustive coverage is
+//    computationally infeasible (e.g. 32-bit).
 // ==========================================
 SC_MODULE(Testbench) {
-    sc_out<sc_lv<16>> A;
-    sc_out<sc_lv<16>> B;
-
-    sc_in<sc_lv<16>> Sum;
+    sc_out<sc_lv<4>> A, B;
+    sc_in<sc_lv<4>> Sum;
     sc_in<bool> Cout;
 
-    RippleCarryAdder16* rca_ptr;
+    RippleCarryAdder4* rca_ptr;
 
     unsigned int number_of_errors;
 
-    // Partition of the a-value range to cover. Defaults to the full
-    // range; sc_main() narrows this when run with partition arguments,
-    // so the exhaustive sweep can be split across parallel processes.
-    unsigned int a_start;
-    unsigned int a_end;
-
-    // When true, this process's slice was launched as one of several
-    // parallel workers (see run_slice() below), so it stays silent and
-    // lets the orchestrating parent print the combined report instead.
-    bool quiet;
+    unsigned long long num_samples;
+    unsigned long long rng_seed;
 
     SC_CTOR(Testbench)
         : rca_ptr(nullptr),
           number_of_errors(0),
-          a_start(0),
-          a_end(65536),
-          quiet(false)
+          num_samples(1000000ULL),
+          rng_seed(42ULL)
     {
         SC_THREAD(stimulus);
     }
 
     void stimulus() {
-        for (unsigned int a_value = a_start; a_value < a_end; a_value++) {
-            for (unsigned int b_value = 0; b_value < 65536; b_value++) {
-                apply_test(a_value, b_value);
-            }
+        std::mt19937_64 rng(rng_seed);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 15ULL);
+
+        for (unsigned long long i = 0; i < num_samples; i++) {
+            unsigned int a_value = static_cast<unsigned int>(dist(rng));
+            unsigned int b_value = static_cast<unsigned int>(dist(rng));
+            apply_test(a_value, b_value);
         }
 
         assert(number_of_errors == 0);
-        if (!quiet) {
-            rca_ptr->print_report();
-        }
-
         sc_stop();
     }
 
     void apply_test(unsigned int a_value, unsigned int b_value) {
-        A.write(make_16bit_vector(a_value));
-        B.write(make_16bit_vector(b_value));
+        A.write(make_4bit_vector(a_value));
+        B.write(make_4bit_vector(b_value));
 
         wait(200, SC_NS);
 
         unsigned int expected_result = a_value + b_value;
-        unsigned int actual_sum = to_unsigned_16bit(Sum.read());
-        unsigned int actual_result = actual_sum + (Cout.read() ? 65536U : 0U);
+        unsigned int actual_sum = to_unsigned_4bit(Sum.read());
+        unsigned int actual_result = actual_sum + (Cout.read() ? 16U : 0U);
 
         if (expected_result != actual_result) {
             number_of_errors++;
@@ -297,42 +261,26 @@ SC_MODULE(Testbench) {
 };
 
 // ==========================================
-// 4. MAIN ENTRY POINT
+// 5. MAIN — Monte Carlo, auto-parallel across all CPU cores
 // ==========================================
 
-// Elaborates a fresh adder + testbench and simulates exactly one
-// a-value slice [partition_index, num_partitions) to completion in the
-// calling process. Used both for manual external partitioning (one
-// process, prints its own report) and as the body of each forked
-// worker in the auto-parallel default path (quiet, reports back via
-// out params instead of stdout).
-static void run_slice(unsigned int partition_index, unsigned int num_partitions,
-                       bool quiet, unsigned int& out_switches, unsigned int& out_errors) {
-    sc_signal<sc_lv<16>> A;
-    sc_signal<sc_lv<16>> B;
-
-    sc_signal<sc_lv<16>> Sum;
+// Elaborates a fresh adder + testbench and simulates exactly
+// samples_for_this_worker random test vectors, seeded independently so
+// parallel workers never repeat each other's samples.
+static void run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker,
+                       unsigned long long& out_switches, unsigned int& out_errors) {
+    sc_signal<sc_lv<4>> A, B, Sum;
     sc_signal<bool> Cout;
 
-    RippleCarryAdder16 rca("RCA16");
+    RippleCarryAdder4 rca("RCA4");
     Testbench tb("TB");
-
     tb.rca_ptr = &rca;
 
-    rca.A(A);
-    rca.B(B);
-    rca.Sum(Sum);
-    rca.Cout(Cout);
+    rca.A(A); rca.B(B); rca.Sum(Sum); rca.Cout(Cout);
+    tb.A(A); tb.B(B); tb.Sum(Sum); tb.Cout(Cout);
 
-    tb.A(A);
-    tb.B(B);
-    tb.Sum(Sum);
-    tb.Cout(Cout);
-
-    unsigned int slice = 65536U / num_partitions;
-    tb.a_start = partition_index * slice;
-    tb.a_end = (partition_index == num_partitions - 1) ? 65536U : (partition_index + 1) * slice;
-    tb.quiet = quiet;
+    tb.num_samples = samples_for_this_worker;
+    tb.rng_seed = seed_for_this_worker;
 
     sc_start();
 
@@ -341,34 +289,30 @@ static void run_slice(unsigned int partition_index, unsigned int num_partitions,
 }
 
 int sc_main(int argc, char* argv[]) {
-    // Manual external partitioning: "rca_16bit <partition_index> <num_partitions>"
-    // runs exactly that slice in this single process and prints its own
-    // partial report, e.g. for hand-orchestrated multi-machine runs.
-    if (argc == 3) {
-        unsigned int partition_index = static_cast<unsigned int>(std::stoul(argv[1]));
-        unsigned int num_partitions = static_cast<unsigned int>(std::stoul(argv[2]));
-        unsigned int switches = 0, errors = 0;
-        run_slice(partition_index, num_partitions, /*quiet=*/false, switches, errors);
-        assert(errors == 0);
-        return 0;
-    }
+    unsigned long long total_samples = (argc >= 2) ? std::stoull(argv[1]) : 1000000ULL;
+    unsigned long long base_seed     = (argc >= 3) ? std::stoull(argv[2]) : 42ULL;
 
-    // Default (no args): fan the exhaustive sweep out across every
-    // available CPU core. SystemC's kernel state (sc_curr_simcontext) is
-    // a single un-synchronized global, not thread-local, so one process
-    // cannot safely run more than one simulation concurrently via
-    // std::thread. Instead we fork() one worker process per core before
-    // any SystemC object is created; each child then elaborates and
-    // simulates its own independent slice in its own independent kernel,
-    // and reports its partial switch/error counts back through a pipe.
+    // SystemC's kernel state (sc_curr_simcontext) is a single
+    // un-synchronized global, not thread-local, so one process cannot
+    // safely run more than one simulation concurrently via std::thread.
+    // Instead we fork() one worker process per core before any SystemC
+    // object is created; each child simulates its own independent slice
+    // of samples (with its own RNG stream) in its own independent
+    // kernel, and reports its partial switch/error counts back through
+    // a pipe.
     unsigned int num_workers = std::thread::hardware_concurrency();
     if (num_workers == 0) num_workers = 1;
-    num_workers = std::min(num_workers, 65536U);
+    num_workers = static_cast<unsigned int>(std::min<unsigned long long>(num_workers, std::max<unsigned long long>(total_samples, 1ULL)));
 
     std::vector<int> read_fd(num_workers);
     std::vector<pid_t> worker_pid(num_workers);
 
+    unsigned long long base_slice = total_samples / num_workers;
+    unsigned long long remainder  = total_samples % num_workers;
+
     for (unsigned int i = 0; i < num_workers; i++) {
+        unsigned long long samples_for_worker = base_slice + (i < remainder ? 1ULL : 0ULL);
+
         int fds[2];
         if (pipe(fds) != 0) { perror("pipe"); return 1; }
 
@@ -377,9 +321,10 @@ int sc_main(int argc, char* argv[]) {
 
         if (child == 0) {
             close(fds[0]);
-            unsigned int switches = 0, errors = 0;
-            run_slice(i, num_workers, /*quiet=*/true, switches, errors);
-            unsigned int payload[2] = { switches, errors };
+            unsigned long long switches = 0;
+            unsigned int errors = 0;
+            run_slice(samples_for_worker, base_seed + i, switches, errors);
+            unsigned long long payload[2] = { switches, static_cast<unsigned long long>(errors) };
             ssize_t written = write(fds[1], payload, sizeof(payload));
             (void)written;
             close(fds[1]);
@@ -391,14 +336,14 @@ int sc_main(int argc, char* argv[]) {
         worker_pid[i] = child;
     }
 
-    unsigned int total_switches = 0;
-    unsigned int total_errors = 0;
+    unsigned long long total_switches = 0;
+    unsigned long long total_errors = 0;
     for (unsigned int i = 0; i < num_workers; i++) {
-        unsigned int payload[2] = { 0, 0 };
+        unsigned long long payload[2] = { 0, 0 };
         ssize_t got = read(read_fd[i], payload, sizeof(payload));
         if (got == static_cast<ssize_t>(sizeof(payload))) {
             total_switches += payload[0];
-            total_errors += payload[1];
+            total_errors   += payload[1];
         }
         close(read_fd[i]);
         int status = 0;
@@ -406,7 +351,13 @@ int sc_main(int argc, char* argv[]) {
     }
 
     assert(total_errors == 0);
-    std::cout << "RCA-16: GATES=80 SWITCHES=" << total_switches << " DELAY=32ns\n";
+    double avg_switches = total_samples > 0
+        ? (static_cast<double>(total_switches) / static_cast<double>(total_samples))
+        : 0.0;
+    std::cout << "RCA-4-MC: GATES=20 SAMPLES=" << total_samples
+              << " SWITCHES=" << total_switches
+              << " AVG_SWITCHES=" << avg_switches
+              << " DELAY=8ns\n";
 
     return 0;
 }

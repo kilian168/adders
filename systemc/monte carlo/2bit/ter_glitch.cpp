@@ -1,37 +1,31 @@
-// main.cpp
+// bsd_ternary_adder2_exhaustive.cpp
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <algorithm>
-#include <cstdio>
-#include <thread>
-#include <vector>
-#include <sys/wait.h>
-#include <unistd.h>
 
 // ============================================================================
 // 0. HELPER STRUCTS AND FUNCTIONS
 // ============================================================================
-struct DualRail16 {
-    sc_lv<16> rail_a;
-    sc_lv<16> rail_b;
+struct DualRail2 {
+    sc_lv<2> rail_a;
+    sc_lv<2> rail_b;
 };
 
-static DualRail16 encode_unsigned_to_balanced_ternary_16(unsigned int value) {
-    DualRail16 encoded;
-    encoded.rail_a = "0000000000000000";
-    encoded.rail_b = "0000000000000000";
+static DualRail2 encode_unsigned_to_balanced_ternary_2(unsigned int value) {
+    DualRail2 encoded;
+    encoded.rail_a = "00";
+    encoded.rail_b = "00";
 
-    if (value > 65535U) {
-        std::cerr << "Fehler: Der 16-Trit-Test erwartet Werte im Bereich 0..65535.\n";
+    if (value > 3U) {
+        std::cerr << "Fehler: Der 2-Trit-Test erwartet Werte im Bereich 0..3.\n";
         sc_stop();
         return encoded;
     }
 
     int remaining_value = static_cast<int>(value);
 
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 2; i++) {
         int remainder = remaining_value % 3;
         remaining_value /= 3;
 
@@ -171,8 +165,12 @@ SC_MODULE(Gate3Or) {
 //    sum  = XOR(xor1,c)     carry = OR3(and1,and2,and3)
 // ============================================================================
 SC_MODULE(BsdBinaryFullAdder) {
-    sc_in<bool> input_a, input_b, input_c;
-    sc_out<bool> sum_out, carry_out;
+    sc_in<bool> input_a;
+    sc_in<bool> input_b;
+    sc_in<bool> input_c;
+
+    sc_out<bool> sum_out;
+    sc_out<bool> carry_out;
 
     sc_signal<bool> xor1_sig, and1_sig, and2_sig, and3_sig;
 
@@ -220,32 +218,37 @@ SC_MODULE(BsdBinaryFullAdder) {
 };
 
 // ============================================================================
-// 2. 16-TRIT BALANCED TERNARY ADDER MODULE
+// 2. 2-TRIT BALANCED TERNARY / BSD-SUM ADDER
 // ============================================================================
-SC_MODULE(BalancedTernaryAdder16) {
-    sc_in<sc_lv<16>> A_a, A_b, B_a, B_b;
-    sc_out<sc_lv<17>> S_minus, S_plus;
+SC_MODULE(BalancedTernaryAdder2) {
+    sc_in<sc_lv<2>> A_a;
+    sc_in<sc_lv<2>> A_b;
+    sc_in<sc_lv<2>> B_a;
+    sc_in<sc_lv<2>> B_b;
 
-    sc_signal<bool> sa_a[16];
-    sc_signal<bool> sa_b[16];
-    sc_signal<bool> sb_a[16];
-    sc_signal<bool> sb_b[16];
+    sc_out<sc_lv<3>> S_minus;
+    sc_out<sc_lv<3>> S_plus;
 
-    sc_signal<bool> stage1_sum[16];
-    sc_signal<bool> stage1_carry[16];
+    sc_signal<bool> sa_a[2];
+    sc_signal<bool> sa_b[2];
+    sc_signal<bool> sb_a[2];
+    sc_signal<bool> sb_b[2];
 
-    sc_signal<bool> stage2_sum[16];
-    sc_signal<bool> stage2_carry[16];
+    sc_signal<bool> stage1_sum[2];
+    sc_signal<bool> stage1_carry[2];
+
+    sc_signal<bool> stage2_sum[2];
+    sc_signal<bool> stage2_carry[2];
 
     sc_signal<bool> const_one;
 
-    BsdBinaryFullAdder* stage1_adders[16];
-    BsdBinaryFullAdder* stage2_adders[16];
+    BsdBinaryFullAdder* stage1_adders[2];
+    BsdBinaryFullAdder* stage2_adders[2];
 
-    SC_CTOR(BalancedTernaryAdder16) {
+    SC_CTOR(BalancedTernaryAdder2) {
         const_one.write(true);
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 2; i++) {
             std::string stage1_name = "S1_FA" + std::to_string(i + 1);
             stage1_adders[i] = new BsdBinaryFullAdder(stage1_name.c_str());
 
@@ -276,19 +279,18 @@ SC_MODULE(BalancedTernaryAdder16) {
 
         SC_METHOD(pack_outputs);
         dont_initialize();
-        for (int i = 0; i < 16; i++) {
-            sensitive << stage2_sum[i] << stage2_carry[i];
-        }
-        sensitive << stage1_carry[15];
+        sensitive << stage2_sum[0] << stage2_carry[0]
+                  << stage2_sum[1] << stage2_carry[1]
+                  << stage1_carry[1];
     }
 
     void unpack_inputs() {
-        sc_lv<16> value_a_a = A_a.read();
-        sc_lv<16> value_a_b = A_b.read();
-        sc_lv<16> value_b_a = B_a.read();
-        sc_lv<16> value_b_b = B_b.read();
+        sc_lv<2> value_a_a = A_a.read();
+        sc_lv<2> value_a_b = A_b.read();
+        sc_lv<2> value_b_a = B_a.read();
+        sc_lv<2> value_b_b = B_b.read();
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 2; i++) {
             sa_a[i].write(value_a_a[i].is_01() ? value_a_a[i].to_bool() : false);
             sa_b[i].write(value_a_b[i].is_01() ? value_a_b[i].to_bool() : false);
             sb_a[i].write(value_b_a[i].is_01() ? value_b_a[i].to_bool() : false);
@@ -297,43 +299,42 @@ SC_MODULE(BalancedTernaryAdder16) {
     }
 
     void pack_outputs() {
-        sc_lv<17> output_minus;
-        sc_lv<17> output_plus;
+        sc_lv<3> output_minus;
+        sc_lv<3> output_plus;
 
-        for (int i = 0; i < 16; i++) {
-            output_minus[i] = stage2_carry[i].read();
-            output_plus[i] = stage2_sum[i].read();
-        }
+        output_minus[0] = stage2_carry[0].read();
+        output_plus[0] = stage2_sum[0].read();
 
-        output_minus[16] = stage2_carry[15].read();
-        output_plus[16] = stage1_carry[15].read();
+        output_minus[1] = stage2_carry[1].read();
+        output_plus[1] = stage2_sum[1].read();
+
+        output_minus[2] = stage2_carry[1].read();
+        output_plus[2] = stage1_carry[1].read();
 
         S_minus.write(output_minus);
         S_plus.write(output_plus);
     }
 
     void reset_counters() {
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < 2; i++) {
             stage1_adders[i]->reset_counters();
             stage2_adders[i]->reset_counters();
         }
     }
 
-    unsigned int total_switches() const {
+    void print_report() {
         unsigned int total_switches = 0;
-        for (int i = 0; i < 16; i++) {
+
+        for (int i = 0; i < 2; i++) {
             total_switches += stage1_adders[i]->total_switches();
             total_switches += stage2_adders[i]->total_switches();
         }
-        return total_switches;
+
+        std::cout << "TER-2: GATES=24 SWITCHES=" << total_switches << " DELAY=4ns\n";
     }
 
-    void print_report() {
-        std::cout << "TER-16: GATES=192 SWITCHES=" << total_switches() << " DELAY=4ns\n";
-    }
-
-    ~BalancedTernaryAdder16() {
-        for (int i = 0; i < 16; i++) {
+    ~BalancedTernaryAdder2() {
+        for (int i = 0; i < 2; i++) {
             delete stage1_adders[i];
             delete stage2_adders[i];
         }
@@ -341,36 +342,32 @@ SC_MODULE(BalancedTernaryAdder16) {
 };
 
 // ============================================================================
-// 3. TESTBENCH
+// 3. TESTBENCH: EXHAUSTIVE RANGE 0..3 LIKE 2-BIT RCA WITHOUT CIN
 // ============================================================================
 SC_MODULE(Testbench) {
-    sc_out<sc_lv<16>> A_a, A_b, B_a, B_b;
-    sc_in<sc_lv<17>> S_minus, S_plus;
+    sc_out<sc_lv<2>> A_a;
+    sc_out<sc_lv<2>> A_b;
+    sc_out<sc_lv<2>> B_a;
+    sc_out<sc_lv<2>> B_b;
 
-    BalancedTernaryAdder16* design_ptr;
+    sc_in<sc_lv<3>> S_minus;
+    sc_in<sc_lv<3>> S_plus;
 
-    // Partition of the a-value range to cover. Defaults to the full
-    // range; sc_main() narrows this when run with partition arguments,
-    // so the exhaustive sweep can be split across parallel processes.
+    BalancedTernaryAdder2* design_ptr;
+
     unsigned int a_start;
     unsigned int a_end;
-
-    // When true, this process's slice was launched as one of several
-    // parallel workers (see run_slice() below), so it stays silent and
-    // lets the orchestrating parent print the combined report instead.
-    bool quiet;
 
     SC_CTOR(Testbench)
         : design_ptr(nullptr),
           a_start(0),
-          a_end(65536),
-          quiet(false)
+          a_end(4)
     {
         SC_THREAD(stimulus);
     }
 
     void stimulus() {
-        DualRail16 zero = encode_unsigned_to_balanced_ternary_16(0);
+        DualRail2 zero = encode_unsigned_to_balanced_ternary_2(0);
 
         A_a.write(zero.rail_a);
         A_b.write(zero.rail_b);
@@ -382,21 +379,19 @@ SC_MODULE(Testbench) {
         design_ptr->reset_counters();
 
         for (unsigned int a_value = a_start; a_value < a_end; a_value++) {
-            for (unsigned int b_value = 0; b_value < 65536; b_value++) {
+            for (unsigned int b_value = 0; b_value < 4; b_value++) {
                 apply_test(a_value, b_value);
             }
         }
 
-        if (!quiet) {
-            design_ptr->print_report();
-        }
+        design_ptr->print_report();
 
         sc_stop();
     }
 
     void apply_test(unsigned int a_value, unsigned int b_value) {
-        DualRail16 encoded_a = encode_unsigned_to_balanced_ternary_16(a_value);
-        DualRail16 encoded_b = encode_unsigned_to_balanced_ternary_16(b_value);
+        DualRail2 encoded_a = encode_unsigned_to_balanced_ternary_2(a_value);
+        DualRail2 encoded_b = encode_unsigned_to_balanced_ternary_2(b_value);
 
         A_a.write(encoded_a.rail_a);
         A_b.write(encoded_a.rail_b);
@@ -410,18 +405,16 @@ SC_MODULE(Testbench) {
 // ============================================================================
 // 4. MAIN
 // ============================================================================
+int sc_main(int argc, char* argv[]) {
+    sc_signal<sc_lv<2>> A_a;
+    sc_signal<sc_lv<2>> A_b;
+    sc_signal<sc_lv<2>> B_a;
+    sc_signal<sc_lv<2>> B_b;
 
-// Elaborates a fresh adder + testbench and simulates exactly one
-// a-value slice [partition_index, num_partitions) to completion in the
-// calling process. Used both for manual external partitioning (one
-// process, prints its own report) and as the body of each forked
-// worker in the auto-parallel default path (quiet, returns its partial
-// switch count instead of printing to stdout).
-static unsigned int run_slice(unsigned int partition_index, unsigned int num_partitions, bool quiet) {
-    sc_signal<sc_lv<16>> A_a, A_b, B_a, B_b;
-    sc_signal<sc_lv<17>> S_minus, S_plus;
+    sc_signal<sc_lv<3>> S_minus;
+    sc_signal<sc_lv<3>> S_plus;
 
-    BalancedTernaryAdder16 adder("BalancedTernaryAdder16");
+    BalancedTernaryAdder2 adder("BalancedTernaryAdder2");
     Testbench tb("TB");
 
     tb.design_ptr = &adder;
@@ -440,76 +433,18 @@ static unsigned int run_slice(unsigned int partition_index, unsigned int num_par
     tb.S_minus(S_minus);
     tb.S_plus(S_plus);
 
-    unsigned int slice = 65536U / num_partitions;
-    tb.a_start = partition_index * slice;
-    tb.a_end = (partition_index == num_partitions - 1) ? 65536U : (partition_index + 1) * slice;
-    tb.quiet = quiet;
-
-    sc_start();
-
-    return adder.total_switches();
-}
-
-int sc_main(int argc, char* argv[]) {
-    // Manual external partitioning: "ter_16bit <partition_index> <num_partitions>"
-    // runs exactly that slice in this single process and prints its own
-    // partial report, e.g. for hand-orchestrated multi-machine runs.
+    // Optional partitioning: "ter_2bit <partition_index> <num_partitions>"
+    // restricts this process to a slice of the a-value range, so the
+    // exhaustive sweep can be split across parallel processes.
     if (argc == 3) {
         unsigned int partition_index = static_cast<unsigned int>(std::stoul(argv[1]));
         unsigned int num_partitions = static_cast<unsigned int>(std::stoul(argv[2]));
-        run_slice(partition_index, num_partitions, /*quiet=*/false);
-        return 0;
+        unsigned int slice = 4U / num_partitions;
+        tb.a_start = partition_index * slice;
+        tb.a_end = (partition_index == num_partitions - 1) ? 4U : (partition_index + 1) * slice;
     }
 
-    // Default (no args): fan the exhaustive sweep out across every
-    // available CPU core. SystemC's kernel state (sc_curr_simcontext) is
-    // a single un-synchronized global, not thread-local, so one process
-    // cannot safely run more than one simulation concurrently via
-    // std::thread. Instead we fork() one worker process per core before
-    // any SystemC object is created; each child then elaborates and
-    // simulates its own independent slice in its own independent kernel,
-    // and reports its partial switch count back through a pipe.
-    unsigned int num_workers = std::thread::hardware_concurrency();
-    if (num_workers == 0) num_workers = 1;
-    num_workers = std::min(num_workers, 65536U);
-
-    std::vector<int> read_fd(num_workers);
-    std::vector<pid_t> worker_pid(num_workers);
-
-    for (unsigned int i = 0; i < num_workers; i++) {
-        int fds[2];
-        if (pipe(fds) != 0) { perror("pipe"); return 1; }
-
-        pid_t child = fork();
-        if (child < 0) { perror("fork"); return 1; }
-
-        if (child == 0) {
-            close(fds[0]);
-            unsigned int switches = run_slice(i, num_workers, /*quiet=*/true);
-            ssize_t written = write(fds[1], &switches, sizeof(switches));
-            (void)written;
-            close(fds[1]);
-            _exit(0);
-        }
-
-        close(fds[1]);
-        read_fd[i] = fds[0];
-        worker_pid[i] = child;
-    }
-
-    unsigned int total_switches = 0;
-    for (unsigned int i = 0; i < num_workers; i++) {
-        unsigned int switches = 0;
-        ssize_t got = read(read_fd[i], &switches, sizeof(switches));
-        if (got == static_cast<ssize_t>(sizeof(switches))) {
-            total_switches += switches;
-        }
-        close(read_fd[i]);
-        int status = 0;
-        waitpid(worker_pid[i], &status, 0);
-    }
-
-    std::cout << "TER-16: GATES=192 SWITCHES=" << total_switches << " DELAY=4ns\n";
+    sc_start();
 
     return 0;
 }
