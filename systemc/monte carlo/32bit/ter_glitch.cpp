@@ -14,26 +14,26 @@
 // ============================================================================
 // 0. HELPER STRUCTS AND FUNCTIONS
 // ============================================================================
-struct DualRail8 {
-    sc_lv<8> rail_a;
-    sc_lv<8> rail_b;
+struct DualRail32 {
+    sc_lv<32> rail_a;
+    sc_lv<32> rail_b;
 };
 
-static DualRail8 encode_unsigned_to_balanced_ternary_8(unsigned int value) {
-    DualRail8 encoded;
-    encoded.rail_a = "00000000";
-    encoded.rail_b = "00000000";
+static DualRail32 encode_unsigned_to_balanced_ternary_32(unsigned long long value) {
+    DualRail32 encoded;
+    encoded.rail_a = "00000000000000000000000000000000";
+    encoded.rail_b = "00000000000000000000000000000000";
 
-    if (value > 255U) {
-        std::cerr << "Fehler: Der 8-Trit-Test erwartet Werte im Bereich 0..255.\n";
+    if (value > 4294967295ULL) {
+        std::cerr << "Fehler: Der 32-Trit-Test erwartet Werte im Bereich 0..4294967295.\n";
         sc_stop();
         return encoded;
     }
 
-    int remaining_value = static_cast<int>(value);
+    long long remaining_value = static_cast<long long>(value);
 
-    for (int i = 0; i < 8; i++) {
-        int remainder = remaining_value % 3;
+    for (int i = 0; i < 32; i++) {
+        long long remainder = remaining_value % 3;
         remaining_value /= 3;
 
         int trit_value;
@@ -221,32 +221,32 @@ SC_MODULE(BsdBinaryFullAdder) {
 };
 
 // ============================================================================
-// 2. 8-TRIT BALANCED TERNARY ADDER MODULE
+// 2. 32-TRIT BALANCED TERNARY ADDER MODULE
 // ============================================================================
-SC_MODULE(BalancedTernaryAdder8) {
-    sc_in<sc_lv<8>> A_a, A_b, B_a, B_b;
-    sc_out<sc_lv<9>> S_minus, S_plus;
+SC_MODULE(BalancedTernaryAdder32) {
+    sc_in<sc_lv<32>> A_a, A_b, B_a, B_b;
+    sc_out<sc_lv<33>> S_minus, S_plus;
 
-    sc_signal<bool> sa_a[8];
-    sc_signal<bool> sa_b[8];
-    sc_signal<bool> sb_a[8];
-    sc_signal<bool> sb_b[8];
+    sc_signal<bool> sa_a[32];
+    sc_signal<bool> sa_b[32];
+    sc_signal<bool> sb_a[32];
+    sc_signal<bool> sb_b[32];
 
-    sc_signal<bool> stage1_sum[8];
-    sc_signal<bool> stage1_carry[8];
+    sc_signal<bool> stage1_sum[32];
+    sc_signal<bool> stage1_carry[32];
 
-    sc_signal<bool> stage2_sum[8];
-    sc_signal<bool> stage2_carry[8];
+    sc_signal<bool> stage2_sum[32];
+    sc_signal<bool> stage2_carry[32];
 
     sc_signal<bool> const_one;
 
-    BsdBinaryFullAdder* stage1_adders[8];
-    BsdBinaryFullAdder* stage2_adders[8];
+    BsdBinaryFullAdder* stage1_adders[32];
+    BsdBinaryFullAdder* stage2_adders[32];
 
-    SC_CTOR(BalancedTernaryAdder8) {
+    SC_CTOR(BalancedTernaryAdder32) {
         const_one.write(true);
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 32; i++) {
             std::string stage1_name = "S1_FA" + std::to_string(i + 1);
             stage1_adders[i] = new BsdBinaryFullAdder(stage1_name.c_str());
 
@@ -277,19 +277,19 @@ SC_MODULE(BalancedTernaryAdder8) {
 
         SC_METHOD(pack_outputs);
         dont_initialize();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 32; i++) {
             sensitive << stage2_sum[i] << stage2_carry[i];
         }
-        sensitive << stage1_carry[7];
+        sensitive << stage1_carry[31];
     }
 
     void unpack_inputs() {
-        sc_lv<8> value_a_a = A_a.read();
-        sc_lv<8> value_a_b = A_b.read();
-        sc_lv<8> value_b_a = B_a.read();
-        sc_lv<8> value_b_b = B_b.read();
+        sc_lv<32> value_a_a = A_a.read();
+        sc_lv<32> value_a_b = A_b.read();
+        sc_lv<32> value_b_a = B_a.read();
+        sc_lv<32> value_b_b = B_b.read();
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 32; i++) {
             sa_a[i].write(value_a_a[i].is_01() ? value_a_a[i].to_bool() : false);
             sa_b[i].write(value_a_b[i].is_01() ? value_a_b[i].to_bool() : false);
             sb_a[i].write(value_b_a[i].is_01() ? value_b_a[i].to_bool() : false);
@@ -298,23 +298,23 @@ SC_MODULE(BalancedTernaryAdder8) {
     }
 
     void pack_outputs() {
-        sc_lv<9> output_minus;
-        sc_lv<9> output_plus;
+        sc_lv<33> output_minus;
+        sc_lv<33> output_plus;
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 32; i++) {
             output_minus[i] = stage2_carry[i].read();
             output_plus[i] = stage2_sum[i].read();
         }
 
-        output_minus[8] = stage2_carry[7].read();
-        output_plus[8] = stage1_carry[7].read();
+        output_minus[32] = stage2_carry[31].read();
+        output_plus[32] = stage1_carry[31].read();
 
         S_minus.write(output_minus);
         S_plus.write(output_plus);
     }
 
     void reset_counters() {
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 32; i++) {
             stage1_adders[i]->reset_counters();
             stage2_adders[i]->reset_counters();
         }
@@ -322,15 +322,15 @@ SC_MODULE(BalancedTernaryAdder8) {
 
     unsigned int total_switches() const {
         unsigned int total_switches = 0;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 32; i++) {
             total_switches += stage1_adders[i]->total_switches();
             total_switches += stage2_adders[i]->total_switches();
         }
         return total_switches;
     }
 
-    ~BalancedTernaryAdder8() {
-        for (int i = 0; i < 8; i++) {
+    ~BalancedTernaryAdder32() {
+        for (int i = 0; i < 32; i++) {
             delete stage1_adders[i];
             delete stage2_adders[i];
         }
@@ -340,17 +340,17 @@ SC_MODULE(BalancedTernaryAdder8) {
 // ============================================================================
 // 3. TESTBENCH — Monte Carlo random sampling
 //    Draws num_samples uniformly random (a, b) pairs instead of
-//    exhaustively covering the whole input space, so the same
-//    methodology also works for widths where exhaustive coverage is
-//    computationally infeasible (e.g. 32-bit). No correctness check is
-//    performed here, matching the original exhaustive testbench, which
-//    only measured switching activity for this adder.
+//    exhaustively covering the whole input space: at 32 bits exhaustive
+//    coverage (2^32 x 2^32 cases) is computationally infeasible, so
+//    Monte Carlo sampling is the only tractable option. No correctness
+//    check is performed here, matching the original exhaustive
+//    testbench, which only measured switching activity for this adder.
 // ============================================================================
 SC_MODULE(Testbench) {
-    sc_out<sc_lv<8>> A_a, A_b, B_a, B_b;
-    sc_in<sc_lv<9>> S_minus, S_plus;
+    sc_out<sc_lv<32>> A_a, A_b, B_a, B_b;
+    sc_in<sc_lv<33>> S_minus, S_plus;
 
-    BalancedTernaryAdder8* design_ptr;
+    BalancedTernaryAdder32* design_ptr;
 
     unsigned long long num_samples;
     unsigned long long rng_seed;
@@ -364,7 +364,7 @@ SC_MODULE(Testbench) {
     }
 
     void stimulus() {
-        DualRail8 zero = encode_unsigned_to_balanced_ternary_8(0);
+        DualRail32 zero = encode_unsigned_to_balanced_ternary_32(0ULL);
 
         A_a.write(zero.rail_a);
         A_b.write(zero.rail_b);
@@ -376,20 +376,20 @@ SC_MODULE(Testbench) {
         design_ptr->reset_counters();
 
         std::mt19937_64 rng(rng_seed);
-        std::uniform_int_distribution<unsigned long long> dist(0ULL, 255ULL);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 4294967295ULL);
 
         for (unsigned long long i = 0; i < num_samples; i++) {
-            unsigned int a_value = static_cast<unsigned int>(dist(rng));
-            unsigned int b_value = static_cast<unsigned int>(dist(rng));
+            unsigned long long a_value = dist(rng);
+            unsigned long long b_value = dist(rng);
             apply_test(a_value, b_value);
         }
 
         sc_stop();
     }
 
-    void apply_test(unsigned int a_value, unsigned int b_value) {
-        DualRail8 encoded_a = encode_unsigned_to_balanced_ternary_8(a_value);
-        DualRail8 encoded_b = encode_unsigned_to_balanced_ternary_8(b_value);
+    void apply_test(unsigned long long a_value, unsigned long long b_value) {
+        DualRail32 encoded_a = encode_unsigned_to_balanced_ternary_32(a_value);
+        DualRail32 encoded_b = encode_unsigned_to_balanced_ternary_32(b_value);
 
         A_a.write(encoded_a.rail_a);
         A_b.write(encoded_a.rail_b);
@@ -408,10 +408,10 @@ SC_MODULE(Testbench) {
 // samples_for_this_worker random test vectors, seeded independently so
 // parallel workers never repeat each other's samples.
 static unsigned long long run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker) {
-    sc_signal<sc_lv<8>> A_a, A_b, B_a, B_b;
-    sc_signal<sc_lv<9>> S_minus, S_plus;
+    sc_signal<sc_lv<32>> A_a, A_b, B_a, B_b;
+    sc_signal<sc_lv<33>> S_minus, S_plus;
 
-    BalancedTernaryAdder8 adder("BalancedTernaryAdder8");
+    BalancedTernaryAdder32 adder("BalancedTernaryAdder32");
     Testbench tb("TB");
 
     tb.design_ptr = &adder;
@@ -497,7 +497,7 @@ int sc_main(int argc, char* argv[]) {
     double avg_switches = total_samples > 0
         ? (static_cast<double>(total_switches) / static_cast<double>(total_samples))
         : 0.0;
-    std::cout << "TER-8-MC: GATES=96 SAMPLES=" << total_samples
+    std::cout << "TER-32-MC: GATES=384 SAMPLES=" << total_samples
               << " SWITCHES=" << total_switches
               << " AVG_SWITCHES=" << avg_switches
               << " DELAY=4ns\n";

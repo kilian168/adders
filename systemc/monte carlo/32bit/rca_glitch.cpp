@@ -1,4 +1,4 @@
-// cla_glitch.cpp – 2-bit Carry Lookahead Adder, gate-level switching activity
+// main.cpp
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
@@ -15,25 +15,33 @@
 // ==========================================
 // Helper functions
 // ==========================================
-static sc_lv<2> make_2bit_vector(unsigned int value) {
-    sc_lv<2> bits;
-    bits[0] = (value & 1U) != 0U;
-    bits[1] = (value & 2U) != 0U;
+static sc_lv<32> make_32bit_vector(unsigned int value) {
+    sc_lv<32> bits;
+    for (int i = 0; i < 32; i++) {
+        bits[i] = ((value >> i) & 1U) != 0U;
+    }
     return bits;
 }
 
-static unsigned int to_unsigned_2bit(const sc_lv<2>& bits) {
+static unsigned int to_unsigned_32bit(const sc_lv<32>& bits) {
     unsigned int value = 0;
-    if (bits[0].is_01() && bits[0].to_bool()) value += 1U;
-    if (bits[1].is_01() && bits[1].to_bool()) value += 2U;
+    for (int i = 0; i < 32; i++) {
+        if (bits[i].is_01() && bits[i].to_bool()) {
+            value += (1U << i);
+        }
+    }
     return value;
 }
 
 // ==========================================
-// 0b. GENERIC GATE-LEVEL PRIMITIVE
-//     Independently sensitive to each input, with a 1ns delay between
-//     evaluation and output commit, so every transient glitch from
-//     asynchronously-arriving inputs is counted as a separate switch.
+// 1. GENERIC GATE-LEVEL PRIMITIVE
+//    Each instance is exactly one 2-input AND/OR/XOR gate.
+//    It is sensitive to each of its two inputs independently, so
+//    inputs arriving at different simulated times each trigger their
+//    own evaluation (and are counted as separate switches if the
+//    gate's output value changes), instead of being batched into one
+//    combined evaluation. Output commit is delayed by 1ns from the
+//    evaluation that caused the change, modeling real gate delay.
 // ==========================================
 enum GateOp { GATE_AND, GATE_OR, GATE_XOR };
 
@@ -86,107 +94,159 @@ SC_MODULE(Gate) {
 };
 
 // ==========================================
-// 1. 2-BIT CARRY LOOKAHEAD ADDER MODULE
-//    Gate count: 13
-//    PG tier : 2 XOR (P) + 2 AND (G)          =  4 gates
-//    C1 logic: 1 AND (P0&Cin) + 1 OR           =  2 gates
-//    C2 logic: 3 AND + 2 OR (Cout)             =  5 gates
-//    Sum tier: 2 XOR (S0=P0^Cin, S1=P1^C1)    =  2 gates
-//    Cin is hardwired 0 for top-level adder.
-//    Wired as real per-gate dependencies (not batched tiers).
+// 2. GATE-LEVEL FULL ADDER MODULE (5 gates)
+//    s1   = XOR(a,b)        c1  = AND(a,b)
+//    sum  = XOR(s1,cin)     c2  = AND(s1,cin)
+//    cout = OR(c1,c2)
 // ==========================================
-SC_MODULE(CarryLookaheadAdder2) {
-    sc_in<sc_lv<2>>  A, B;
-    sc_out<sc_lv<2>> Sum;
-    sc_out<bool>     Cout;
+SC_MODULE(FullAdder) {
+    sc_in<bool> a;
+    sc_in<bool> b;
+    sc_in<bool> cin;
 
-    sc_signal<bool> a_bit[2], b_bit[2];
-    sc_signal<bool> p[2], g[2];
-    sc_signal<bool> const_zero;
-    sc_signal<bool> c1a, c1o;
-    sc_signal<bool> c2a1, c2a2, c2a3, c2o1, c2o2;
-    sc_signal<bool> s[2];
+    sc_out<bool> sum;
+    sc_out<bool> cout;
 
-    Gate *g_p[2], *g_g[2], *g_s[2];
-    Gate *g_c1a, *g_c1o;
-    Gate *g_c2a1, *g_c2a2, *g_c2a3, *g_c2o1, *g_c2o2;
+    sc_signal<bool> s1, c1, c2;
 
-    SC_CTOR(CarryLookaheadAdder2) {
-        SC_METHOD(unpack_inputs);
-        dont_initialize();
-        sensitive << A << B;
+    Gate *g_xor1, *g_and1, *g_xor2, *g_and2, *g_or1;
 
-        SC_METHOD(pack_outputs);
-        dont_initialize();
-        sensitive << s[0] << s[1] << c2o2;
+    SC_CTOR(FullAdder) {
+        g_xor1 = new Gate("XOR1", GATE_XOR);
+        g_xor1->in1(a); g_xor1->in2(b); g_xor1->out(s1);
 
-        for (int i = 0; i < 2; i++) {
-            std::string pn = "P" + std::to_string(i);
-            g_p[i] = new Gate(pn.c_str(), GATE_XOR);
-            g_p[i]->in1(a_bit[i]); g_p[i]->in2(b_bit[i]); g_p[i]->out(p[i]);
+        g_and1 = new Gate("AND1", GATE_AND);
+        g_and1->in1(a); g_and1->in2(b); g_and1->out(c1);
 
-            std::string gn = "G" + std::to_string(i);
-            g_g[i] = new Gate(gn.c_str(), GATE_AND);
-            g_g[i]->in1(a_bit[i]); g_g[i]->in2(b_bit[i]); g_g[i]->out(g[i]);
-        }
+        g_xor2 = new Gate("XOR2", GATE_XOR);
+        g_xor2->in1(s1); g_xor2->in2(cin); g_xor2->out(sum);
 
-        g_c1a = new Gate("C1A", GATE_AND); g_c1a->in1(p[0]); g_c1a->in2(const_zero); g_c1a->out(c1a);
-        g_c1o = new Gate("C1O", GATE_OR);  g_c1o->in1(g[0]); g_c1o->in2(c1a);        g_c1o->out(c1o);
+        g_and2 = new Gate("AND2", GATE_AND);
+        g_and2->in1(s1); g_and2->in2(cin); g_and2->out(c2);
 
-        g_c2a1 = new Gate("C2A1", GATE_AND); g_c2a1->in1(p[1]);  g_c2a1->in2(g[0]);        g_c2a1->out(c2a1);
-        g_c2a2 = new Gate("C2A2", GATE_AND); g_c2a2->in1(p[1]);  g_c2a2->in2(p[0]);        g_c2a2->out(c2a2);
-        g_c2a3 = new Gate("C2A3", GATE_AND); g_c2a3->in1(c2a2);  g_c2a3->in2(const_zero);  g_c2a3->out(c2a3);
-        g_c2o1 = new Gate("C2O1", GATE_OR);  g_c2o1->in1(g[1]);  g_c2o1->in2(c2a1);        g_c2o1->out(c2o1);
-        g_c2o2 = new Gate("C2O2", GATE_OR);  g_c2o2->in1(c2o1);  g_c2o2->in2(c2a3);        g_c2o2->out(c2o2);
-
-        g_s[0] = new Gate("S0", GATE_XOR); g_s[0]->in1(p[0]); g_s[0]->in2(const_zero); g_s[0]->out(s[0]);
-        g_s[1] = new Gate("S1", GATE_XOR); g_s[1]->in1(p[1]); g_s[1]->in2(c1o);        g_s[1]->out(s[1]);
-    }
-
-    void unpack_inputs() {
-        sc_lv<2> va = A.read(), vb = B.read();
-        for (int i = 0; i < 2; i++) {
-            a_bit[i].write(va[i].is_01() ? va[i].to_bool() : false);
-            b_bit[i].write(vb[i].is_01() ? vb[i].to_bool() : false);
-        }
-    }
-
-    void pack_outputs() {
-        sc_lv<2> out;
-        out[0] = s[0].read();
-        out[1] = s[1].read();
-        Sum.write(out);
-        Cout.write(c2o2.read());
+        g_or1 = new Gate("OR1", GATE_OR);
+        g_or1->in1(c1); g_or1->in2(c2); g_or1->out(cout);
     }
 
     unsigned int total_switches() const {
-        unsigned int t = 0;
-        for (int i = 0; i < 2; i++) t += g_p[i]->switches + g_g[i]->switches + g_s[i]->switches;
-        t += g_c1a->switches + g_c1o->switches;
-        t += g_c2a1->switches + g_c2a2->switches + g_c2a3->switches + g_c2o1->switches + g_c2o2->switches;
-        return t;
+        return g_xor1->switches + g_and1->switches + g_xor2->switches + g_and2->switches + g_or1->switches;
     }
 
-    ~CarryLookaheadAdder2() {
-        for (int i = 0; i < 2; i++) { delete g_p[i]; delete g_g[i]; delete g_s[i]; }
-        delete g_c1a; delete g_c1o;
-        delete g_c2a1; delete g_c2a2; delete g_c2a3; delete g_c2o1; delete g_c2o2;
+    ~FullAdder() {
+        delete g_xor1; delete g_and1; delete g_xor2; delete g_and2; delete g_or1;
     }
 };
 
 // ==========================================
-// 2. TESTBENCH — Monte Carlo random sampling
+// 2. 32-BIT RIPPLE CARRY ADDER
+// ==========================================
+SC_MODULE(RippleCarryAdder32) {
+    sc_in<sc_lv<32>> A;
+    sc_in<sc_lv<32>> B;
+
+    sc_out<sc_lv<32>> Sum;
+    sc_out<bool> Cout;
+
+    sc_signal<bool> a[32];
+    sc_signal<bool> b[32];
+    sc_signal<bool> s[32];
+    sc_signal<bool> c[32];
+    sc_signal<bool> const_zero;
+
+    FullAdder* fa[32];
+
+    SC_CTOR(RippleCarryAdder32) {
+        for (int i = 0; i < 32; i++) {
+            std::string name = "FA_" + std::to_string(i);
+            fa[i] = new FullAdder(name.c_str());
+
+            fa[i]->a(a[i]);
+            fa[i]->b(b[i]);
+            fa[i]->sum(s[i]);
+            fa[i]->cout(c[i]);
+
+            if (i == 0) {
+                fa[i]->cin(const_zero);
+            } else {
+                fa[i]->cin(c[i - 1]);
+            }
+        }
+
+        SC_METHOD(split_inputs);
+        sensitive << A << B;
+
+        SC_METHOD(combine_outputs);
+        for (int i = 0; i < 32; i++) {
+            sensitive << s[i];
+        }
+        sensitive << c[31];
+    }
+
+    void split_inputs() {
+        sc_lv<32> value_a = A.read();
+        sc_lv<32> value_b = B.read();
+
+        for (int i = 0; i < 32; i++) {
+            if (value_a[i].is_01()) {
+                a[i].write(value_a[i].to_bool());
+            } else {
+                a[i].write(false);
+            }
+
+            if (value_b[i].is_01()) {
+                b[i].write(value_b[i].to_bool());
+            } else {
+                b[i].write(false);
+            }
+        }
+    }
+
+    void combine_outputs() {
+        sc_lv<32> value_sum;
+
+        for (int i = 0; i < 32; i++) {
+            value_sum[i] = s[i].read();
+        }
+
+        Sum.write(value_sum);
+        Cout.write(c[31].read());
+    }
+
+    unsigned int total_switches() const {
+        unsigned int total = 0;
+        for (int i = 0; i < 32; i++) {
+            total += fa[i]->total_switches();
+        }
+        return total;
+    }
+
+    ~RippleCarryAdder32() {
+        for (int i = 0; i < 32; i++) {
+            delete fa[i];
+        }
+    }
+};
+
+// ==========================================
+// 3. TESTBENCH — Monte Carlo random sampling
 //    Draws num_samples uniformly random (a, b) pairs instead of
-//    exhaustively covering the whole input space, so the same
-//    methodology also works for widths where exhaustive coverage is
-//    computationally infeasible (e.g. 32-bit).
+//    exhaustively covering the whole input space: at 32 bits exhaustive
+//    coverage (2^32 x 2^32 cases) is computationally infeasible, so
+//    Monte Carlo sampling is the only tractable option.
+//
+//    Note: a 32-bit adder's result needs 33 bits (32-bit sum + carry),
+//    so the correctness check below widens to unsigned long long before
+//    adding — doing this arithmetic in plain 32-bit unsigned int would
+//    silently overflow/wrap and produce false error reports.
 // ==========================================
 SC_MODULE(Testbench) {
-    sc_out<sc_lv<2>> A, B;
-    sc_in<sc_lv<2>>  Sum;
-    sc_in<bool>      Cout;
+    sc_out<sc_lv<32>> A;
+    sc_out<sc_lv<32>> B;
 
-    CarryLookaheadAdder2* cla_ptr;
+    sc_in<sc_lv<32>> Sum;
+    sc_in<bool> Cout;
+
+    RippleCarryAdder32* rca_ptr;
 
     unsigned int number_of_errors;
 
@@ -194,12 +254,17 @@ SC_MODULE(Testbench) {
     unsigned long long rng_seed;
 
     SC_CTOR(Testbench)
-        : cla_ptr(nullptr), number_of_errors(0), num_samples(1000000ULL), rng_seed(42ULL)
-    { SC_THREAD(stimulus); }
+        : rca_ptr(nullptr),
+          number_of_errors(0),
+          num_samples(1000000ULL),
+          rng_seed(42ULL)
+    {
+        SC_THREAD(stimulus);
+    }
 
     void stimulus() {
         std::mt19937_64 rng(rng_seed);
-        std::uniform_int_distribution<unsigned long long> dist(0ULL, 3ULL);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 4294967295ULL);
 
         for (unsigned long long i = 0; i < num_samples; i++) {
             unsigned int a_value = static_cast<unsigned int>(dist(rng));
@@ -212,19 +277,24 @@ SC_MODULE(Testbench) {
     }
 
     void apply_test(unsigned int a_value, unsigned int b_value) {
-        A.write(make_2bit_vector(a_value));
-        B.write(make_2bit_vector(b_value));
-        wait(50, SC_NS);
+        A.write(make_32bit_vector(a_value));
+        B.write(make_32bit_vector(b_value));
 
-        unsigned int expected_result = a_value + b_value;
-        unsigned int actual_sum      = to_unsigned_2bit(Sum.read());
-        unsigned int actual_result   = actual_sum + (Cout.read() ? 4U : 0U);
-        if (expected_result != actual_result) number_of_errors++;
+        wait(200, SC_NS);
+
+        unsigned long long expected_result = static_cast<unsigned long long>(a_value)
+                                            + static_cast<unsigned long long>(b_value);
+        unsigned long long actual_sum = to_unsigned_32bit(Sum.read());
+        unsigned long long actual_result = actual_sum + (Cout.read() ? 4294967296ULL : 0ULL);
+
+        if (expected_result != actual_result) {
+            number_of_errors++;
+        }
     }
 };
 
 // ==========================================
-// 3. MAIN — Monte Carlo, auto-parallel across all CPU cores
+// 4. MAIN — Monte Carlo, auto-parallel across all CPU cores
 // ==========================================
 
 // Elaborates a fresh adder + testbench and simulates exactly
@@ -232,22 +302,33 @@ SC_MODULE(Testbench) {
 // parallel workers never repeat each other's samples.
 static void run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker,
                        unsigned long long& out_switches, unsigned int& out_errors) {
-    sc_signal<sc_lv<2>> A, B, Sum;
-    sc_signal<bool>     Cout;
+    sc_signal<sc_lv<32>> A;
+    sc_signal<sc_lv<32>> B;
 
-    CarryLookaheadAdder2 cla("CLA2");
+    sc_signal<sc_lv<32>> Sum;
+    sc_signal<bool> Cout;
+
+    RippleCarryAdder32 rca("RCA32");
     Testbench tb("TB");
-    tb.cla_ptr = &cla;
 
-    cla.A(A); cla.B(B); cla.Sum(Sum); cla.Cout(Cout);
-    tb.A(A);  tb.B(B);  tb.Sum(Sum);  tb.Cout(Cout);
+    tb.rca_ptr = &rca;
+
+    rca.A(A);
+    rca.B(B);
+    rca.Sum(Sum);
+    rca.Cout(Cout);
+
+    tb.A(A);
+    tb.B(B);
+    tb.Sum(Sum);
+    tb.Cout(Cout);
 
     tb.num_samples = samples_for_this_worker;
     tb.rng_seed = seed_for_this_worker;
 
     sc_start();
 
-    out_switches = cla.total_switches();
+    out_switches = rca.total_switches();
     out_errors = tb.number_of_errors;
 }
 
@@ -317,10 +398,10 @@ int sc_main(int argc, char* argv[]) {
     double avg_switches = total_samples > 0
         ? (static_cast<double>(total_switches) / static_cast<double>(total_samples))
         : 0.0;
-    std::cout << "CLA-2-MC: GATES=13 SAMPLES=" << total_samples
+    std::cout << "RCA-32-MC: GATES=160 SAMPLES=" << total_samples
               << " SWITCHES=" << total_switches
               << " AVG_SWITCHES=" << avg_switches
-              << " DELAY=2ns\n";
+              << " DELAY=64ns\n";
 
     return 0;
 }

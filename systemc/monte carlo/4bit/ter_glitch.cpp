@@ -3,6 +3,13 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <random>
+#include <algorithm>
+#include <cstdio>
+#include <thread>
+#include <vector>
+#include <sys/wait.h>
+#include <unistd.h>
 
 // ============================================================================
 // 0. HELPER STRUCTS AND FUNCTIONS
@@ -362,7 +369,7 @@ SC_MODULE(BalancedTernaryAdder) {
         fa8->reset_counters();
     }
 
-    void print_report() {
+    unsigned int total_switches() const {
         unsigned int total_sw = 0;
         BsdBinaryFullAdder* blocks[8] = {fa1, fa2, fa3, fa4, fa5, fa6, fa7, fa8};
 
@@ -370,7 +377,7 @@ SC_MODULE(BalancedTernaryAdder) {
             total_sw += blocks[i]->total_switches();
         }
 
-        std::cout << "TER-4: GATES=48 SWITCHES=" << total_sw << " DELAY=4ns\n";
+        return total_sw;
     }
 
     ~BalancedTernaryAdder() {
@@ -386,7 +393,13 @@ SC_MODULE(BalancedTernaryAdder) {
 };
 
 // ============================================================================
-// 3. TESTBENCH
+// 3. TESTBENCH — Monte Carlo random sampling
+//    Draws num_samples uniformly random (a, b) pairs instead of
+//    exhaustively covering the whole input space, so the same
+//    methodology also works for widths where exhaustive coverage is
+//    computationally infeasible (e.g. 32-bit). No correctness check is
+//    performed here, matching the original exhaustive testbench, which
+//    only measured switching activity for this adder.
 // ============================================================================
 SC_MODULE(Testbench) {
     sc_out<sc_lv<4>> A_a, A_b, B_a, B_b;
@@ -394,13 +407,13 @@ SC_MODULE(Testbench) {
 
     BalancedTernaryAdder* design_ptr;
 
-    unsigned int a_start;
-    unsigned int a_end;
+    unsigned long long num_samples;
+    unsigned long long rng_seed;
 
     SC_CTOR(Testbench)
         : design_ptr(nullptr),
-          a_start(0),
-          a_end(16)
+          num_samples(1000000ULL),
+          rng_seed(42ULL)
     {
         SC_THREAD(stimulus);
     }
@@ -417,13 +430,14 @@ SC_MODULE(Testbench) {
 
         design_ptr->reset_counters();
 
-        for (unsigned int a_value = a_start; a_value < a_end; a_value++) {
-            for (unsigned int b_value = 0; b_value < 16; b_value++) {
-                apply_test(a_value, b_value);
-            }
-        }
+        std::mt19937_64 rng(rng_seed);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 15ULL);
 
-        design_ptr->print_report();
+        for (unsigned long long i = 0; i < num_samples; i++) {
+            unsigned int a_value = static_cast<unsigned int>(dist(rng));
+            unsigned int b_value = static_cast<unsigned int>(dist(rng));
+            apply_test(a_value, b_value);
+        }
 
         sc_stop();
     }
@@ -442,9 +456,13 @@ SC_MODULE(Testbench) {
 };
 
 // ============================================================================
-// 4. MAIN
+// 4. MAIN — Monte Carlo, auto-parallel across all CPU cores
 // ============================================================================
-int sc_main(int argc, char* argv[]) {
+
+// Elaborates a fresh adder + testbench and simulates exactly
+// samples_for_this_worker random test vectors, seeded independently so
+// parallel workers never repeat each other's samples.
+static unsigned long long run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker) {
     sc_signal<sc_lv<4>> A_a, A_b, B_a, B_b;
     sc_signal<sc_lv<5>> S_minus, S_plus;
 
@@ -467,18 +485,77 @@ int sc_main(int argc, char* argv[]) {
     tb.S_minus(S_minus);
     tb.S_plus(S_plus);
 
-    // Optional partitioning: "ter_4bit <partition_index> <num_partitions>"
-    // restricts this process to a slice of the a-value range, so the
-    // exhaustive sweep can be split across parallel processes.
-    if (argc == 3) {
-        unsigned int partition_index = static_cast<unsigned int>(std::stoul(argv[1]));
-        unsigned int num_partitions = static_cast<unsigned int>(std::stoul(argv[2]));
-        unsigned int slice = 16U / num_partitions;
-        tb.a_start = partition_index * slice;
-        tb.a_end = (partition_index == num_partitions - 1) ? 16U : (partition_index + 1) * slice;
-    }
+    tb.num_samples = samples_for_this_worker;
+    tb.rng_seed = seed_for_this_worker;
 
     sc_start();
+
+    return adder.total_switches();
+}
+
+int sc_main(int argc, char* argv[]) {
+    unsigned long long total_samples = (argc >= 2) ? std::stoull(argv[1]) : 1000000ULL;
+    unsigned long long base_seed     = (argc >= 3) ? std::stoull(argv[2]) : 42ULL;
+
+    // SystemC's kernel state (sc_curr_simcontext) is a single
+    // un-synchronized global, not thread-local, so one process cannot
+    // safely run more than one simulation concurrently via std::thread.
+    // Instead we fork() one worker process per core before any SystemC
+    // object is created; each child simulates its own independent slice
+    // of samples (with its own RNG stream) in its own independent
+    // kernel, and reports its partial switch count back through a pipe.
+    unsigned int num_workers = std::thread::hardware_concurrency();
+    if (num_workers == 0) num_workers = 1;
+    num_workers = static_cast<unsigned int>(std::min<unsigned long long>(num_workers, std::max<unsigned long long>(total_samples, 1ULL)));
+
+    std::vector<int> read_fd(num_workers);
+    std::vector<pid_t> worker_pid(num_workers);
+
+    unsigned long long base_slice = total_samples / num_workers;
+    unsigned long long remainder  = total_samples % num_workers;
+
+    for (unsigned int i = 0; i < num_workers; i++) {
+        unsigned long long samples_for_worker = base_slice + (i < remainder ? 1ULL : 0ULL);
+
+        int fds[2];
+        if (pipe(fds) != 0) { perror("pipe"); return 1; }
+
+        pid_t child = fork();
+        if (child < 0) { perror("fork"); return 1; }
+
+        if (child == 0) {
+            close(fds[0]);
+            unsigned long long switches = run_slice(samples_for_worker, base_seed + i);
+            ssize_t written = write(fds[1], &switches, sizeof(switches));
+            (void)written;
+            close(fds[1]);
+            _exit(0);
+        }
+
+        close(fds[1]);
+        read_fd[i] = fds[0];
+        worker_pid[i] = child;
+    }
+
+    unsigned long long total_switches = 0;
+    for (unsigned int i = 0; i < num_workers; i++) {
+        unsigned long long switches = 0;
+        ssize_t got = read(read_fd[i], &switches, sizeof(switches));
+        if (got == static_cast<ssize_t>(sizeof(switches))) {
+            total_switches += switches;
+        }
+        close(read_fd[i]);
+        int status = 0;
+        waitpid(worker_pid[i], &status, 0);
+    }
+
+    double avg_switches = total_samples > 0
+        ? (static_cast<double>(total_switches) / static_cast<double>(total_samples))
+        : 0.0;
+    std::cout << "TER-4-MC: GATES=48 SAMPLES=" << total_samples
+              << " SWITCHES=" << total_switches
+              << " AVG_SWITCHES=" << avg_switches
+              << " DELAY=4ns\n";
 
     return 0;
 }

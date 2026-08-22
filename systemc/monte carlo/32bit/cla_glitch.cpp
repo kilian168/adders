@@ -1,4 +1,4 @@
-// cla_glitch.cpp – 12-bit Carry Lookahead Adder, gate-level switching activity
+// cla_glitch.cpp – 32-bit Carry Lookahead Adder, gate-level switching activity
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
@@ -15,15 +15,15 @@
 // ==========================================
 // Helper functions
 // ==========================================
-static sc_lv<12> make_12bit_vector(unsigned int value) {
-    sc_lv<12> bits;
-    for (int i = 0; i < 12; i++) bits[i] = ((value >> i) & 1U) != 0U;
+static sc_lv<32> make_32bit_vector(unsigned int value) {
+    sc_lv<32> bits;
+    for (int i = 0; i < 32; i++) bits[i] = ((value >> i) & 1U) != 0U;
     return bits;
 }
 
-static unsigned int to_unsigned_12bit(const sc_lv<12>& bits) {
+static unsigned int to_unsigned_32bit(const sc_lv<32>& bits) {
     unsigned int value = 0;
-    for (int i = 0; i < 12; i++)
+    for (int i = 0; i < 32; i++)
         if (bits[i].is_01() && bits[i].to_bool()) value += (1U << i);
     return value;
 }
@@ -208,41 +208,50 @@ SC_MODULE(ClaBlock4) {
 };
 
 // ==========================================
-// 2. 12-BIT CARRY LOOKAHEAD ADDER (3 x 4-bit blocks)
-//    Total gates: 3 x 38 = 114
+// 2. 32-BIT CARRY LOOKAHEAD ADDER (8 x 4-bit blocks)
+//    Total gates: 8 x 38 = 304
 // ==========================================
-SC_MODULE(CarryLookaheadAdder12) {
-    sc_in<sc_lv<12>>  A, B;
-    sc_out<sc_lv<12>> Sum;
+SC_MODULE(CarryLookaheadAdder32) {
+    sc_in<sc_lv<32>>  A, B;
+    sc_out<sc_lv<32>> Sum;
     sc_out<bool>      Cout;
 
-    sc_signal<sc_lv<4>> a_slice[3], b_slice[3], s_slice[3];
-    sc_signal<bool>     c_between[2];
+    sc_signal<sc_lv<4>> a_slice[8], b_slice[8], s_slice[8];
+    sc_signal<bool>     c_between[7];
     sc_signal<bool>     const_zero;
 
-    ClaBlock4* blk[3];
+    ClaBlock4* blk[8];
 
-    SC_CTOR(CarryLookaheadAdder12) {
-        blk[0] = new ClaBlock4("BLK0");
-        blk[0]->A(a_slice[0]); blk[0]->B(b_slice[0]);
-        blk[0]->Cin(const_zero); blk[0]->Sum(s_slice[0]); blk[0]->Cout(c_between[0]);
+    SC_CTOR(CarryLookaheadAdder32) {
+        for (int blki = 0; blki < 8; blki++) {
+            std::string name = "BLK" + std::to_string(blki);
+            blk[blki] = new ClaBlock4(name.c_str());
+            blk[blki]->A(a_slice[blki]);
+            blk[blki]->B(b_slice[blki]);
 
-        blk[1] = new ClaBlock4("BLK1");
-        blk[1]->A(a_slice[1]); blk[1]->B(b_slice[1]);
-        blk[1]->Cin(c_between[0]); blk[1]->Sum(s_slice[1]); blk[1]->Cout(c_between[1]);
+            if (blki == 0) {
+                blk[blki]->Cin(const_zero);
+            } else {
+                blk[blki]->Cin(c_between[blki - 1]);
+            }
 
-        blk[2] = new ClaBlock4("BLK2");
-        blk[2]->A(a_slice[2]); blk[2]->B(b_slice[2]);
-        blk[2]->Cin(c_between[1]); blk[2]->Sum(s_slice[2]); blk[2]->Cout(Cout);
+            blk[blki]->Sum(s_slice[blki]);
+
+            if (blki == 7) {
+                blk[blki]->Cout(Cout);
+            } else {
+                blk[blki]->Cout(c_between[blki]);
+            }
+        }
 
         SC_METHOD(split_inputs);    dont_initialize(); sensitive << A << B;
         SC_METHOD(combine_outputs); dont_initialize();
-        sensitive << s_slice[0] << s_slice[1] << s_slice[2];
+        for (int blki = 0; blki < 8; blki++) sensitive << s_slice[blki];
     }
 
     void split_inputs() {
-        sc_lv<12> va=A.read(), vb=B.read();
-        for (int blki=0; blki<3; blki++) {
+        sc_lv<32> va=A.read(), vb=B.read();
+        for (int blki=0; blki<8; blki++) {
             sc_lv<4> a4, b4;
             for (int i=0; i<4; i++) { a4[i]=va[blki*4+i]; b4[i]=vb[blki*4+i]; }
             a_slice[blki].write(a4); b_slice[blki].write(b4);
@@ -250,8 +259,8 @@ SC_MODULE(CarryLookaheadAdder12) {
     }
 
     void combine_outputs() {
-        sc_lv<12> s;
-        for (int blki=0; blki<3; blki++) {
+        sc_lv<32> s;
+        for (int blki=0; blki<8; blki++) {
             sc_lv<4> s4=s_slice[blki].read();
             for (int i=0; i<4; i++) s[blki*4+i]=s4[i];
         }
@@ -260,26 +269,31 @@ SC_MODULE(CarryLookaheadAdder12) {
 
     unsigned int total_switches() const {
         unsigned int total=0;
-        for(int i=0;i<3;i++) total+=blk[i]->total_block_switches();
+        for(int i=0;i<8;i++) total+=blk[i]->total_block_switches();
         return total;
     }
 
-    ~CarryLookaheadAdder12() { for(int i=0;i<3;i++) delete blk[i]; }
+    ~CarryLookaheadAdder32() { for(int i=0;i<8;i++) delete blk[i]; }
 };
 
 // ==========================================
 // 3. TESTBENCH — Monte Carlo random sampling
 //    Draws num_samples uniformly random (a, b) pairs instead of
-//    exhaustively covering the whole input space, so the same
-//    methodology also works for widths where exhaustive coverage is
-//    computationally infeasible (e.g. 32-bit).
+//    exhaustively covering the whole input space: at 32 bits exhaustive
+//    coverage (2^32 x 2^32 cases) is computationally infeasible, so
+//    Monte Carlo sampling is the only tractable option.
+//
+//    Note: a 32-bit adder's result needs 33 bits (32-bit sum + carry),
+//    so the correctness check below widens to unsigned long long before
+//    adding — doing this arithmetic in plain 32-bit unsigned int would
+//    silently overflow/wrap and produce false error reports.
 // ==========================================
 SC_MODULE(Testbench) {
-    sc_out<sc_lv<12>> A, B;
-    sc_in<sc_lv<12>>  Sum;
+    sc_out<sc_lv<32>> A, B;
+    sc_in<sc_lv<32>>  Sum;
     sc_in<bool>       Cout;
 
-    CarryLookaheadAdder12* cla_ptr;
+    CarryLookaheadAdder32* cla_ptr;
 
     unsigned int number_of_errors;
 
@@ -292,7 +306,7 @@ SC_MODULE(Testbench) {
 
     void stimulus() {
         std::mt19937_64 rng(rng_seed);
-        std::uniform_int_distribution<unsigned long long> dist(0ULL, 4095ULL);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 4294967295ULL);
 
         for (unsigned long long i = 0; i < num_samples; i++) {
             unsigned int a_value = static_cast<unsigned int>(dist(rng));
@@ -305,13 +319,14 @@ SC_MODULE(Testbench) {
     }
 
     void apply_test(unsigned int a_value, unsigned int b_value) {
-        A.write(make_12bit_vector(a_value));
-        B.write(make_12bit_vector(b_value));
+        A.write(make_32bit_vector(a_value));
+        B.write(make_32bit_vector(b_value));
         wait(50, SC_NS);
 
-        unsigned int expected_result = a_value + b_value;
-        unsigned int actual_sum      = to_unsigned_12bit(Sum.read());
-        unsigned int actual_result   = actual_sum + (Cout.read() ? 4096U : 0U);
+        unsigned long long expected_result = static_cast<unsigned long long>(a_value)
+                                            + static_cast<unsigned long long>(b_value);
+        unsigned long long actual_sum      = to_unsigned_32bit(Sum.read());
+        unsigned long long actual_result   = actual_sum + (Cout.read() ? 4294967296ULL : 0ULL);
         if (expected_result != actual_result) number_of_errors++;
     }
 };
@@ -325,10 +340,10 @@ SC_MODULE(Testbench) {
 // parallel workers never repeat each other's samples.
 static void run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker,
                        unsigned long long& out_switches, unsigned int& out_errors) {
-    sc_signal<sc_lv<12>> A, B, Sum;
+    sc_signal<sc_lv<32>> A, B, Sum;
     sc_signal<bool>      Cout;
 
-    CarryLookaheadAdder12 cla("CLA12");
+    CarryLookaheadAdder32 cla("CLA32");
     Testbench tb("TB");
     tb.cla_ptr = &cla;
 
@@ -410,10 +425,10 @@ int sc_main(int argc, char* argv[]) {
     double avg_switches = total_samples > 0
         ? (static_cast<double>(total_switches) / static_cast<double>(total_samples))
         : 0.0;
-    std::cout << "CLA-12-MC: GATES=114 SAMPLES=" << total_samples
+    std::cout << "CLA-32-MC: GATES=304 SAMPLES=" << total_samples
               << " SWITCHES=" << total_switches
               << " AVG_SWITCHES=" << avg_switches
-              << " DELAY=6ns\n";
+              << " DELAY=16ns\n";
 
     return 0;
 }

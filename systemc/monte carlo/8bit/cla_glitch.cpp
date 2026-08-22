@@ -4,6 +4,13 @@
 #include <iomanip>
 #include <string>
 #include <cassert>
+#include <random>
+#include <algorithm>
+#include <cstdio>
+#include <thread>
+#include <vector>
+#include <sys/wait.h>
+#include <unistd.h>
 
 // ==========================================
 // Helper functions
@@ -243,17 +250,21 @@ SC_MODULE(CarryLookaheadAdder8) {
         Sum.write(s);
     }
 
-    void print_report() {
+    unsigned int total_switches() const {
         unsigned int total=0;
         for(int i=0;i<2;i++) total+=blk[i]->total_block_switches();
-        std::cout << "CLA-8: GATES=76 SWITCHES=" << total << " DELAY=4ns\n";
+        return total;
     }
 
     ~CarryLookaheadAdder8() { delete blk[0]; delete blk[1]; }
 };
 
 // ==========================================
-// 3. TESTBENCH – exhaustive 8-bit test
+// 3. TESTBENCH — Monte Carlo random sampling
+//    Draws num_samples uniformly random (a, b) pairs instead of
+//    exhaustively covering the whole input space, so the same
+//    methodology also works for widths where exhaustive coverage is
+//    computationally infeasible (e.g. 32-bit).
 // ==========================================
 SC_MODULE(Testbench) {
     sc_out<sc_lv<8>> A, B;
@@ -264,22 +275,24 @@ SC_MODULE(Testbench) {
 
     unsigned int number_of_errors;
 
-    unsigned int a_start;
-    unsigned int a_end;
+    unsigned long long num_samples;
+    unsigned long long rng_seed;
 
     SC_CTOR(Testbench)
-        : cla_ptr(nullptr), number_of_errors(0), a_start(0), a_end(256)
+        : cla_ptr(nullptr), number_of_errors(0), num_samples(1000000ULL), rng_seed(42ULL)
     { SC_THREAD(stimulus); }
 
     void stimulus() {
-        for (unsigned int a_value = a_start; a_value < a_end; a_value++) {
-            for (unsigned int b_value = 0; b_value < 256; b_value++) {
-                apply_test(a_value, b_value);
-            }
+        std::mt19937_64 rng(rng_seed);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 255ULL);
+
+        for (unsigned long long i = 0; i < num_samples; i++) {
+            unsigned int a_value = static_cast<unsigned int>(dist(rng));
+            unsigned int b_value = static_cast<unsigned int>(dist(rng));
+            apply_test(a_value, b_value);
         }
 
         assert(number_of_errors == 0);
-        cla_ptr->print_report();
         sc_stop();
     }
 
@@ -296,9 +309,14 @@ SC_MODULE(Testbench) {
 };
 
 // ==========================================
-// 4. MAIN
+// 4. MAIN — Monte Carlo, auto-parallel across all CPU cores
 // ==========================================
-int sc_main(int argc, char* argv[]) {
+
+// Elaborates a fresh adder + testbench and simulates exactly
+// samples_for_this_worker random test vectors, seeded independently so
+// parallel workers never repeat each other's samples.
+static void run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker,
+                       unsigned long long& out_switches, unsigned int& out_errors) {
     sc_signal<sc_lv<8>> A, B, Sum;
     sc_signal<bool>     Cout;
 
@@ -309,17 +327,85 @@ int sc_main(int argc, char* argv[]) {
     cla.A(A); cla.B(B); cla.Sum(Sum); cla.Cout(Cout);
     tb.A(A);  tb.B(B);  tb.Sum(Sum);  tb.Cout(Cout);
 
-    // Optional partitioning: "cla_8bit <partition_index> <num_partitions>"
-    // restricts this process to a slice of the a-value range, so the
-    // exhaustive sweep can be split across parallel processes.
-    if (argc == 3) {
-        unsigned int partition_index = static_cast<unsigned int>(std::stoul(argv[1]));
-        unsigned int num_partitions = static_cast<unsigned int>(std::stoul(argv[2]));
-        unsigned int slice = 256U / num_partitions;
-        tb.a_start = partition_index * slice;
-        tb.a_end = (partition_index == num_partitions - 1) ? 256U : (partition_index + 1) * slice;
-    }
+    tb.num_samples = samples_for_this_worker;
+    tb.rng_seed = seed_for_this_worker;
 
     sc_start();
+
+    out_switches = cla.total_switches();
+    out_errors = tb.number_of_errors;
+}
+
+int sc_main(int argc, char* argv[]) {
+    unsigned long long total_samples = (argc >= 2) ? std::stoull(argv[1]) : 1000000ULL;
+    unsigned long long base_seed     = (argc >= 3) ? std::stoull(argv[2]) : 42ULL;
+
+    // SystemC's kernel state (sc_curr_simcontext) is a single
+    // un-synchronized global, not thread-local, so one process cannot
+    // safely run more than one simulation concurrently via std::thread.
+    // Instead we fork() one worker process per core before any SystemC
+    // object is created; each child simulates its own independent slice
+    // of samples (with its own RNG stream) in its own independent
+    // kernel, and reports its partial switch/error counts back through
+    // a pipe.
+    unsigned int num_workers = std::thread::hardware_concurrency();
+    if (num_workers == 0) num_workers = 1;
+    num_workers = static_cast<unsigned int>(std::min<unsigned long long>(num_workers, std::max<unsigned long long>(total_samples, 1ULL)));
+
+    std::vector<int> read_fd(num_workers);
+    std::vector<pid_t> worker_pid(num_workers);
+
+    unsigned long long base_slice = total_samples / num_workers;
+    unsigned long long remainder  = total_samples % num_workers;
+
+    for (unsigned int i = 0; i < num_workers; i++) {
+        unsigned long long samples_for_worker = base_slice + (i < remainder ? 1ULL : 0ULL);
+
+        int fds[2];
+        if (pipe(fds) != 0) { perror("pipe"); return 1; }
+
+        pid_t child = fork();
+        if (child < 0) { perror("fork"); return 1; }
+
+        if (child == 0) {
+            close(fds[0]);
+            unsigned long long switches = 0;
+            unsigned int errors = 0;
+            run_slice(samples_for_worker, base_seed + i, switches, errors);
+            unsigned long long payload[2] = { switches, static_cast<unsigned long long>(errors) };
+            ssize_t written = write(fds[1], payload, sizeof(payload));
+            (void)written;
+            close(fds[1]);
+            _exit(0);
+        }
+
+        close(fds[1]);
+        read_fd[i] = fds[0];
+        worker_pid[i] = child;
+    }
+
+    unsigned long long total_switches = 0;
+    unsigned long long total_errors = 0;
+    for (unsigned int i = 0; i < num_workers; i++) {
+        unsigned long long payload[2] = { 0, 0 };
+        ssize_t got = read(read_fd[i], payload, sizeof(payload));
+        if (got == static_cast<ssize_t>(sizeof(payload))) {
+            total_switches += payload[0];
+            total_errors   += payload[1];
+        }
+        close(read_fd[i]);
+        int status = 0;
+        waitpid(worker_pid[i], &status, 0);
+    }
+
+    assert(total_errors == 0);
+    double avg_switches = total_samples > 0
+        ? (static_cast<double>(total_switches) / static_cast<double>(total_samples))
+        : 0.0;
+    std::cout << "CLA-8-MC: GATES=76 SAMPLES=" << total_samples
+              << " SWITCHES=" << total_switches
+              << " AVG_SWITCHES=" << avg_switches
+              << " DELAY=4ns\n";
+
     return 0;
 }

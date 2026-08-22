@@ -1,10 +1,10 @@
 // cla_glitch.cpp – 16-bit Carry Lookahead Adder, gate-level switching activity
-// Exhaustive: 65536 x 65536 = 4,294,967,296 additions
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <cassert>
+#include <random>
 #include <algorithm>
 #include <cstdio>
 #include <thread>
@@ -268,15 +268,15 @@ SC_MODULE(CarryLookaheadAdder16) {
         return total;
     }
 
-    void print_report() {
-        std::cout << "CLA-16: GATES=152 SWITCHES=" << total_switches() << " DELAY=8ns\n";
-    }
-
     ~CarryLookaheadAdder16() { for(int i=0;i<4;i++) delete blk[i]; }
 };
 
 // ==========================================
-// 3. TESTBENCH – exhaustive 16-bit test (65536 x 65536 = 4,294,967,296 cases)
+// 3. TESTBENCH — Monte Carlo random sampling
+//    Draws num_samples uniformly random (a, b) pairs instead of
+//    exhaustively covering the whole input space, so the same
+//    methodology also works for widths where exhaustive coverage is
+//    computationally infeasible (e.g. 32-bit).
 // ==========================================
 SC_MODULE(Testbench) {
     sc_out<sc_lv<16>> A, B;
@@ -287,32 +287,24 @@ SC_MODULE(Testbench) {
 
     unsigned int number_of_errors;
 
-    // Partition of the a-value range to cover. Defaults to the full
-    // range; sc_main() narrows this when run with partition arguments,
-    // so the exhaustive sweep can be split across parallel processes.
-    unsigned int a_start;
-    unsigned int a_end;
-
-    // When true, this process's slice was launched as one of several
-    // parallel workers (see run_slice() below), so it stays silent and
-    // lets the orchestrating parent print the combined report instead.
-    bool quiet;
+    unsigned long long num_samples;
+    unsigned long long rng_seed;
 
     SC_CTOR(Testbench)
-        : cla_ptr(nullptr), number_of_errors(0), a_start(0), a_end(65536), quiet(false)
+        : cla_ptr(nullptr), number_of_errors(0), num_samples(1000000ULL), rng_seed(42ULL)
     { SC_THREAD(stimulus); }
 
     void stimulus() {
-        for (unsigned int a_value = a_start; a_value < a_end; a_value++) {
-            for (unsigned int b_value = 0; b_value < 65536; b_value++) {
-                apply_test(a_value, b_value);
-            }
+        std::mt19937_64 rng(rng_seed);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 65535ULL);
+
+        for (unsigned long long i = 0; i < num_samples; i++) {
+            unsigned int a_value = static_cast<unsigned int>(dist(rng));
+            unsigned int b_value = static_cast<unsigned int>(dist(rng));
+            apply_test(a_value, b_value);
         }
 
         assert(number_of_errors == 0);
-        if (!quiet) {
-            cla_ptr->print_report();
-        }
         sc_stop();
     }
 
@@ -329,17 +321,14 @@ SC_MODULE(Testbench) {
 };
 
 // ==========================================
-// 4. MAIN
+// 4. MAIN — Monte Carlo, auto-parallel across all CPU cores
 // ==========================================
 
-// Elaborates a fresh adder + testbench and simulates exactly one
-// a-value slice [partition_index, num_partitions) to completion in the
-// calling process. Used both for manual external partitioning (one
-// process, prints its own report) and as the body of each forked
-// worker in the auto-parallel default path (quiet, reports back via
-// out params instead of stdout).
-static void run_slice(unsigned int partition_index, unsigned int num_partitions,
-                       bool quiet, unsigned int& out_switches, unsigned int& out_errors) {
+// Elaborates a fresh adder + testbench and simulates exactly
+// samples_for_this_worker random test vectors, seeded independently so
+// parallel workers never repeat each other's samples.
+static void run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker,
+                       unsigned long long& out_switches, unsigned int& out_errors) {
     sc_signal<sc_lv<16>> A, B, Sum;
     sc_signal<bool>      Cout;
 
@@ -350,10 +339,8 @@ static void run_slice(unsigned int partition_index, unsigned int num_partitions,
     cla.A(A); cla.B(B); cla.Sum(Sum); cla.Cout(Cout);
     tb.A(A);  tb.B(B);  tb.Sum(Sum);  tb.Cout(Cout);
 
-    unsigned int slice = 65536U / num_partitions;
-    tb.a_start = partition_index * slice;
-    tb.a_end = (partition_index == num_partitions - 1) ? 65536U : (partition_index + 1) * slice;
-    tb.quiet = quiet;
+    tb.num_samples = samples_for_this_worker;
+    tb.rng_seed = seed_for_this_worker;
 
     sc_start();
 
@@ -362,34 +349,30 @@ static void run_slice(unsigned int partition_index, unsigned int num_partitions,
 }
 
 int sc_main(int argc, char* argv[]) {
-    // Manual external partitioning: "cla_16bit <partition_index> <num_partitions>"
-    // runs exactly that slice in this single process and prints its own
-    // partial report, e.g. for hand-orchestrated multi-machine runs.
-    if (argc == 3) {
-        unsigned int partition_index = static_cast<unsigned int>(std::stoul(argv[1]));
-        unsigned int num_partitions = static_cast<unsigned int>(std::stoul(argv[2]));
-        unsigned int switches = 0, errors = 0;
-        run_slice(partition_index, num_partitions, /*quiet=*/false, switches, errors);
-        assert(errors == 0);
-        return 0;
-    }
+    unsigned long long total_samples = (argc >= 2) ? std::stoull(argv[1]) : 1000000ULL;
+    unsigned long long base_seed     = (argc >= 3) ? std::stoull(argv[2]) : 42ULL;
 
-    // Default (no args): fan the exhaustive sweep out across every
-    // available CPU core. SystemC's kernel state (sc_curr_simcontext) is
-    // a single un-synchronized global, not thread-local, so one process
-    // cannot safely run more than one simulation concurrently via
-    // std::thread. Instead we fork() one worker process per core before
-    // any SystemC object is created; each child then elaborates and
-    // simulates its own independent slice in its own independent kernel,
-    // and reports its partial switch/error counts back through a pipe.
+    // SystemC's kernel state (sc_curr_simcontext) is a single
+    // un-synchronized global, not thread-local, so one process cannot
+    // safely run more than one simulation concurrently via std::thread.
+    // Instead we fork() one worker process per core before any SystemC
+    // object is created; each child simulates its own independent slice
+    // of samples (with its own RNG stream) in its own independent
+    // kernel, and reports its partial switch/error counts back through
+    // a pipe.
     unsigned int num_workers = std::thread::hardware_concurrency();
     if (num_workers == 0) num_workers = 1;
-    num_workers = std::min(num_workers, 65536U);
+    num_workers = static_cast<unsigned int>(std::min<unsigned long long>(num_workers, std::max<unsigned long long>(total_samples, 1ULL)));
 
     std::vector<int> read_fd(num_workers);
     std::vector<pid_t> worker_pid(num_workers);
 
+    unsigned long long base_slice = total_samples / num_workers;
+    unsigned long long remainder  = total_samples % num_workers;
+
     for (unsigned int i = 0; i < num_workers; i++) {
+        unsigned long long samples_for_worker = base_slice + (i < remainder ? 1ULL : 0ULL);
+
         int fds[2];
         if (pipe(fds) != 0) { perror("pipe"); return 1; }
 
@@ -398,9 +381,10 @@ int sc_main(int argc, char* argv[]) {
 
         if (child == 0) {
             close(fds[0]);
-            unsigned int switches = 0, errors = 0;
-            run_slice(i, num_workers, /*quiet=*/true, switches, errors);
-            unsigned int payload[2] = { switches, errors };
+            unsigned long long switches = 0;
+            unsigned int errors = 0;
+            run_slice(samples_for_worker, base_seed + i, switches, errors);
+            unsigned long long payload[2] = { switches, static_cast<unsigned long long>(errors) };
             ssize_t written = write(fds[1], payload, sizeof(payload));
             (void)written;
             close(fds[1]);
@@ -412,14 +396,14 @@ int sc_main(int argc, char* argv[]) {
         worker_pid[i] = child;
     }
 
-    unsigned int total_switches = 0;
-    unsigned int total_errors = 0;
+    unsigned long long total_switches = 0;
+    unsigned long long total_errors = 0;
     for (unsigned int i = 0; i < num_workers; i++) {
-        unsigned int payload[2] = { 0, 0 };
+        unsigned long long payload[2] = { 0, 0 };
         ssize_t got = read(read_fd[i], payload, sizeof(payload));
         if (got == static_cast<ssize_t>(sizeof(payload))) {
             total_switches += payload[0];
-            total_errors += payload[1];
+            total_errors   += payload[1];
         }
         close(read_fd[i]);
         int status = 0;
@@ -427,7 +411,13 @@ int sc_main(int argc, char* argv[]) {
     }
 
     assert(total_errors == 0);
-    std::cout << "CLA-16: GATES=152 SWITCHES=" << total_switches << " DELAY=8ns\n";
+    double avg_switches = total_samples > 0
+        ? (static_cast<double>(total_switches) / static_cast<double>(total_samples))
+        : 0.0;
+    std::cout << "CLA-16-MC: GATES=152 SAMPLES=" << total_samples
+              << " SWITCHES=" << total_switches
+              << " AVG_SWITCHES=" << avg_switches
+              << " DELAY=8ns\n";
 
     return 0;
 }
