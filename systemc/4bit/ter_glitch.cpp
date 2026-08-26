@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <cassert>
 
 // ============================================================================
 // 0. HELPER STRUCTS AND FUNCTIONS
@@ -12,47 +13,43 @@ struct DualRail4 {
     sc_lv<4> rail_b;
 };
 
+// Encodes each bit of `value` as a dual-rail digit at binary place value 2^i
+// (despite the function's name, the circuit's digits are binary-weighted,
+// not base-3 - confirmed against the reference schematic). Coding per digit:
+// 0 -> (rail_a=0, rail_b=1), 1 -> (rail_a=1, rail_b=1). rail_b is therefore
+// always 1; only rail_a carries the bit value.
 static DualRail4 encode_unsigned_to_balanced_ternary_4(unsigned int value) {
     DualRail4 encoded;
     encoded.rail_a = "0000";
     encoded.rail_b = "0000";
 
     if (value > 15U) {
-        std::cerr << "Fehler: Der 4-Trit-Test erwartet Werte im Bereich 0..15.\n";
+        std::cerr << "Fehler: Der 4-Bit-Test erwartet Werte im Bereich 0..15.\n";
         sc_stop();
         return encoded;
     }
 
-    int remaining_value = static_cast<int>(value);
-
     for (int i = 0; i < 4; i++) {
-        int remainder = remaining_value % 3;
-        remaining_value /= 3;
-
-        int trit_value;
-
-        if (remainder == 0) {
-            trit_value = 0;
-        } else if (remainder == 1) {
-            trit_value = 1;
-        } else {
-            trit_value = -1;
-            remaining_value += 1;
-        }
-
-        if (trit_value == 0) {
-            encoded.rail_a[i] = false;
-            encoded.rail_b[i] = false;
-        } else if (trit_value == 1) {
-            encoded.rail_a[i] = true;
-            encoded.rail_b[i] = true;
-        } else {
-            encoded.rail_a[i] = false;
-            encoded.rail_b[i] = true;
-        }
+        bool bit = ((value >> i) & 1U) != 0U;
+        encoded.rail_a[i] = bit;
+        encoded.rail_b[i] = true;
     }
 
     return encoded;
+}
+
+// Decodes the 5-digit dual-rail result: each (S_plus[i], S_minus[i]) pair
+// is a digit at binary place value 2^i, coded 00=-1, 11=+1, 01/10=0
+// (same coding as the operand rails).
+static int decode_dual_rail_5(const sc_lv<5>& s_plus, const sc_lv<5>& s_minus) {
+    int value = 0;
+    for (int i = 0; i < 5; i++) {
+        bool p = s_plus[i].is_01() && s_plus[i].to_bool();
+        bool m = s_minus[i].is_01() && s_minus[i].to_bool();
+        int digit = (p && m) ? 1 : ((!p && !m) ? -1 : 0);
+        value += digit * (1 << i);
+    }
+    return value;
 }
 
 // ============================================================================
@@ -232,7 +229,6 @@ SC_MODULE(BalancedTernaryAdder) {
     sc_signal<bool> fa2_sum, fa2_carry;
     sc_signal<bool> fa4_sum, fa4_carry;
     sc_signal<bool> fa7_sum, fa7_carry;
-    sc_signal<bool> fa8_sum, fa8_carry;
 
     sc_signal<bool> const_one;
 
@@ -240,6 +236,7 @@ SC_MODULE(BalancedTernaryAdder) {
 
     SC_CTOR(BalancedTernaryAdder) {
         const_one.write(true);
+        s_minus_out[0].write(false);  // no carry-in below the least significant digit
 
         // --- SPALTE 1 ---
         fa1 = new BsdBinaryFullAdder("FA1");
@@ -271,39 +268,40 @@ SC_MODULE(BalancedTernaryAdder) {
         fa7->carry_out(fa7_carry);
 
         // --- SPALTE 2 ---
-        // Eingangsreihenfolge bleibt wie in deinem ursprünglichen Code,
-        // damit die Switch-Zahlen mit deiner alten Messung vergleichbar bleiben.
+        // Jeder Volladdierer hier liefert S_plus[i] (Summe) und S_minus[i+1]
+        // (Übertrag, diagonal in die naechste Stelle verschoben) - S_minus[0]
+        // ist konstant 0 (kein Übertrag vor der niederwertigsten Stelle).
         fa5 = new BsdBinaryFullAdder("FA5");
         fa5->input_a(const_one);
         fa5->input_b(sb_b[0]);
         fa5->input_c(fa1_sum);
         fa5->sum_out(s_plus_out[0]);
-        fa5->carry_out(s_minus_out[0]);
+        fa5->carry_out(s_minus_out[1]);
 
         fa3 = new BsdBinaryFullAdder("FA3");
         fa3->input_a(fa1_carry);
         fa3->input_b(sb_b[1]);
         fa3->input_c(fa2_sum);
         fa3->sum_out(s_plus_out[1]);
-        fa3->carry_out(s_minus_out[1]);
+        fa3->carry_out(s_minus_out[2]);
 
         fa6 = new BsdBinaryFullAdder("FA6");
         fa6->input_a(fa2_carry);
         fa6->input_b(sb_b[2]);
         fa6->input_c(fa4_sum);
         fa6->sum_out(s_plus_out[2]);
-        fa6->carry_out(s_minus_out[2]);
+        fa6->carry_out(s_minus_out[3]);
 
         fa8 = new BsdBinaryFullAdder("FA8");
         fa8->input_a(fa4_carry);
         fa8->input_b(sb_b[3]);
         fa8->input_c(fa7_sum);
-        fa8->sum_out(fa8_sum);
-        fa8->carry_out(fa8_carry);
+        fa8->sum_out(s_plus_out[3]);
+        fa8->carry_out(s_minus_out[4]);
 
-        SC_METHOD(assign_fa8_outputs);
+        SC_METHOD(assign_top_digit);
         dont_initialize();
-        sensitive << fa8_sum << fa8_carry << fa7_carry;
+        sensitive << fa7_carry;
 
         SC_METHOD(unpack_inputs);
         dont_initialize();
@@ -316,11 +314,7 @@ SC_MODULE(BalancedTernaryAdder) {
         }
     }
 
-    void assign_fa8_outputs() {
-        s_plus_out[3].write(fa8_sum.read());
-        s_minus_out[3].write(fa8_carry.read());
-
-        s_minus_out[4].write(fa8_carry.read());
+    void assign_top_digit() {
         s_plus_out[4].write(fa7_carry.read());
     }
 
@@ -394,11 +388,14 @@ SC_MODULE(Testbench) {
 
     BalancedTernaryAdder* design_ptr;
 
+    unsigned int number_of_errors;
+
     unsigned int a_start;
     unsigned int a_end;
 
     SC_CTOR(Testbench)
         : design_ptr(nullptr),
+          number_of_errors(0),
           a_start(0),
           a_end(16)
     {
@@ -423,6 +420,7 @@ SC_MODULE(Testbench) {
             }
         }
 
+        assert(number_of_errors == 0);
         design_ptr->print_report();
 
         sc_stop();
@@ -438,6 +436,13 @@ SC_MODULE(Testbench) {
         B_b.write(encoded_b.rail_b);
 
         wait(20, SC_NS);
+
+        int expected_result = static_cast<int>(a_value + b_value);
+        int actual_result = decode_dual_rail_5(S_plus.read(), S_minus.read());
+
+        if (expected_result != actual_result) {
+            number_of_errors++;
+        }
     }
 };
 

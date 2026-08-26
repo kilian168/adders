@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <cassert>
 
 // ============================================================================
 // 0. HELPER STRUCTS AND FUNCTIONS
@@ -12,47 +13,43 @@ struct DualRail12 {
     sc_lv<12> rail_b;
 };
 
+// Encodes each bit of `value` as a dual-rail digit at binary place value 2^i
+// (despite the function's name, the circuit's digits are binary-weighted,
+// not base-3 - confirmed against the reference schematic). Coding per digit:
+// 0 -> (rail_a=0, rail_b=1), 1 -> (rail_a=1, rail_b=1). rail_b is therefore
+// always 1; only rail_a carries the bit value.
 static DualRail12 encode_unsigned_to_balanced_ternary_12(unsigned int value) {
     DualRail12 encoded;
     encoded.rail_a = "000000000000";
     encoded.rail_b = "000000000000";
 
     if (value > 4095U) {
-        std::cerr << "Fehler: Der 12-Trit-Test erwartet Werte im Bereich 0..4095.\n";
+        std::cerr << "Fehler: Der 12-Bit-Test erwartet Werte im Bereich 0..4095.\n";
         sc_stop();
         return encoded;
     }
 
-    int remaining_value = static_cast<int>(value);
-
     for (int i = 0; i < 12; i++) {
-        int remainder = remaining_value % 3;
-        remaining_value /= 3;
-
-        int trit_value;
-
-        if (remainder == 0) {
-            trit_value = 0;
-        } else if (remainder == 1) {
-            trit_value = 1;
-        } else {
-            trit_value = -1;
-            remaining_value += 1;
-        }
-
-        if (trit_value == 0) {
-            encoded.rail_a[i] = false;
-            encoded.rail_b[i] = false;
-        } else if (trit_value == 1) {
-            encoded.rail_a[i] = true;
-            encoded.rail_b[i] = true;
-        } else {
-            encoded.rail_a[i] = false;
-            encoded.rail_b[i] = true;
-        }
+        bool bit = ((value >> i) & 1U) != 0U;
+        encoded.rail_a[i] = bit;
+        encoded.rail_b[i] = true;
     }
 
     return encoded;
+}
+
+// Decodes the 13-digit dual-rail result: each (S_plus[i], S_minus[i]) pair
+// is a digit at binary place value 2^i, coded 00=-1, 11=+1, 01/10=0
+// (same coding as the operand rails).
+static int decode_dual_rail_13(const sc_lv<13>& s_plus, const sc_lv<13>& s_minus) {
+    int value = 0;
+    for (int i = 0; i < 13; i++) {
+        bool p = s_plus[i].is_01() && s_plus[i].to_bool();
+        bool m = s_minus[i].is_01() && s_minus[i].to_bool();
+        int digit = (p && m) ? 1 : ((!p && !m) ? -1 : 0);
+        value += digit * (1 << i);
+    }
+    return value;
 }
 
 // ============================================================================
@@ -294,12 +291,12 @@ SC_MODULE(BalancedTernaryAdder12) {
         sc_lv<13> output_minus;
         sc_lv<13> output_plus;
 
+        output_minus[0] = false;  // no carry-in below the least significant digit
         for (int i = 0; i < 12; i++) {
-            output_minus[i] = stage2_carry[i].read();
+            output_minus[i + 1] = stage2_carry[i].read();
             output_plus[i] = stage2_sum[i].read();
         }
 
-        output_minus[12] = stage2_carry[11].read();
         output_plus[12] = stage1_carry[11].read();
 
         S_minus.write(output_minus);
@@ -340,11 +337,14 @@ SC_MODULE(Testbench) {
 
     BalancedTernaryAdder12* design_ptr;
 
+    unsigned int number_of_errors;
+
     unsigned int a_start;
     unsigned int a_end;
 
     SC_CTOR(Testbench)
         : design_ptr(nullptr),
+          number_of_errors(0),
           a_start(0),
           a_end(4096)
     {
@@ -369,6 +369,7 @@ SC_MODULE(Testbench) {
             }
         }
 
+        assert(number_of_errors == 0);
         design_ptr->print_report();
 
         sc_stop();
@@ -384,6 +385,13 @@ SC_MODULE(Testbench) {
         B_b.write(encoded_b.rail_b);
 
         wait(20, SC_NS);
+
+        int expected_result = static_cast<int>(a_value + b_value);
+        int actual_result = decode_dual_rail_13(S_plus.read(), S_minus.read());
+
+        if (expected_result != actual_result) {
+            number_of_errors++;
+        }
     }
 };
 

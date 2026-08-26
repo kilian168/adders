@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <string>
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <thread>
 #include <vector>
@@ -18,47 +19,43 @@ struct DualRail16 {
     sc_lv<16> rail_b;
 };
 
+// Encodes each bit of `value` as a dual-rail digit at binary place value 2^i
+// (despite the function's name, the circuit's digits are binary-weighted,
+// not base-3 - confirmed against the reference schematic). Coding per digit:
+// 0 -> (rail_a=0, rail_b=1), 1 -> (rail_a=1, rail_b=1). rail_b is therefore
+// always 1; only rail_a carries the bit value.
 static DualRail16 encode_unsigned_to_balanced_ternary_16(unsigned int value) {
     DualRail16 encoded;
     encoded.rail_a = "0000000000000000";
     encoded.rail_b = "0000000000000000";
 
     if (value > 65535U) {
-        std::cerr << "Fehler: Der 16-Trit-Test erwartet Werte im Bereich 0..65535.\n";
+        std::cerr << "Fehler: Der 16-Bit-Test erwartet Werte im Bereich 0..65535.\n";
         sc_stop();
         return encoded;
     }
 
-    int remaining_value = static_cast<int>(value);
-
     for (int i = 0; i < 16; i++) {
-        int remainder = remaining_value % 3;
-        remaining_value /= 3;
-
-        int trit_value;
-
-        if (remainder == 0) {
-            trit_value = 0;
-        } else if (remainder == 1) {
-            trit_value = 1;
-        } else {
-            trit_value = -1;
-            remaining_value += 1;
-        }
-
-        if (trit_value == 0) {
-            encoded.rail_a[i] = false;
-            encoded.rail_b[i] = false;
-        } else if (trit_value == 1) {
-            encoded.rail_a[i] = true;
-            encoded.rail_b[i] = true;
-        } else {
-            encoded.rail_a[i] = false;
-            encoded.rail_b[i] = true;
-        }
+        bool bit = ((value >> i) & 1U) != 0U;
+        encoded.rail_a[i] = bit;
+        encoded.rail_b[i] = true;
     }
 
     return encoded;
+}
+
+// Decodes the 17-digit dual-rail result: each (S_plus[i], S_minus[i]) pair
+// is a digit at binary place value 2^i, coded 00=-1, 11=+1, 01/10=0
+// (same coding as the operand rails).
+static long decode_dual_rail_17(const sc_lv<17>& s_plus, const sc_lv<17>& s_minus) {
+    long value = 0;
+    for (int i = 0; i < 17; i++) {
+        bool p = s_plus[i].is_01() && s_plus[i].to_bool();
+        bool m = s_minus[i].is_01() && s_minus[i].to_bool();
+        int digit = (p && m) ? 1 : ((!p && !m) ? -1 : 0);
+        value += static_cast<long>(digit) * (1L << i);
+    }
+    return value;
 }
 
 // ============================================================================
@@ -300,12 +297,12 @@ SC_MODULE(BalancedTernaryAdder16) {
         sc_lv<17> output_minus;
         sc_lv<17> output_plus;
 
+        output_minus[0] = false;  // no carry-in below the least significant digit
         for (int i = 0; i < 16; i++) {
-            output_minus[i] = stage2_carry[i].read();
+            output_minus[i + 1] = stage2_carry[i].read();
             output_plus[i] = stage2_sum[i].read();
         }
 
-        output_minus[16] = stage2_carry[15].read();
         output_plus[16] = stage1_carry[15].read();
 
         S_minus.write(output_minus);
@@ -349,6 +346,8 @@ SC_MODULE(Testbench) {
 
     BalancedTernaryAdder16* design_ptr;
 
+    unsigned int number_of_errors;
+
     // Partition of the a-value range to cover. Defaults to the full
     // range; sc_main() narrows this when run with partition arguments,
     // so the exhaustive sweep can be split across parallel processes.
@@ -362,6 +361,7 @@ SC_MODULE(Testbench) {
 
     SC_CTOR(Testbench)
         : design_ptr(nullptr),
+          number_of_errors(0),
           a_start(0),
           a_end(65536),
           quiet(false)
@@ -404,6 +404,13 @@ SC_MODULE(Testbench) {
         B_b.write(encoded_b.rail_b);
 
         wait(20, SC_NS);
+
+        long expected_result = static_cast<long>(a_value) + static_cast<long>(b_value);
+        long actual_result = decode_dual_rail_17(S_plus.read(), S_minus.read());
+
+        if (expected_result != actual_result) {
+            number_of_errors++;
+        }
     }
 };
 
@@ -417,7 +424,8 @@ SC_MODULE(Testbench) {
 // process, prints its own report) and as the body of each forked
 // worker in the auto-parallel default path (quiet, returns its partial
 // switch count instead of printing to stdout).
-static unsigned int run_slice(unsigned int partition_index, unsigned int num_partitions, bool quiet) {
+static void run_slice(unsigned int partition_index, unsigned int num_partitions,
+                       bool quiet, unsigned int& out_switches, unsigned int& out_errors) {
     sc_signal<sc_lv<16>> A_a, A_b, B_a, B_b;
     sc_signal<sc_lv<17>> S_minus, S_plus;
 
@@ -447,7 +455,8 @@ static unsigned int run_slice(unsigned int partition_index, unsigned int num_par
 
     sc_start();
 
-    return adder.total_switches();
+    out_switches = adder.total_switches();
+    out_errors = tb.number_of_errors;
 }
 
 int sc_main(int argc, char* argv[]) {
@@ -457,7 +466,9 @@ int sc_main(int argc, char* argv[]) {
     if (argc == 3) {
         unsigned int partition_index = static_cast<unsigned int>(std::stoul(argv[1]));
         unsigned int num_partitions = static_cast<unsigned int>(std::stoul(argv[2]));
-        run_slice(partition_index, num_partitions, /*quiet=*/false);
+        unsigned int switches = 0, errors = 0;
+        run_slice(partition_index, num_partitions, /*quiet=*/false, switches, errors);
+        assert(errors == 0);
         return 0;
     }
 
@@ -485,8 +496,10 @@ int sc_main(int argc, char* argv[]) {
 
         if (child == 0) {
             close(fds[0]);
-            unsigned int switches = run_slice(i, num_workers, /*quiet=*/true);
-            ssize_t written = write(fds[1], &switches, sizeof(switches));
+            unsigned int switches = 0, errors = 0;
+            run_slice(i, num_workers, /*quiet=*/true, switches, errors);
+            unsigned int payload[2] = { switches, errors };
+            ssize_t written = write(fds[1], payload, sizeof(payload));
             (void)written;
             close(fds[1]);
             _exit(0);
@@ -498,17 +511,20 @@ int sc_main(int argc, char* argv[]) {
     }
 
     unsigned int total_switches = 0;
+    unsigned int total_errors = 0;
     for (unsigned int i = 0; i < num_workers; i++) {
-        unsigned int switches = 0;
-        ssize_t got = read(read_fd[i], &switches, sizeof(switches));
-        if (got == static_cast<ssize_t>(sizeof(switches))) {
-            total_switches += switches;
+        unsigned int payload[2] = { 0, 0 };
+        ssize_t got = read(read_fd[i], payload, sizeof(payload));
+        if (got == static_cast<ssize_t>(sizeof(payload))) {
+            total_switches += payload[0];
+            total_errors += payload[1];
         }
         close(read_fd[i]);
         int status = 0;
         waitpid(worker_pid[i], &status, 0);
     }
 
+    assert(total_errors == 0);
     std::cout << "TER-16: GATES=192 SWITCHES=" << total_switches << " DELAY=4ns\n";
 
     return 0;

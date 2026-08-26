@@ -5,6 +5,7 @@
 #include <string>
 #include <random>
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <thread>
 #include <vector>
@@ -19,47 +20,43 @@ struct DualRail8 {
     sc_lv<8> rail_b;
 };
 
+// Encodes each bit of `value` as a dual-rail digit at binary place value 2^i
+// (despite the function's name, the circuit's digits are binary-weighted,
+// not base-3 - confirmed against the reference schematic). Coding per digit:
+// 0 -> (rail_a=0, rail_b=1), 1 -> (rail_a=1, rail_b=1). rail_b is therefore
+// always 1; only rail_a carries the bit value.
 static DualRail8 encode_unsigned_to_balanced_ternary_8(unsigned int value) {
     DualRail8 encoded;
     encoded.rail_a = "00000000";
     encoded.rail_b = "00000000";
 
     if (value > 255U) {
-        std::cerr << "Fehler: Der 8-Trit-Test erwartet Werte im Bereich 0..255.\n";
+        std::cerr << "Fehler: Der 8-Bit-Test erwartet Werte im Bereich 0..255.\n";
         sc_stop();
         return encoded;
     }
 
-    int remaining_value = static_cast<int>(value);
-
     for (int i = 0; i < 8; i++) {
-        int remainder = remaining_value % 3;
-        remaining_value /= 3;
-
-        int trit_value;
-
-        if (remainder == 0) {
-            trit_value = 0;
-        } else if (remainder == 1) {
-            trit_value = 1;
-        } else {
-            trit_value = -1;
-            remaining_value += 1;
-        }
-
-        if (trit_value == 0) {
-            encoded.rail_a[i] = false;
-            encoded.rail_b[i] = false;
-        } else if (trit_value == 1) {
-            encoded.rail_a[i] = true;
-            encoded.rail_b[i] = true;
-        } else {
-            encoded.rail_a[i] = false;
-            encoded.rail_b[i] = true;
-        }
+        bool bit = ((value >> i) & 1U) != 0U;
+        encoded.rail_a[i] = bit;
+        encoded.rail_b[i] = true;
     }
 
     return encoded;
+}
+
+// Decodes the 9-digit dual-rail result: each (S_plus[i], S_minus[i]) pair
+// is a digit at binary place value 2^i, coded 00=-1, 11=+1, 01/10=0
+// (same coding as the operand rails).
+static int decode_dual_rail_9(const sc_lv<9>& s_plus, const sc_lv<9>& s_minus) {
+    int value = 0;
+    for (int i = 0; i < 9; i++) {
+        bool p = s_plus[i].is_01() && s_plus[i].to_bool();
+        bool m = s_minus[i].is_01() && s_minus[i].to_bool();
+        int digit = (p && m) ? 1 : ((!p && !m) ? -1 : 0);
+        value += digit * (1 << i);
+    }
+    return value;
 }
 
 // ============================================================================
@@ -301,12 +298,12 @@ SC_MODULE(BalancedTernaryAdder8) {
         sc_lv<9> output_minus;
         sc_lv<9> output_plus;
 
+        output_minus[0] = false;  // no carry-in below the least significant digit
         for (int i = 0; i < 8; i++) {
-            output_minus[i] = stage2_carry[i].read();
+            output_minus[i + 1] = stage2_carry[i].read();
             output_plus[i] = stage2_sum[i].read();
         }
 
-        output_minus[8] = stage2_carry[7].read();
         output_plus[8] = stage1_carry[7].read();
 
         S_minus.write(output_minus);
@@ -342,9 +339,7 @@ SC_MODULE(BalancedTernaryAdder8) {
 //    Draws num_samples uniformly random (a, b) pairs instead of
 //    exhaustively covering the whole input space, so the same
 //    methodology also works for widths where exhaustive coverage is
-//    computationally infeasible (e.g. 32-bit). No correctness check is
-//    performed here, matching the original exhaustive testbench, which
-//    only measured switching activity for this adder.
+//    computationally infeasible (e.g. 32-bit).
 // ============================================================================
 SC_MODULE(Testbench) {
     sc_out<sc_lv<8>> A_a, A_b, B_a, B_b;
@@ -352,11 +347,14 @@ SC_MODULE(Testbench) {
 
     BalancedTernaryAdder8* design_ptr;
 
+    unsigned int number_of_errors;
+
     unsigned long long num_samples;
     unsigned long long rng_seed;
 
     SC_CTOR(Testbench)
         : design_ptr(nullptr),
+          number_of_errors(0),
           num_samples(1000000ULL),
           rng_seed(42ULL)
     {
@@ -397,6 +395,13 @@ SC_MODULE(Testbench) {
         B_b.write(encoded_b.rail_b);
 
         wait(20, SC_NS);
+
+        int expected_result = static_cast<int>(a_value + b_value);
+        int actual_result = decode_dual_rail_9(S_plus.read(), S_minus.read());
+
+        if (expected_result != actual_result) {
+            number_of_errors++;
+        }
     }
 };
 
@@ -407,7 +412,8 @@ SC_MODULE(Testbench) {
 // Elaborates a fresh adder + testbench and simulates exactly
 // samples_for_this_worker random test vectors, seeded independently so
 // parallel workers never repeat each other's samples.
-static unsigned long long run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker) {
+static void run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker,
+                       unsigned long long& out_switches, unsigned int& out_errors) {
     sc_signal<sc_lv<8>> A_a, A_b, B_a, B_b;
     sc_signal<sc_lv<9>> S_minus, S_plus;
 
@@ -435,7 +441,8 @@ static unsigned long long run_slice(unsigned long long samples_for_this_worker, 
 
     sc_start();
 
-    return adder.total_switches();
+    out_switches = adder.total_switches();
+    out_errors = tb.number_of_errors;
 }
 
 int sc_main(int argc, char* argv[]) {
@@ -470,8 +477,11 @@ int sc_main(int argc, char* argv[]) {
 
         if (child == 0) {
             close(fds[0]);
-            unsigned long long switches = run_slice(samples_for_worker, base_seed + i);
-            ssize_t written = write(fds[1], &switches, sizeof(switches));
+            unsigned long long switches = 0;
+            unsigned int errors = 0;
+            run_slice(samples_for_worker, base_seed + i, switches, errors);
+            unsigned long long payload[2] = { switches, static_cast<unsigned long long>(errors) };
+            ssize_t written = write(fds[1], payload, sizeof(payload));
             (void)written;
             close(fds[1]);
             _exit(0);
@@ -483,17 +493,20 @@ int sc_main(int argc, char* argv[]) {
     }
 
     unsigned long long total_switches = 0;
+    unsigned long long total_errors = 0;
     for (unsigned int i = 0; i < num_workers; i++) {
-        unsigned long long switches = 0;
-        ssize_t got = read(read_fd[i], &switches, sizeof(switches));
-        if (got == static_cast<ssize_t>(sizeof(switches))) {
-            total_switches += switches;
+        unsigned long long payload[2] = { 0, 0 };
+        ssize_t got = read(read_fd[i], payload, sizeof(payload));
+        if (got == static_cast<ssize_t>(sizeof(payload))) {
+            total_switches += payload[0];
+            total_errors   += payload[1];
         }
         close(read_fd[i]);
         int status = 0;
         waitpid(worker_pid[i], &status, 0);
     }
 
+    assert(total_errors == 0);
     double avg_switches = total_samples > 0
         ? (static_cast<double>(total_switches) / static_cast<double>(total_samples))
         : 0.0;
