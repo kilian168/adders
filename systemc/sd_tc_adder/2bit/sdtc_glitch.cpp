@@ -377,9 +377,6 @@ SC_MODULE(Testbench) {
 // 5. MAIN -- Monte Carlo, auto-parallel across all CPU cores
 // ==========================================
 
-// Elaborates a fresh adder + testbench and simulates exactly
-// samples_for_this_worker random test vectors, seeded independently so
-// parallel workers never repeat each other's samples.
 static void run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker,
                        unsigned long long& out_switches, unsigned int& out_errors) {
     sc_signal<sc_lv<2>> SD_a, SD_b, TC;
