@@ -4,8 +4,8 @@ LDFLAGS = -L/usr/lib -Wl,-rpath,/usr/lib -lsystemc
 
 all: run_sdtc
 
-sdtc_12bit: sdtc_glitch.cpp
-	$(CXX) $(CXXFLAGS) -o sdtc_12bit sdtc_glitch.cpp $(LDFLAGS)
+sdtc_12bit: sdtc_glitch_ppm.cpp
+	$(CXX) $(CXXFLAGS) -o sdtc_12bit sdtc_glitch_ppm.cpp $(LDFLAGS)
 
 run_sdtc: sdtc_12bit
 	@echo "\n======================================================="

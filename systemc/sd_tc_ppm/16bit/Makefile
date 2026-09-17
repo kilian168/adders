@@ -4,14 +4,14 @@ LDFLAGS = -L/usr/lib -Wl,-rpath,/usr/lib -lsystemc
 
 all: run_sdtc
 
-sdtc_32bit: sdtc_glitch.cpp
-	$(CXX) $(CXXFLAGS) -o sdtc_32bit sdtc_glitch.cpp $(LDFLAGS)
+sdtc_16bit: sdtc_glitch_ppm.cpp
+	$(CXX) $(CXXFLAGS) -o sdtc_16bit sdtc_glitch_ppm.cpp $(LDFLAGS)
 
-run_sdtc: sdtc_32bit
+run_sdtc: sdtc_16bit
 	@echo "\n======================================================="
-	@echo " STARTING 32-BIT SIGNED-DIGIT / TWO'S-COMPLEMENT ADDER MONTE CARLO SIMULATION"
+	@echo " STARTING 16-BIT SIGNED-DIGIT / TWO'S-COMPLEMENT ADDER MONTE CARLO SIMULATION"
 	@echo "======================================================="
-	./sdtc_32bit
+	./sdtc_16bit
 
 clean:
-	rm -f sdtc_32bit
+	rm -f sdtc_16bit
