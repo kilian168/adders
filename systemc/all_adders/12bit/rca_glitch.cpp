@@ -81,9 +81,11 @@ SC_MODULE(RippleCarryAdder12) {
 
     sc_signal<bool> a_bit[12], b_bit[12], s_bit[12], c_bit[12];
     sc_signal<bool> const_zero;
+    void drive_const_zero() { const_zero.write(false); }  // real tie-low driver (SystemC's implicit zero-init doesn't synthesize)
     FullAdder* fa[12];
 
     SC_CTOR(RippleCarryAdder12) {
+        SC_METHOD(drive_const_zero);
         for (int i = 0; i < 12; i++) {
             fa[i] = new FullAdder(("FA_" + std::to_string(i)).c_str());
             fa[i]->a(a_bit[i]);

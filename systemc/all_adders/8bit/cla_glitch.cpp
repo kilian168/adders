@@ -180,6 +180,8 @@ SC_MODULE(ClaTree) {
     int gate_count;
     Wire leaf_cin[NLEAF];           // leaf_cin[i] = resolved Cin wire for block i (i=0 unused)
     sc_signal<bool>* cout_sig;
+    sc_in<bool> leaf_cin_port[NLEAF];  // ports for drive_outputs to read leaf_cin through (ICSC-synthesizable: no raw pointer reads in process code)
+    sc_in<bool> cout_in_port;
 
     SC_HAS_PROCESS(ClaTree);
 
@@ -191,9 +193,18 @@ SC_MODULE(ClaTree) {
         sc_signal<bool>* cout_and = gate2("COUT_A", GATE_AND, root.pg, Wire(Cin));
         cout_sig = gate2("COUT_O", GATE_OR, root.gg, Wire(*cout_and));
 
+        leaf_cin_port[0](Cin);  // index 0 unused but SystemC requires every port bound
+        for (int i = 1; i < NLEAF; i++) leaf_cin_port[i](*leaf_cin[i].sig);
+        cout_in_port(*cout_sig);
+
         SC_METHOD(drive_outputs);
-        for (int i = 1; i < NLEAF; i++) sensitive << *leaf_cin[i].sig;
-        sensitive << *cout_sig;
+        for (int i = 1; i < NLEAF; i++) sensitive << leaf_cin_port[i];
+        sensitive << cout_in_port;
+    }
+
+    void drive_outputs() {
+        for (int i = 1; i < NLEAF; i++) C[i - 1].write(leaf_cin_port[i].read());
+        Cout.write(cout_in_port.read());
     }
 
     static void bind_wire(sc_in<bool>& dst, const Wire& w) {
@@ -246,11 +257,6 @@ SC_MODULE(ClaTree) {
         return RangeResult{ Wire(*pg_out), Wire(*gg_out) };
     }
 
-    void drive_outputs() {
-        for (int i = 1; i < NLEAF; i++) C[i - 1].write(leaf_cin[i].sig->read());
-        Cout.write(cout_sig->read());
-    }
-
     ~ClaTree() {
         for (int i = 0; i < gate_count; i++) { delete gates[i]; delete sigs[i]; }
     }
@@ -275,11 +281,13 @@ SC_MODULE(CarryLookaheadAdder8) {
     sc_signal<bool>       blk_pg[NBLK], blk_gg[NBLK];
     sc_signal<bool>       c_mid[NBLK - 1];
     sc_signal<bool>       const_zero;      // tied low for block 0's Cin
+    void drive_const_zero() { const_zero.write(false); }  // real tie-low driver (SystemC's implicit zero-init doesn't synthesize)
 
     ClaBlock4* blk[NBLK];
     ClaTree*   tree;
 
     SC_CTOR(CarryLookaheadAdder8) {
+        SC_METHOD(drive_const_zero);
         for (int i = 0; i < NBLK; i++) {
             blk[i] = new ClaBlock4(("BLK" + std::to_string(i)).c_str());
             blk[i]->A(a_slice[i]);

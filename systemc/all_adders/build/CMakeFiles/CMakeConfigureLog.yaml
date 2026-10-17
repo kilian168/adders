@@ -1,0 +1,2067 @@
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineSystem.cmake:12 (find_program)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_UNAME"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "uname"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/sbin/"
+      - "/home/kilian/Projects/systemc-compiler/"
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+      - "/bin/"
+    searched_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/uname"
+      - "/home/kilian/Projects/systemc-compiler/sbin/uname"
+      - "/home/kilian/Projects/systemc-compiler/uname"
+      - "/home/kilian/Projects/systemc-compiler/bin/uname"
+      - "/home/kilian/Projects/systemc-compiler/include/uname"
+      - "/usr/local/sbin/uname"
+      - "/usr/local/bin/uname"
+    found: "/usr/bin/uname"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineSystem.cmake:218 (message)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      The system is: Linux - 7.2.10-arch1-1 - x86_64
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeUnixFindMake.cmake:5 (find_program)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_MAKE_PROGRAM"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "gmake"
+      - "make"
+      - "smake"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/sbin/"
+      - "/home/kilian/Projects/systemc-compiler/"
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    searched_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/gmake"
+      - "/home/kilian/Projects/systemc-compiler/sbin/gmake"
+      - "/home/kilian/Projects/systemc-compiler/gmake"
+      - "/home/kilian/Projects/systemc-compiler/bin/gmake"
+      - "/home/kilian/Projects/systemc-compiler/include/gmake"
+      - "/usr/local/sbin/gmake"
+      - "/usr/local/bin/gmake"
+      - "/usr/bin/gmake"
+      - "/home/kilian/.local/share/flatpak/exports/bin/gmake"
+      - "/var/lib/flatpak/exports/bin/gmake"
+      - "/usr/lib/jvm/default/bin/gmake"
+      - "/usr/bin/site_perl/gmake"
+      - "/usr/bin/vendor_perl/gmake"
+      - "/usr/bin/core_perl/gmake"
+      - "/usr/lib/rustup/bin/gmake"
+      - "/home/kilian/Projects/systemc-compiler/bin/make"
+      - "/home/kilian/Projects/systemc-compiler/sbin/make"
+      - "/home/kilian/Projects/systemc-compiler/make"
+      - "/home/kilian/Projects/systemc-compiler/bin/make"
+      - "/home/kilian/Projects/systemc-compiler/include/make"
+      - "/usr/local/sbin/make"
+      - "/usr/local/bin/make"
+    found: "/usr/bin/make"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompiler.cmake:73 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:64 (_cmake_find_compiler)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_C_COMPILER"
+    description: "C compiler"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/home/kilian/Projects/systemc-compiler/bin/clang"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/sbin/"
+      - "/home/kilian/Projects/systemc-compiler/"
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/clang"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:501 (find_file)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:538 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCCompilerId.c.in"
+    candidate_directories:
+      - "/usr/share/cmake/Modules/"
+    found: "/usr/share/cmake/Modules/CMakeCCompilerId.c.in"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /home/kilian/Projects/systemc-compiler/bin/clang 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+      
+      The C compiler identification is Clang, found in:
+        /mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/4.4.4/CompilerIdC/a.out
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_AR"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-ar"
+      - "ar"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-ar"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_RANLIB"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-ranlib"
+      - "ranlib"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-ranlib"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_STRIP"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-strip"
+      - "strip"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-strip"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_LINKER"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "ld.lld"
+      - "ld"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    searched_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/ld.lld"
+      - "/home/kilian/Projects/systemc-compiler/include/ld.lld"
+      - "/usr/local/sbin/ld.lld"
+      - "/usr/local/bin/ld.lld"
+      - "/usr/bin/ld.lld"
+      - "/home/kilian/.local/share/flatpak/exports/bin/ld.lld"
+      - "/var/lib/flatpak/exports/bin/ld.lld"
+      - "/usr/lib/jvm/default/bin/ld.lld"
+      - "/usr/bin/site_perl/ld.lld"
+      - "/usr/bin/vendor_perl/ld.lld"
+      - "/usr/bin/core_perl/ld.lld"
+      - "/usr/lib/rustup/bin/ld.lld"
+      - "/home/kilian/Projects/systemc-compiler/bin/ld"
+      - "/home/kilian/Projects/systemc-compiler/include/ld"
+      - "/usr/local/sbin/ld"
+      - "/usr/local/bin/ld"
+    found: "/usr/bin/ld"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_NM"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-nm"
+      - "nm"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-nm"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_OBJDUMP"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-objdump"
+      - "objdump"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-objdump"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_OBJCOPY"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-objcopy"
+      - "objcopy"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-objcopy"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_READELF"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-readelf"
+      - "readelf"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-readelf"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_DLLTOOL"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-dlltool"
+      - "dlltool"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-dlltool"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_ADDR2LINE"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-addr2line"
+      - "addr2line"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-addr2line"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:200 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_TAPI"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "tapi"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    searched_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/tapi"
+      - "/home/kilian/Projects/systemc-compiler/include/tapi"
+      - "/usr/local/sbin/tapi"
+      - "/usr/local/bin/tapi"
+      - "/usr/bin/tapi"
+      - "/home/kilian/.local/share/flatpak/exports/bin/tapi"
+      - "/var/lib/flatpak/exports/bin/tapi"
+      - "/usr/lib/jvm/default/bin/tapi"
+      - "/usr/bin/site_perl/tapi"
+      - "/usr/bin/vendor_perl/tapi"
+      - "/usr/bin/core_perl/tapi"
+      - "/usr/lib/rustup/bin/tapi"
+    found: false
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Compiler/Clang-FindBinUtils.cmake:26 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:201 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_C_COMPILER_AR"
+    description: "LLVM archiver"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-ar-18.1"
+      - "llvm-ar-18"
+      - "llvm-ar18"
+      - "llvm-ar"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    searched_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ar-18.1"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ar-18.1"
+      - "/usr/local/sbin/llvm-ar-18.1"
+      - "/usr/local/bin/llvm-ar-18.1"
+      - "/usr/bin/llvm-ar-18.1"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ar-18.1"
+      - "/var/lib/flatpak/exports/bin/llvm-ar-18.1"
+      - "/usr/lib/jvm/default/bin/llvm-ar-18.1"
+      - "/usr/bin/site_perl/llvm-ar-18.1"
+      - "/usr/bin/vendor_perl/llvm-ar-18.1"
+      - "/usr/bin/core_perl/llvm-ar-18.1"
+      - "/usr/lib/rustup/bin/llvm-ar-18.1"
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ar-18"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ar-18"
+      - "/usr/local/sbin/llvm-ar-18"
+      - "/usr/local/bin/llvm-ar-18"
+      - "/usr/bin/llvm-ar-18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ar-18"
+      - "/var/lib/flatpak/exports/bin/llvm-ar-18"
+      - "/usr/lib/jvm/default/bin/llvm-ar-18"
+      - "/usr/bin/site_perl/llvm-ar-18"
+      - "/usr/bin/vendor_perl/llvm-ar-18"
+      - "/usr/bin/core_perl/llvm-ar-18"
+      - "/usr/lib/rustup/bin/llvm-ar-18"
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ar18"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ar18"
+      - "/usr/local/sbin/llvm-ar18"
+      - "/usr/local/bin/llvm-ar18"
+      - "/usr/bin/llvm-ar18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ar18"
+      - "/var/lib/flatpak/exports/bin/llvm-ar18"
+      - "/usr/lib/jvm/default/bin/llvm-ar18"
+      - "/usr/bin/site_perl/llvm-ar18"
+      - "/usr/bin/vendor_perl/llvm-ar18"
+      - "/usr/bin/core_perl/llvm-ar18"
+      - "/usr/lib/rustup/bin/llvm-ar18"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-ar"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Compiler/Clang-FindBinUtils.cmake:38 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:201 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_C_COMPILER_RANLIB"
+    description: "Generate index for LLVM archive"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-ranlib-18.1"
+      - "llvm-ranlib-18"
+      - "llvm-ranlib18"
+      - "llvm-ranlib"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    searched_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ranlib-18.1"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ranlib-18.1"
+      - "/usr/local/sbin/llvm-ranlib-18.1"
+      - "/usr/local/bin/llvm-ranlib-18.1"
+      - "/usr/bin/llvm-ranlib-18.1"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ranlib-18.1"
+      - "/var/lib/flatpak/exports/bin/llvm-ranlib-18.1"
+      - "/usr/lib/jvm/default/bin/llvm-ranlib-18.1"
+      - "/usr/bin/site_perl/llvm-ranlib-18.1"
+      - "/usr/bin/vendor_perl/llvm-ranlib-18.1"
+      - "/usr/bin/core_perl/llvm-ranlib-18.1"
+      - "/usr/lib/rustup/bin/llvm-ranlib-18.1"
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ranlib-18"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ranlib-18"
+      - "/usr/local/sbin/llvm-ranlib-18"
+      - "/usr/local/bin/llvm-ranlib-18"
+      - "/usr/bin/llvm-ranlib-18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ranlib-18"
+      - "/var/lib/flatpak/exports/bin/llvm-ranlib-18"
+      - "/usr/lib/jvm/default/bin/llvm-ranlib-18"
+      - "/usr/bin/site_perl/llvm-ranlib-18"
+      - "/usr/bin/vendor_perl/llvm-ranlib-18"
+      - "/usr/bin/core_perl/llvm-ranlib-18"
+      - "/usr/lib/rustup/bin/llvm-ranlib-18"
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ranlib18"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ranlib18"
+      - "/usr/local/sbin/llvm-ranlib18"
+      - "/usr/local/bin/llvm-ranlib18"
+      - "/usr/bin/llvm-ranlib18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ranlib18"
+      - "/var/lib/flatpak/exports/bin/llvm-ranlib18"
+      - "/usr/lib/jvm/default/bin/llvm-ranlib18"
+      - "/usr/bin/site_perl/llvm-ranlib18"
+      - "/usr/bin/vendor_perl/llvm-ranlib18"
+      - "/usr/bin/core_perl/llvm-ranlib18"
+      - "/usr/lib/rustup/bin/llvm-ranlib18"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-ranlib"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Compiler/Clang-FindBinUtils.cmake:50 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:201 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_C_COMPILER_CLANG_SCAN_DEPS"
+    description: "`clang-scan-deps` dependency scanner"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "clang-scan-deps-18.1"
+      - "clang-scan-deps-18"
+      - "clang-scan-deps18"
+      - "clang-scan-deps"
+      - "clang-scan-deps-18.1"
+      - "clang-scan-deps-18"
+      - "clang-scan-deps18"
+      - "clang-scan-deps"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    searched_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps-18.1"
+      - "/home/kilian/Projects/systemc-compiler/include/clang-scan-deps-18.1"
+      - "/usr/local/sbin/clang-scan-deps-18.1"
+      - "/usr/local/bin/clang-scan-deps-18.1"
+      - "/usr/bin/clang-scan-deps-18.1"
+      - "/home/kilian/.local/share/flatpak/exports/bin/clang-scan-deps-18.1"
+      - "/var/lib/flatpak/exports/bin/clang-scan-deps-18.1"
+      - "/usr/lib/jvm/default/bin/clang-scan-deps-18.1"
+      - "/usr/bin/site_perl/clang-scan-deps-18.1"
+      - "/usr/bin/vendor_perl/clang-scan-deps-18.1"
+      - "/usr/bin/core_perl/clang-scan-deps-18.1"
+      - "/usr/lib/rustup/bin/clang-scan-deps-18.1"
+      - "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps-18"
+      - "/home/kilian/Projects/systemc-compiler/include/clang-scan-deps-18"
+      - "/usr/local/sbin/clang-scan-deps-18"
+      - "/usr/local/bin/clang-scan-deps-18"
+      - "/usr/bin/clang-scan-deps-18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/clang-scan-deps-18"
+      - "/var/lib/flatpak/exports/bin/clang-scan-deps-18"
+      - "/usr/lib/jvm/default/bin/clang-scan-deps-18"
+      - "/usr/bin/site_perl/clang-scan-deps-18"
+      - "/usr/bin/vendor_perl/clang-scan-deps-18"
+      - "/usr/bin/core_perl/clang-scan-deps-18"
+      - "/usr/lib/rustup/bin/clang-scan-deps-18"
+      - "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps18"
+      - "/home/kilian/Projects/systemc-compiler/include/clang-scan-deps18"
+      - "/usr/local/sbin/clang-scan-deps18"
+      - "/usr/local/bin/clang-scan-deps18"
+      - "/usr/bin/clang-scan-deps18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/clang-scan-deps18"
+      - "/var/lib/flatpak/exports/bin/clang-scan-deps18"
+      - "/usr/lib/jvm/default/bin/clang-scan-deps18"
+      - "/usr/bin/site_perl/clang-scan-deps18"
+      - "/usr/bin/vendor_perl/clang-scan-deps18"
+      - "/usr/bin/core_perl/clang-scan-deps18"
+      - "/usr/lib/rustup/bin/clang-scan-deps18"
+    found: "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompiler.cmake:54 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:69 (_cmake_find_compiler)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER"
+    description: "CXX compiler"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "/home/kilian/Projects/systemc-compiler/bin/clang++"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+    found: "/home/kilian/Projects/systemc-compiler/bin/clang++"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:501 (find_file)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:538 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCXXCompilerId.cpp.in"
+    candidate_directories:
+      - "/usr/share/cmake/Modules/"
+    found: "/usr/share/cmake/Modules/CMakeCXXCompilerId.cpp.in"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /home/kilian/Projects/systemc-compiler/bin/clang++ 
+      Build flags: -stdlib=libc++
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+      
+      The CXX compiler identification is Clang, found in:
+        /mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/4.4.4/CompilerIdCXX/a.out
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Compiler/Clang-FindBinUtils.cmake:26 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:207 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER_AR"
+    description: "LLVM archiver"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-ar-18.1"
+      - "llvm-ar-18"
+      - "llvm-ar18"
+      - "llvm-ar"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    searched_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ar-18.1"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ar-18.1"
+      - "/usr/local/sbin/llvm-ar-18.1"
+      - "/usr/local/bin/llvm-ar-18.1"
+      - "/usr/bin/llvm-ar-18.1"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ar-18.1"
+      - "/var/lib/flatpak/exports/bin/llvm-ar-18.1"
+      - "/usr/lib/jvm/default/bin/llvm-ar-18.1"
+      - "/usr/bin/site_perl/llvm-ar-18.1"
+      - "/usr/bin/vendor_perl/llvm-ar-18.1"
+      - "/usr/bin/core_perl/llvm-ar-18.1"
+      - "/usr/lib/rustup/bin/llvm-ar-18.1"
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ar-18"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ar-18"
+      - "/usr/local/sbin/llvm-ar-18"
+      - "/usr/local/bin/llvm-ar-18"
+      - "/usr/bin/llvm-ar-18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ar-18"
+      - "/var/lib/flatpak/exports/bin/llvm-ar-18"
+      - "/usr/lib/jvm/default/bin/llvm-ar-18"
+      - "/usr/bin/site_perl/llvm-ar-18"
+      - "/usr/bin/vendor_perl/llvm-ar-18"
+      - "/usr/bin/core_perl/llvm-ar-18"
+      - "/usr/lib/rustup/bin/llvm-ar-18"
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ar18"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ar18"
+      - "/usr/local/sbin/llvm-ar18"
+      - "/usr/local/bin/llvm-ar18"
+      - "/usr/bin/llvm-ar18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ar18"
+      - "/var/lib/flatpak/exports/bin/llvm-ar18"
+      - "/usr/lib/jvm/default/bin/llvm-ar18"
+      - "/usr/bin/site_perl/llvm-ar18"
+      - "/usr/bin/vendor_perl/llvm-ar18"
+      - "/usr/bin/core_perl/llvm-ar18"
+      - "/usr/lib/rustup/bin/llvm-ar18"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-ar"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Compiler/Clang-FindBinUtils.cmake:38 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:207 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER_RANLIB"
+    description: "Generate index for LLVM archive"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "llvm-ranlib-18.1"
+      - "llvm-ranlib-18"
+      - "llvm-ranlib18"
+      - "llvm-ranlib"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    searched_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ranlib-18.1"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ranlib-18.1"
+      - "/usr/local/sbin/llvm-ranlib-18.1"
+      - "/usr/local/bin/llvm-ranlib-18.1"
+      - "/usr/bin/llvm-ranlib-18.1"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ranlib-18.1"
+      - "/var/lib/flatpak/exports/bin/llvm-ranlib-18.1"
+      - "/usr/lib/jvm/default/bin/llvm-ranlib-18.1"
+      - "/usr/bin/site_perl/llvm-ranlib-18.1"
+      - "/usr/bin/vendor_perl/llvm-ranlib-18.1"
+      - "/usr/bin/core_perl/llvm-ranlib-18.1"
+      - "/usr/lib/rustup/bin/llvm-ranlib-18.1"
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ranlib-18"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ranlib-18"
+      - "/usr/local/sbin/llvm-ranlib-18"
+      - "/usr/local/bin/llvm-ranlib-18"
+      - "/usr/bin/llvm-ranlib-18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ranlib-18"
+      - "/var/lib/flatpak/exports/bin/llvm-ranlib-18"
+      - "/usr/lib/jvm/default/bin/llvm-ranlib-18"
+      - "/usr/bin/site_perl/llvm-ranlib-18"
+      - "/usr/bin/vendor_perl/llvm-ranlib-18"
+      - "/usr/bin/core_perl/llvm-ranlib-18"
+      - "/usr/lib/rustup/bin/llvm-ranlib-18"
+      - "/home/kilian/Projects/systemc-compiler/bin/llvm-ranlib18"
+      - "/home/kilian/Projects/systemc-compiler/include/llvm-ranlib18"
+      - "/usr/local/sbin/llvm-ranlib18"
+      - "/usr/local/bin/llvm-ranlib18"
+      - "/usr/bin/llvm-ranlib18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/llvm-ranlib18"
+      - "/var/lib/flatpak/exports/bin/llvm-ranlib18"
+      - "/usr/lib/jvm/default/bin/llvm-ranlib18"
+      - "/usr/bin/site_perl/llvm-ranlib18"
+      - "/usr/bin/vendor_perl/llvm-ranlib18"
+      - "/usr/bin/core_perl/llvm-ranlib18"
+      - "/usr/lib/rustup/bin/llvm-ranlib18"
+    found: "/home/kilian/Projects/systemc-compiler/bin/llvm-ranlib"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Compiler/Clang-FindBinUtils.cmake:50 (find_program)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:207 (include)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS"
+    description: "`clang-scan-deps` dependency scanner"
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "clang-scan-deps-18.1"
+      - "clang-scan-deps-18"
+      - "clang-scan-deps18"
+      - "clang-scan-deps"
+      - "clang-scan-deps-18.1"
+      - "clang-scan-deps-18"
+      - "clang-scan-deps18"
+      - "clang-scan-deps"
+    candidate_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/"
+      - "/home/kilian/Projects/systemc-compiler/include/"
+      - "/usr/local/sbin/"
+      - "/usr/local/bin/"
+      - "/usr/bin/"
+      - "/home/kilian/.local/share/flatpak/exports/bin/"
+      - "/var/lib/flatpak/exports/bin/"
+      - "/usr/lib/jvm/default/bin/"
+      - "/usr/bin/site_perl/"
+      - "/usr/bin/vendor_perl/"
+      - "/usr/bin/core_perl/"
+      - "/usr/lib/rustup/bin/"
+    searched_directories:
+      - "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps-18.1"
+      - "/home/kilian/Projects/systemc-compiler/include/clang-scan-deps-18.1"
+      - "/usr/local/sbin/clang-scan-deps-18.1"
+      - "/usr/local/bin/clang-scan-deps-18.1"
+      - "/usr/bin/clang-scan-deps-18.1"
+      - "/home/kilian/.local/share/flatpak/exports/bin/clang-scan-deps-18.1"
+      - "/var/lib/flatpak/exports/bin/clang-scan-deps-18.1"
+      - "/usr/lib/jvm/default/bin/clang-scan-deps-18.1"
+      - "/usr/bin/site_perl/clang-scan-deps-18.1"
+      - "/usr/bin/vendor_perl/clang-scan-deps-18.1"
+      - "/usr/bin/core_perl/clang-scan-deps-18.1"
+      - "/usr/lib/rustup/bin/clang-scan-deps-18.1"
+      - "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps-18"
+      - "/home/kilian/Projects/systemc-compiler/include/clang-scan-deps-18"
+      - "/usr/local/sbin/clang-scan-deps-18"
+      - "/usr/local/bin/clang-scan-deps-18"
+      - "/usr/bin/clang-scan-deps-18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/clang-scan-deps-18"
+      - "/var/lib/flatpak/exports/bin/clang-scan-deps-18"
+      - "/usr/lib/jvm/default/bin/clang-scan-deps-18"
+      - "/usr/bin/site_perl/clang-scan-deps-18"
+      - "/usr/bin/vendor_perl/clang-scan-deps-18"
+      - "/usr/bin/core_perl/clang-scan-deps-18"
+      - "/usr/lib/rustup/bin/clang-scan-deps-18"
+      - "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps18"
+      - "/home/kilian/Projects/systemc-compiler/include/clang-scan-deps18"
+      - "/usr/local/sbin/clang-scan-deps18"
+      - "/usr/local/bin/clang-scan-deps18"
+      - "/usr/bin/clang-scan-deps18"
+      - "/home/kilian/.local/share/flatpak/exports/bin/clang-scan-deps18"
+      - "/var/lib/flatpak/exports/bin/clang-scan-deps18"
+      - "/usr/lib/jvm/default/bin/clang-scan-deps18"
+      - "/usr/bin/site_perl/clang-scan-deps18"
+      - "/usr/bin/vendor_perl/clang-scan-deps18"
+      - "/usr/bin/core_perl/clang-scan-deps18"
+      - "/usr/lib/rustup/bin/clang-scan-deps18"
+    found: "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps"
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:123 (try_compile)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS"
+      binary: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: false
+      stdout: |
+        Change Dir: '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS'
+        
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_52f69/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_52f69.dir/build.make CMakeFiles/cmTC_52f69.dir/build
+        make[1]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS'
+        Building C object CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o
+        /home/kilian/Projects/systemc-compiler/bin/clang   -v -MD -MT CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake/Modules/CMakeCCompilerABI.c
+        clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)
+        Target: x86_64-unknown-linux-gnu
+        Thread model: posix
+        InstalledDir: /home/kilian/Projects/systemc-compiler/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16
+        Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Candidate multilib: .;@m64
+        Candidate multilib: 32;@m32
+        Selected multilib: .;@m64
+         (in-process)
+         "/home/kilian/Projects/systemc-compiler/bin/clang-18" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS -v -fcoverage-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS -resource-dir /home/kilian/Projects/systemc-compiler/lib/clang/18 -dependency-file CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -sys-header-deps -internal-isystem /home/kilian/Projects/systemc-compiler/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake/Modules/CMakeCCompilerABI.c
+        clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target x86_64-unknown-linux-gnu
+        ignoring nonexistent directory "/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include"
+        ignoring nonexistent directory "/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /home/kilian/Projects/systemc-compiler/lib/clang/18/include
+         /usr/local/include
+         /usr/include
+        End of search list.
+        Linking C executable cmTC_52f69
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_52f69.dir/link.txt --verbose=1
+        clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)
+        Target: x86_64-unknown-linux-gnu
+        Thread model: posix
+        InstalledDir: /home/kilian/Projects/systemc-compiler/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16
+        Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Candidate multilib: .;@m64
+        Candidate multilib: 32;@m32
+        Selected multilib: .;@m64
+         "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_52f69 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o
+        GNU ld (GNU Binutils) 2.47
+        /home/kilian/Projects/systemc-compiler/bin/clang -stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw -v -Wl,-v CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -o cmTC_52f69
+        make[1]: Leaving directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:255 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+          add: [/usr/local/include]
+          add: [/usr/include]
+        end of search list found
+        collapse include dir [/home/kilian/Projects/systemc-compiler/lib/clang/18/include] ==> [/home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+        collapse include dir [/usr/local/include] ==> [/usr/local/include]
+        collapse include dir [/usr/include] ==> [/usr/include]
+        implicit include dirs: [/home/kilian/Projects/systemc-compiler/lib/clang/18/include;/usr/local/include;/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:291 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|wild|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|wild))("|,| |$)]
+        ignore line: [Change Dir: '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS']
+        ignore line: []
+        ignore line: [Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_52f69/fast]
+        ignore line: [/usr/bin/make  -f CMakeFiles/cmTC_52f69.dir/build.make CMakeFiles/cmTC_52f69.dir/build]
+        ignore line: [make[1]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS']
+        ignore line: [Building C object CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o]
+        ignore line: [/home/kilian/Projects/systemc-compiler/bin/clang   -v -MD -MT CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake/Modules/CMakeCCompilerABI.c]
+        ignore line: [clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)]
+        ignore line: [Target: x86_64-unknown-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /home/kilian/Projects/systemc-compiler/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Candidate multilib: 32]
+        ignore line: [@m32]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        ignore line: [ (in-process)]
+        ignore line: [ "/home/kilian/Projects/systemc-compiler/bin/clang-18" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS -v -fcoverage-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-4VpcoS -resource-dir /home/kilian/Projects/systemc-compiler/lib/clang/18 -dependency-file CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -sys-header-deps -internal-isystem /home/kilian/Projects/systemc-compiler/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake/Modules/CMakeCCompilerABI.c]
+        ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target x86_64-unknown-linux-gnu]
+        ignore line: [ignoring nonexistent directory "/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include"]
+        ignore line: [ignoring nonexistent directory "/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+        ignore line: [ /usr/local/include]
+        ignore line: [ /usr/include]
+        ignore line: [End of search list.]
+        ignore line: [Linking C executable cmTC_52f69]
+        ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_52f69.dir/link.txt --verbose=1]
+        ignore line: [clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)]
+        ignore line: [Target: x86_64-unknown-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /home/kilian/Projects/systemc-compiler/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Candidate multilib: 32]
+        ignore line: [@m32]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_52f69 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> linker [/usr/bin/ld]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_52f69 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> linker architecture flags [-m;elf]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_52f69 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o]
+          arg [/usr/bin/ld] ==> ignore
+          arg [--hash-style=gnu] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [elf_x86_64] ==> ignore
+          arg [-pie] ==> ignore
+          arg [-dynamic-linker] ==> ignore
+          arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_52f69] ==> ignore
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o]
+          arg [-L/home/kilian/Projects/systemc-compiler/lib] ==> dir [/home/kilian/Projects/systemc-compiler/lib]
+          arg [-L/usr/lib64/gcc/x86_64-pc-linux-gnu/16] ==> dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+          arg [-L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64] ==> dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64]
+          arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+          arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+          arg [-L/lib] ==> dir [/lib]
+          arg [-L/usr/lib] ==> dir [/usr/lib]
+          arg [-lncursesw] ==> lib [ncursesw]
+          arg [-v] ==> ignore
+          arg [CMakeFiles/cmTC_52f69.dir/CMakeCCompilerABI.c.o] ==> ignore
+          arg [-lgcc] ==> lib [gcc]
+          arg [--as-needed] ==> ignore
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [--no-as-needed] ==> ignore
+          arg [-lc] ==> lib [c]
+          arg [-lgcc] ==> lib [gcc]
+          arg [--as-needed] ==> ignore
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [--no-as-needed] ==> ignore
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o]
+        linker tool for 'C': /usr/bin/ld -m;elf
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o] ==> [/usr/lib64/Scrt1.o]
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o] ==> [/usr/lib64/crti.o]
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> [/usr/lib64/crtn.o]
+        collapse library dir [/home/kilian/Projects/systemc-compiler/lib] ==> [/home/kilian/Projects/systemc-compiler/lib]
+        collapse library dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16] ==> [/usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        collapse library dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib/../lib64] ==> [/lib64]
+        collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib] ==> [/lib]
+        collapse library dir [/usr/lib] ==> [/usr/lib]
+        implicit libs: [ncursesw;gcc;gcc_s;c;gcc;gcc_s]
+        implicit objs: [/usr/lib64/Scrt1.o;/usr/lib64/crti.o;/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o;/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o;/usr/lib64/crtn.o]
+        implicit dirs: [/home/kilian/Projects/systemc-compiler/lib;/usr/lib64/gcc/x86_64-pc-linux-gnu/16;/usr/lib64;/lib64;/lib;/usr/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake:41 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:337 (cmake_determine_linker_id)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Running the C compiler's linker: "/usr/bin/ld" "-v"
+      GNU ld (GNU Binutils) 2.47
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:123 (try_compile)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh"
+      binary: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps"
+      CMAKE_CXX_FLAGS: "-stdlib=libc++"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: "-stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: false
+      stdout: |
+        Change Dir: '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh'
+        
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_3bec1/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_3bec1.dir/build.make CMakeFiles/cmTC_3bec1.dir/build
+        make[1]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh'
+        Building CXX object CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o
+        /home/kilian/Projects/systemc-compiler/bin/clang++   -stdlib=libc++    -v -MD -MT CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)
+        Target: x86_64-unknown-linux-gnu
+        Thread model: posix
+        InstalledDir: /home/kilian/Projects/systemc-compiler/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16
+        Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Candidate multilib: .;@m64
+        Candidate multilib: 32;@m32
+        Selected multilib: .;@m64
+         (in-process)
+         "/home/kilian/Projects/systemc-compiler/bin/clang-18" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh -v -fcoverage-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh -resource-dir /home/kilian/Projects/systemc-compiler/lib/clang/18 -dependency-file CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /home/kilian/Projects/systemc-compiler/bin/../include/c++/v1 -internal-isystem /home/kilian/Projects/systemc-compiler/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target x86_64-unknown-linux-gnu
+        ignoring nonexistent directory "/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include"
+        ignoring nonexistent directory "/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /home/kilian/Projects/systemc-compiler/bin/../include/c++/v1
+         /home/kilian/Projects/systemc-compiler/lib/clang/18/include
+         /usr/local/include
+         /usr/include
+        End of search list.
+        Linking CXX executable cmTC_3bec1
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3bec1.dir/link.txt --verbose=1
+        clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)
+        Target: x86_64-unknown-linux-gnu
+        Thread model: posix
+        InstalledDir: /home/kilian/Projects/systemc-compiler/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16
+        Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Candidate multilib: .;@m64
+        Candidate multilib: 32;@m32
+        Selected multilib: .;@m64
+         "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_3bec1 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o
+        GNU ld (GNU Binutils) 2.47
+        /home/kilian/Projects/systemc-compiler/bin/clang++ -stdlib=libc++  -stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw -v -Wl,-v CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_3bec1
+        make[1]: Leaving directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:255 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/home/kilian/Projects/systemc-compiler/bin/../include/c++/v1]
+          add: [/home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+          add: [/usr/local/include]
+          add: [/usr/include]
+        end of search list found
+        collapse include dir [/home/kilian/Projects/systemc-compiler/bin/../include/c++/v1] ==> [/home/kilian/Projects/systemc-compiler/include/c++/v1]
+        collapse include dir [/home/kilian/Projects/systemc-compiler/lib/clang/18/include] ==> [/home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+        collapse include dir [/usr/local/include] ==> [/usr/local/include]
+        collapse include dir [/usr/include] ==> [/usr/include]
+        implicit include dirs: [/home/kilian/Projects/systemc-compiler/include/c++/v1;/home/kilian/Projects/systemc-compiler/lib/clang/18/include;/usr/local/include;/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:291 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|wild|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|wild))("|,| |$)]
+        ignore line: [Change Dir: '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh']
+        ignore line: []
+        ignore line: [Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_3bec1/fast]
+        ignore line: [/usr/bin/make  -f CMakeFiles/cmTC_3bec1.dir/build.make CMakeFiles/cmTC_3bec1.dir/build]
+        ignore line: [make[1]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh']
+        ignore line: [Building CXX object CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/home/kilian/Projects/systemc-compiler/bin/clang++   -stdlib=libc++    -v -MD -MT CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)]
+        ignore line: [Target: x86_64-unknown-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /home/kilian/Projects/systemc-compiler/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Candidate multilib: 32]
+        ignore line: [@m32]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        ignore line: [ (in-process)]
+        ignore line: [ "/home/kilian/Projects/systemc-compiler/bin/clang-18" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh -v -fcoverage-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BF4TNh -resource-dir /home/kilian/Projects/systemc-compiler/lib/clang/18 -dependency-file CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /home/kilian/Projects/systemc-compiler/bin/../include/c++/v1 -internal-isystem /home/kilian/Projects/systemc-compiler/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target x86_64-unknown-linux-gnu]
+        ignore line: [ignoring nonexistent directory "/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include"]
+        ignore line: [ignoring nonexistent directory "/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /home/kilian/Projects/systemc-compiler/bin/../include/c++/v1]
+        ignore line: [ /home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+        ignore line: [ /usr/local/include]
+        ignore line: [ /usr/include]
+        ignore line: [End of search list.]
+        ignore line: [Linking CXX executable cmTC_3bec1]
+        ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3bec1.dir/link.txt --verbose=1]
+        ignore line: [clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)]
+        ignore line: [Target: x86_64-unknown-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /home/kilian/Projects/systemc-compiler/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Candidate multilib: 32]
+        ignore line: [@m32]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_3bec1 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> linker [/usr/bin/ld]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_3bec1 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> linker architecture flags [-m;elf]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_3bec1 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o]
+          arg [/usr/bin/ld] ==> ignore
+          arg [--hash-style=gnu] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [elf_x86_64] ==> ignore
+          arg [-pie] ==> ignore
+          arg [-dynamic-linker] ==> ignore
+          arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_3bec1] ==> ignore
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o]
+          arg [-L/home/kilian/Projects/systemc-compiler/lib] ==> dir [/home/kilian/Projects/systemc-compiler/lib]
+          arg [-L/usr/lib64/gcc/x86_64-pc-linux-gnu/16] ==> dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+          arg [-L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64] ==> dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64]
+          arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+          arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+          arg [-L/lib] ==> dir [/lib]
+          arg [-L/usr/lib] ==> dir [/usr/lib]
+          arg [-lncursesw] ==> lib [ncursesw]
+          arg [-v] ==> ignore
+          arg [CMakeFiles/cmTC_3bec1.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [-lc++] ==> lib [c++]
+          arg [-lm] ==> lib [m]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lc] ==> lib [c]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o]
+        linker tool for 'CXX': /usr/bin/ld -m;elf
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o] ==> [/usr/lib64/Scrt1.o]
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o] ==> [/usr/lib64/crti.o]
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> [/usr/lib64/crtn.o]
+        collapse library dir [/home/kilian/Projects/systemc-compiler/lib] ==> [/home/kilian/Projects/systemc-compiler/lib]
+        collapse library dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16] ==> [/usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        collapse library dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib/../lib64] ==> [/lib64]
+        collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib] ==> [/lib]
+        collapse library dir [/usr/lib] ==> [/usr/lib]
+        implicit libs: [ncursesw;c++;m;gcc_s;gcc;c;gcc_s;gcc]
+        implicit objs: [/usr/lib64/Scrt1.o;/usr/lib64/crti.o;/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o;/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o;/usr/lib64/crtn.o]
+        implicit dirs: [/home/kilian/Projects/systemc-compiler/lib;/usr/lib64/gcc/x86_64-pc-linux-gnu/16;/usr/lib64;/lib64;/lib;/usr/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake:41 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:337 (cmake_determine_linker_id)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Running the CXX compiler's linker: "/usr/bin/ld" "-v"
+      GNU ld (GNU Binutils) 2.47
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:81 (try_compile)"
+      - "/usr/share/cmake/Modules/CheckCSourceCompiles.cmake:103 (cmake_check_source_compiles)"
+      - "/usr/share/cmake/Modules/FindThreads.cmake:160 (check_c_source_compiles)"
+      - "/usr/share/cmake/Modules/FindThreads.cmake:226 (_threads_check_libc)"
+      - "/usr/share/cmake/Modules/CMakeFindDependencyMacro.cmake:93 (find_package)"
+      - "/usr/share/cmake/Modules/CMakeFindDependencyMacro.cmake:125 (__find_dependency_common)"
+      - "/home/kilian/Projects/systemc-compiler/lib/cmake/SVC/SVCConfig.cmake:45 (find_dependency)"
+      - "CMakeLists.txt:17 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-95rCxF"
+      binary: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-95rCxF"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-95rCxF'
+        
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_c1a8f/fast
+        /usr/bin/make  -f CMakeFiles/cmTC_c1a8f.dir/build.make CMakeFiles/cmTC_c1a8f.dir/build
+        make[1]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-95rCxF'
+        Building C object CMakeFiles/cmTC_c1a8f.dir/src.c.o
+        /home/kilian/Projects/systemc-compiler/bin/clang -DCMAKE_HAVE_LIBC_PTHREAD   -MD -MT CMakeFiles/cmTC_c1a8f.dir/src.c.o -MF CMakeFiles/cmTC_c1a8f.dir/src.c.o.d -o CMakeFiles/cmTC_c1a8f.dir/src.c.o -c /mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-95rCxF/src.c
+        Linking C executable cmTC_c1a8f
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c1a8f.dir/link.txt --verbose=1
+        /home/kilian/Projects/systemc-compiler/bin/clang -stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw  CMakeFiles/cmTC_c1a8f.dir/src.c.o -o cmTC_c1a8f
+        make[1]: Leaving directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-95rCxF'
+        
+      exitCode: 0
+  -
+    kind: "find_package-v1"
+    backtrace:
+      - "CMakeLists.txt:17 (find_package)"
+    name: "SVC"
+    configs:
+      -
+        filename: "SVC.cps"
+        kind: "cps"
+      -
+        filename: "svc.cps"
+        kind: "cps"
+      -
+        filename: "SVCConfig.cmake"
+        kind: "cmake"
+      -
+        filename: "svc-config.cmake"
+        kind: "cmake"
+    version_request:
+      exact: false
+    settings:
+      required: "required_explicit"
+      quiet: false
+      global: false
+      policy_scope: true
+      bypass_provider: false
+      names:
+        - "SVC"
+      path_suffixes:
+        - ""
+      paths:
+        CMAKE_FIND_USE_CMAKE_PATH: true
+        CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+        CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+        CMAKE_FIND_USE_INSTALL_PREFIX: true
+        CMAKE_FIND_USE_PACKAGE_ROOT_PATH: true
+        CMAKE_FIND_USE_CMAKE_PACKAGE_REGISTRY: true
+        CMAKE_FIND_USE_SYSTEM_PACKAGE_REGISTRY: true
+        CMAKE_FIND_ROOT_PATH_MODE: "BOTH"
+    candidates:
+      -
+        path: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/pkgRedirects/SVCConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/pkgRedirects/svc-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/pkgRedirects/lib/cps/SVC.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/pkgRedirects/lib/cps/svc.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/pkgRedirects/share/cps/SVC.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/pkgRedirects/share/cps/svc.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/kilian/Projects/systemc-compiler/SVCConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/home/kilian/Projects/systemc-compiler/svc-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/home/kilian/Projects/systemc-compiler/cmake/SVCConfig.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/home/kilian/Projects/systemc-compiler/cmake/svc-config.cmake"
+        mode: "config"
+        reason: "no_exist"
+      -
+        path: "/home/kilian/Projects/systemc-compiler/lib/cps/SVC.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/kilian/Projects/systemc-compiler/lib/cps/svc.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/kilian/Projects/systemc-compiler/share/cps/SVC.cps"
+        mode: "cps"
+        reason: "no_exist"
+      -
+        path: "/home/kilian/Projects/systemc-compiler/share/cps/svc.cps"
+        mode: "cps"
+        reason: "no_exist"
+    found:
+      path: "/home/kilian/Projects/systemc-compiler/lib/cmake/SVC/SVCConfig.cmake"
+      mode: "config"
+      version: ""
+    search_context:
+      ENV{CMAKE_PREFIX_PATH}:
+        - "/home/kilian/Projects/systemc-compiler"
+      ENV{PATH}:
+        - "/home/kilian/Projects/systemc-compiler/bin"
+        - "/home/kilian/Projects/systemc-compiler/include"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+      CMAKE_SYSTEM_PREFIX_PATH:
+        - "/usr/local"
+        - "/usr"
+        - "/"
+        - "/usr"
+        - "/usr/local"
+        - "/usr/X11R6"
+        - "/usr/pkg"
+        - "/opt"
+...

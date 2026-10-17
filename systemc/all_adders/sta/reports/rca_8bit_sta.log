@@ -1,0 +1,48 @@
+OpenSTA 3.1.0 49b86c95b3 Copyright (c) 2026, Parallax Software, Inc.
+License GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl.html>
+
+This is free software, and you are free to change and redistribute it
+under certain conditions; type `show_copying' for details. 
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show_warranty'.
+Startpoint: B[0] (input port clocked by vclk)
+Endpoint: Cout (output port clocked by vclk)
+Path Group: vclk
+Path Type: max
+
+      Cap      Slew     Delay      Time   Description
+-------------------------------------------------------------------------------
+             0.0000    0.0000    0.0000   clock vclk (rise edge)
+                       0.0000    0.0000   clock network delay (ideal)
+                       0.0000    0.0000 v input external delay
+   3.2072    0.0000    0.0000    0.0000 v B[0] (in)
+   0.7673    0.0159    0.0862    0.0862 v fa_0/g_and1/_0_/ZN (AND2_X1)
+   3.2072    0.0345    0.1762    0.2624 v fa_0/g_or1/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1060    0.3684 v fa_1/g_and2/_0_/ZN (AND2_X1)
+   3.2072    0.0345    0.1936    0.5619 v fa_1/g_or1/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1060    0.6679 v fa_2/g_and2/_0_/ZN (AND2_X1)
+   3.2072    0.0345    0.1936    0.8615 v fa_2/g_or1/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1060    0.9675 v fa_3/g_and2/_0_/ZN (AND2_X1)
+   3.2072    0.0345    0.1936    1.1610 v fa_3/g_or1/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1060    1.2670 v fa_4/g_and2/_0_/ZN (AND2_X1)
+   3.2072    0.0345    0.1936    1.4606 v fa_4/g_or1/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1060    1.5666 v fa_5/g_and2/_0_/ZN (AND2_X1)
+   3.2072    0.0345    0.1936    1.7601 v fa_5/g_or1/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1060    1.8661 v fa_6/g_and2/_0_/ZN (AND2_X1)
+   3.2072    0.0345    0.1936    2.0597 v fa_6/g_or1/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1060    2.1657 v fa_7/g_and2/_0_/ZN (AND2_X1)
+   0.0000    0.0257    0.1669    2.3326 v fa_7/g_or1/_0_/ZN (OR2_X1)
+             0.0257    0.0000    2.3326 v Cout (out)
+                                 2.3326   data arrival time
+
+             0.0000  100.0000  100.0000   clock vclk (rise edge)
+                       0.0000  100.0000   clock network delay (ideal)
+                       0.0000  100.0000   clock reconvergence pessimism
+                       0.0000  100.0000   output external delay
+                               100.0000   data required time
+-------------------------------------------------------------------------------
+                               100.0000   data required time
+                                -2.3326   data arrival time
+-------------------------------------------------------------------------------
+                                97.6674   slack (MET)
+
+

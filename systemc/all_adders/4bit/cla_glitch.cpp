@@ -157,10 +157,12 @@ SC_MODULE(CarryLookaheadAdder4) {
     sc_out<bool>        Cout;
 
     sc_signal<bool> const_zero;
+    void drive_const_zero() { const_zero.write(false); }  // real tie-low driver (SystemC's implicit zero-init doesn't synthesize)
     sc_signal<bool> pg_unused, gg_unused;
     ClaBlock4* blk;
 
     SC_CTOR(CarryLookaheadAdder4) {
+        SC_METHOD(drive_const_zero);
         blk = new ClaBlock4("BLK0");
         blk->A(A); blk->B(B); blk->Cin(const_zero);
         blk->Sum(Sum); blk->Cout(Cout);

@@ -1,0 +1,3 @@
+Warning: Replacing memory \b_slice with list of registers. See /mnt/storage/bachelor/adders/systemc/all_adders/sta/preproc/cla_12bit.sv:89
+Warning: Replacing memory \a_slice with list of registers. See /mnt/storage/bachelor/adders/systemc/all_adders/sta/preproc/cla_12bit.sv:88
+Warning: Replacing memory \s_slice with list of registers. See /mnt/storage/bachelor/adders/systemc/all_adders/sta/preproc/cla_12bit.sv:120

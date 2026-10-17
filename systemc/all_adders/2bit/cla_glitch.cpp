@@ -49,6 +49,7 @@ SC_MODULE(CarryLookaheadAdder2) {
     sc_signal<bool> a_bit[2], b_bit[2];
     sc_signal<bool> p[2], g[2];
     sc_signal<bool> const_zero;
+    void drive_const_zero() { const_zero.write(false); }  // real tie-low driver (SystemC's implicit zero-init doesn't synthesize)
     sc_signal<bool> c1a, c1o;
     sc_signal<bool> c2a1, c2a2, c2a3, c2o1, c2o2;
     sc_signal<bool> s[2];
@@ -58,6 +59,7 @@ SC_MODULE(CarryLookaheadAdder2) {
     Gate *g_c2a1, *g_c2a2, *g_c2a3, *g_c2o1, *g_c2o2;
 
     SC_CTOR(CarryLookaheadAdder2) {
+        SC_METHOD(drive_const_zero);
         SC_METHOD(unpack_inputs);
         sensitive << A << B;
 

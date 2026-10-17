@@ -1,0 +1,2 @@
+# Empty dependencies file for ter_32bit.
+# This may be replaced when dependencies are built.

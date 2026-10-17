@@ -1,0 +1,36 @@
+OpenSTA 3.1.0 49b86c95b3 Copyright (c) 2026, Parallax Software, Inc.
+License GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl.html>
+
+This is free software, and you are free to change and redistribute it
+under certain conditions; type `show_copying' for details. 
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show_warranty'.
+Startpoint: B[1] (input port clocked by vclk)
+Endpoint: Cout (output port clocked by vclk)
+Path Group: vclk
+Path Type: max
+
+      Cap      Slew     Delay      Time   Description
+-------------------------------------------------------------------------------
+             0.0000    0.0000    0.0000   clock vclk (rise edge)
+                       0.0000    0.0000   clock network delay (ideal)
+                       0.0000    0.0000 v input external delay
+   3.2072    0.0000    0.0000    0.0000 v B[1] (in)
+   3.8093    0.0384    0.1988    0.1988 v g_p_1/_0_/Z (XOR2_X1)
+   0.8587    0.0161    0.0996    0.2983 v g_c2a1/_0_/ZN (AND2_X1)
+   0.7673    0.0280    0.1741    0.4724 v g_c2o1/_0_/ZN (OR2_X1)
+   0.0000    0.0257    0.1546    0.6271 v g_c2o2/_0_/ZN (OR2_X1)
+             0.0257    0.0000    0.6271 v Cout (out)
+                                 0.6271   data arrival time
+
+             0.0000  100.0000  100.0000   clock vclk (rise edge)
+                       0.0000  100.0000   clock network delay (ideal)
+                       0.0000  100.0000   clock reconvergence pessimism
+                       0.0000  100.0000   output external delay
+                               100.0000   data required time
+-------------------------------------------------------------------------------
+                               100.0000   data required time
+                                -0.6271   data arrival time
+-------------------------------------------------------------------------------
+                                99.3729   slack (MET)
+
+

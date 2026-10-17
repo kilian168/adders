@@ -1,0 +1,1 @@
+/home/kilian/Projects/systemc-compiler/bin/clang++ -stdlib=libc++ -O3 -DNDEBUG -stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw -Xlinker --dependency-file=CMakeFiles/cla_12bit.dir/link.d CMakeFiles/cla_12bit.dir/cla_glitch.cpp.o -o cla_12bit  /home/kilian/Projects/systemc-compiler/lib/libsystemc.a

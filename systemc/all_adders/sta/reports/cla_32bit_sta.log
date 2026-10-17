@@ -1,0 +1,49 @@
+OpenSTA 3.1.0 49b86c95b3 Copyright (c) 2026, Parallax Software, Inc.
+License GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl.html>
+
+This is free software, and you are free to change and redistribute it
+under certain conditions; type `show_copying' for details. 
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show_warranty'.
+Startpoint: B[3] (input port clocked by vclk)
+Endpoint: Sum[29] (output port clocked by vclk)
+Path Group: vclk
+Path Type: max
+
+      Cap      Slew     Delay      Time   Description
+-------------------------------------------------------------------------------
+             0.0000    0.0000    0.0000   clock vclk (rise edge)
+                       0.0000    0.0000   clock network delay (ideal)
+                       0.0000    0.0000 v input external delay
+   3.2072    0.0000    0.0000    0.0000 v B[3] (in)
+   3.8093    0.0384    0.1988    0.1988 v blk_0/g_p_3/_0_/Z (XOR2_X1)
+   0.8587    0.0161    0.0996    0.2983 v blk_0/g_c4a1/_0_/ZN (AND2_X1)
+   0.7673    0.0280    0.1741    0.4724 v blk_0/g_c4o1/_0_/ZN (OR2_X1)
+   0.7673    0.0280    0.1618    0.6343 v blk_0/g_c4o2/_0_/ZN (OR2_X1)
+   2.3879    0.0325    0.1757    0.8100 v blk_0/g_c4o3/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1048    0.9148 v tree/gates_3/_0_/ZN (AND2_X1)
+   1.6206    0.0305    0.1821    1.0969 v tree/gates_4/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1037    1.2006 v tree/gates_13/_0_/ZN (AND2_X1)
+   1.6206    0.0305    0.1821    1.3827 v tree/gates_14/_0_/ZN (OR2_X1)
+   7.4739    0.0440    0.2051    1.5879 v tree/gates_16/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1115    1.6993 v tree/gates_22/_0_/ZN (AND2_X1)
+   6.6206    0.0421    0.2120    1.9113 v tree/gates_23/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1104    2.0217 v tree/gates_24/_0_/ZN (AND2_X1)
+   5.7672    0.0403    0.2076    2.2293 v tree/gates_25/_0_/ZN (OR2_X1)
+   0.8587    0.0161    0.1093    2.3386 v blk_7/g_c1a/_0_/ZN (AND2_X1)
+   2.3539    0.0325    0.1878    2.5263 v blk_7/g_c1o/_0_/ZN (OR2_X1)
+   0.0000    0.0366    0.1943    2.7206 v blk_7/g_s_1/_0_/Z (XOR2_X1)
+             0.0366    0.0000    2.7206 v Sum[29] (out)
+                                 2.7206   data arrival time
+
+             0.0000  100.0000  100.0000   clock vclk (rise edge)
+                       0.0000  100.0000   clock network delay (ideal)
+                       0.0000  100.0000   clock reconvergence pessimism
+                       0.0000  100.0000   output external delay
+                               100.0000   data required time
+-------------------------------------------------------------------------------
+                               100.0000   data required time
+                                -2.7206   data arrival time
+-------------------------------------------------------------------------------
+                                97.2794   slack (MET)
+
+

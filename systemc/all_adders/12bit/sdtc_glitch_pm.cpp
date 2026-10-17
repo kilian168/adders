@@ -112,11 +112,13 @@ SC_MODULE(SdTcAdderPM12) {
 
     sc_signal<bool> sda_bit[12], sdb_bit[12], tc_bit[12], sum_bit[12], carry_bit[12];
     sc_signal<bool> const_zero;
+    void drive_const_zero() { const_zero.write(false); }  // real tie-low driver (SystemC's implicit zero-init doesn't synthesize)
     sc_signal<bool> top_bit;
     FullAdder* fa[12];
     GateNot* g_not_top;
 
     SC_CTOR(SdTcAdderPM12) {
+        SC_METHOD(drive_const_zero);
         for (int i = 0; i < 12; i++) {
             fa[i] = new FullAdder(("FA_" + std::to_string(i)).c_str());
             fa[i]->a(tc_bit[i]);

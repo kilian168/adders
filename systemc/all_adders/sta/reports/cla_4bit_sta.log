@@ -1,0 +1,38 @@
+OpenSTA 3.1.0 49b86c95b3 Copyright (c) 2026, Parallax Software, Inc.
+License GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl.html>
+
+This is free software, and you are free to change and redistribute it
+under certain conditions; type `show_copying' for details. 
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show_warranty'.
+Startpoint: B[2] (input port clocked by vclk)
+Endpoint: Sum[3] (output port clocked by vclk)
+Path Group: vclk
+Path Type: max
+
+      Cap      Slew     Delay      Time   Description
+-------------------------------------------------------------------------------
+             0.0000    0.0000    0.0000   clock vclk (rise edge)
+                       0.0000    0.0000   clock network delay (ideal)
+                       0.0000    0.0000 v input external delay
+   3.2072    0.0000    0.0000    0.0000 v B[2] (in)
+   4.6626    0.0403    0.2026    0.2026 v blk/g_p_2/_0_/Z (XOR2_X1)
+   0.8587    0.0161    0.1007    0.3033 v blk/g_c3a1/_0_/ZN (AND2_X1)
+   0.7673    0.0280    0.1741    0.4774 v blk/g_c3o1/_0_/ZN (OR2_X1)
+   0.7673    0.0280    0.1618    0.6392 v blk/g_c3o2/_0_/ZN (OR2_X1)
+   2.3539    0.0325    0.1755    0.8147 v blk/g_c3o3/_0_/ZN (OR2_X1)
+   0.0000    0.0308    0.1943    1.0089 v blk/g_s_3/_0_/Z (XOR2_X1)
+             0.0308    0.0000    1.0089 v Sum[3] (out)
+                                 1.0089   data arrival time
+
+             0.0000  100.0000  100.0000   clock vclk (rise edge)
+                       0.0000  100.0000   clock network delay (ideal)
+                       0.0000  100.0000   clock reconvergence pessimism
+                       0.0000  100.0000   output external delay
+                               100.0000   data required time
+-------------------------------------------------------------------------------
+                               100.0000   data required time
+                                -1.0089   data arrival time
+-------------------------------------------------------------------------------
+                                98.9911   slack (MET)
+
+
