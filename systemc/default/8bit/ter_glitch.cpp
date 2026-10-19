@@ -1,53 +1,80 @@
-// main.cpp
+// ter_glitch.cpp -- 8-digit redundant signed-digit ("PMM") adder.
+// Gate-level port of the reference VHDL (8 chained 1-bit DIG_Add full
+// adders for N=4, generalized to N digits here): each operand digit i
+// is dual-rail encoded as (rail_a, rail_b) with digit = rail_a+rail_b-1,
+// i.e. -1 -> (0,0), 0 -> (0,1) [or equivalently (1,0) -- both decode to
+// 0, this file just picks one canonical encoding per digit value for
+// generating test vectors], +1 -> (1,1). Place values are binary (2^i),
+// not base-3 -- confirmed against the reference schematic.
+//
+// Per digit i: stage1 FA(i) = FullAdder(A_a[i], B_a[i], A_b[i]) ->
+// (stage1_sum[i], stage1_carry[i]); stage2 FA(i) = FullAdder(
+// i==0 ? 1 : stage1_carry[i-1], stage1_sum[i], B_b[i]) ->
+// (S_plus[i], S_minus[i+1]). The top digit's stage1 carry feeds
+// S_plus[N] directly (no stage2 FA for the overflow digit); S_minus[0]
+// is tied to the constant "no carry-in below the LSB".
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <cassert>
+#include <cstdint>
+#include <algorithm>
+#include <thread>
+#include <vector>
+#include <sys/wait.h>
+#include <unistd.h>
 
 // ============================================================================
 // 0. HELPER STRUCTS AND FUNCTIONS
 // ============================================================================
-struct DualRail8 {
+struct DigitRails8 {
     sc_lv<8> rail_a;
     sc_lv<8> rail_b;
 };
 
-// Encodes each bit of `value` as a dual-rail digit at binary place value 2^i
-// (despite the function's name, the circuit's digits are binary-weighted,
-// not base-3 - confirmed against the reference schematic). Coding per digit:
-// 0 -> (rail_a=0, rail_b=1), 1 -> (rail_a=1, rail_b=1). rail_b is therefore
-// always 1; only rail_a carries the bit value.
-static DualRail8 encode_unsigned_to_balanced_ternary_8(unsigned int value) {
-    DualRail8 encoded;
+// Encodes an array of N signed digits (each -1, 0, or +1) into dual rails,
+// one canonical encoding per digit value: -1->(0,0), 0->(0,1), +1->(1,1).
+static DigitRails8 encode_digits_8(const int digits[8]) {
+    DigitRails8 encoded;
     encoded.rail_a = "00000000";
     encoded.rail_b = "00000000";
-
-    if (value > 255U) {
-        std::cerr << "Fehler: Der 8-Bit-Test erwartet Werte im Bereich 0..255.\n";
-        sc_stop();
-        return encoded;
-    }
-
     for (int i = 0; i < 8; i++) {
-        bool bit = ((value >> i) & 1U) != 0U;
-        encoded.rail_a[i] = bit;
-        encoded.rail_b[i] = true;
+        int d = digits[i];
+        encoded.rail_a[i] = (d == 1);
+        encoded.rail_b[i] = (d != -1);
     }
-
     return encoded;
 }
 
-// Decodes the 9-digit dual-rail result: each (S_plus[i], S_minus[i]) pair
-// is a digit at binary place value 2^i, coded 00=-1, 11=+1, 01/10=0
+// Decodes a base-3 index (0 .. 3^N - 1) into N signed digits via base-3
+// digit extraction, each trit mapped {0,1,2} -> {-1,0,+1}.
+static void digits_from_index_8(unsigned long long idx, int digits[8]) {
+    for (int i = 0; i < 8; i++) {
+        digits[i] = static_cast<int>(idx % 3ULL) - 1;
+        idx /= 3ULL;
+    }
+}
+
+static const unsigned long long POW3_8 = 6561ULL;
+
+// Numeric value of a digit pattern at binary place values (2^i).
+static long long digits_value_8(const int digits[8]) {
+    long long value = 0;
+    for (int i = 0; i < 8; i++) value += static_cast<long long>(digits[i]) * (1LL << i);
+    return value;
+}
+
+// Decodes the (N+1)-digit dual-rail result: each (S_plus[i], S_minus[i])
+// pair is a digit at binary place value 2^i, coded 00=-1, 11=+1, 01/10=0
 // (same coding as the operand rails).
-static int decode_dual_rail_9(const sc_lv<9>& s_plus, const sc_lv<9>& s_minus) {
-    int value = 0;
+static long long decode_dual_rail_9(const sc_lv<9>& s_plus, const sc_lv<9>& s_minus) {
+    long long value = 0;
     for (int i = 0; i < 9; i++) {
         bool p = s_plus[i].is_01() && s_plus[i].to_bool();
         bool m = s_minus[i].is_01() && s_minus[i].to_bool();
         int digit = (p && m) ? 1 : ((!p && !m) ? -1 : 0);
-        value += digit * (1 << i);
+        value += static_cast<long long>(digit) * (1LL << i);
     }
     return value;
 }
@@ -70,7 +97,7 @@ SC_MODULE(Gate) {
     bool old_value;
     bool pending_value;
     unsigned int calls;
-    unsigned int switches;
+    uint64_t switches;
 
     SC_HAS_PROCESS(Gate);
 
@@ -122,7 +149,7 @@ SC_MODULE(Gate3Or) {
     bool old_value;
     bool pending_value;
     unsigned int calls;
-    unsigned int switches;
+    uint64_t switches;
 
     SC_CTOR(Gate3Or) : old_value(false), pending_value(false), calls(0), switches(0) {
         SC_METHOD(eval);
@@ -156,14 +183,18 @@ SC_MODULE(Gate3Or) {
 };
 
 // ============================================================================
-// 2. GATE-LEVEL BINARY FULL ADDER (6 gates)
+// 2. GATE-LEVEL BINARY FULL ADDER (6 gates) -- one instance == one DIG_Add
 //    xor1 = XOR(a,b)        and1 = AND(a,b)
 //    and2 = AND(a,c)        and3 = AND(b,c)
 //    sum  = XOR(xor1,c)     carry = OR3(and1,and2,and3)
 // ============================================================================
 SC_MODULE(BsdBinaryFullAdder) {
-    sc_in<bool> input_a, input_b, input_c;
-    sc_out<bool> sum_out, carry_out;
+    sc_in<bool> input_a;
+    sc_in<bool> input_b;
+    sc_in<bool> input_c;
+
+    sc_out<bool> sum_out;
+    sc_out<bool> carry_out;
 
     sc_signal<bool> xor1_sig, and1_sig, and2_sig, and3_sig;
 
@@ -190,7 +221,7 @@ SC_MODULE(BsdBinaryFullAdder) {
         g_or1->in1(and1_sig); g_or1->in2(and2_sig); g_or1->in3(and3_sig); g_or1->out(carry_out);
     }
 
-    unsigned int total_switches() const {
+    uint64_t total_switches() const {
         return g_xor1->switches + g_and1->switches + g_and2->switches +
                g_and3->switches + g_xor2->switches + g_or1->switches;
     }
@@ -211,11 +242,16 @@ SC_MODULE(BsdBinaryFullAdder) {
 };
 
 // ============================================================================
-// 2. 8-TRIT BALANCED TERNARY ADDER MODULE
+// 2. 8-DIGIT SIGNED-DIGIT ("PMM") ADDER -- exact port of the reference VHDL
 // ============================================================================
-SC_MODULE(BalancedTernaryAdder8) {
-    sc_in<sc_lv<8>> A_a, A_b, B_a, B_b;
-    sc_out<sc_lv<9>> S_minus, S_plus;
+SC_MODULE(SignedDigitAdder8) {
+    sc_in<sc_lv<8>> A_a;
+    sc_in<sc_lv<8>> A_b;
+    sc_in<sc_lv<8>> B_a;
+    sc_in<sc_lv<8>> B_b;
+
+    sc_out<sc_lv<9>> S_minus;
+    sc_out<sc_lv<9>> S_plus;
 
     sc_signal<bool> sa_a[8];
     sc_signal<bool> sa_b[8];
@@ -233,13 +269,17 @@ SC_MODULE(BalancedTernaryAdder8) {
     BsdBinaryFullAdder* stage1_adders[8];
     BsdBinaryFullAdder* stage2_adders[8];
 
-    SC_CTOR(BalancedTernaryAdder8) {
-        const_one.write(true);
+    void drive_const_one() { const_one.write(true); }
+
+    SC_CTOR(SignedDigitAdder8) {
+        SC_METHOD(drive_const_one);
 
         for (int i = 0; i < 8; i++) {
             std::string stage1_name = "S1_FA" + std::to_string(i + 1);
             stage1_adders[i] = new BsdBinaryFullAdder(stage1_name.c_str());
 
+            // Stage 1 FA(i): a=A_a[i], b=B_a[i], c=A_b[i] -- matches gate0..gate3
+            // of the reference VHDL (DIG_Add port map a=>Aia, b=>Bia, c_i=>Aib).
             stage1_adders[i]->input_a(sa_a[i]);
             stage1_adders[i]->input_b(sb_a[i]);
             stage1_adders[i]->input_c(sa_b[i]);
@@ -249,14 +289,16 @@ SC_MODULE(BalancedTernaryAdder8) {
             std::string stage2_name = "S2_FA" + std::to_string(i + 1);
             stage2_adders[i] = new BsdBinaryFullAdder(stage2_name.c_str());
 
+            // Stage 2 FA(i): a=(i==0 ? 1 : stage1_carry[i-1]), b=stage1_sum[i],
+            // c=B_b[i] -- matches gate4..gate7 (a=>s_prev/n1, b=>s_even, c_i=>Bib).
             if (i == 0) {
                 stage2_adders[i]->input_a(const_one);
             } else {
                 stage2_adders[i]->input_a(stage1_carry[i - 1]);
             }
 
-            stage2_adders[i]->input_b(sb_b[i]);
-            stage2_adders[i]->input_c(stage1_sum[i]);
+            stage2_adders[i]->input_b(stage1_sum[i]);
+            stage2_adders[i]->input_c(sb_b[i]);
             stage2_adders[i]->sum_out(stage2_sum[i]);
             stage2_adders[i]->carry_out(stage2_carry[i]);
         }
@@ -310,17 +352,20 @@ SC_MODULE(BalancedTernaryAdder8) {
         }
     }
 
-    void print_report() {
-        unsigned int total_switches = 0;
+    uint64_t total_switches() const {
+        uint64_t total_switches = 0;
         for (int i = 0; i < 8; i++) {
             total_switches += stage1_adders[i]->total_switches();
             total_switches += stage2_adders[i]->total_switches();
         }
-
-        std::cout << "TER-8: GATES=96 SWITCHES=" << total_switches << " DELAY=4ns\n";
+        return total_switches;
     }
 
-    ~BalancedTernaryAdder8() {
+    void print_report() {
+        std::cout << "TER-8: GATES=96 SWITCHES=" << total_switches() << " DELAY=4ns\n";
+    }
+
+    ~SignedDigitAdder8() {
         for (int i = 0; i < 8; i++) {
             delete stage1_adders[i];
             delete stage2_adders[i];
@@ -329,30 +374,41 @@ SC_MODULE(BalancedTernaryAdder8) {
 };
 
 // ============================================================================
-// 3. TESTBENCH
+// 3. TESTBENCH -- exhaustive over the full redundant digit-space: every one
+//    of the 3^8 digit patterns (each digit in {-1,0,+1}) for A, crossed
+//    with every one of the 3^8 patterns for B.
 // ============================================================================
 SC_MODULE(Testbench) {
-    sc_out<sc_lv<8>> A_a, A_b, B_a, B_b;
-    sc_in<sc_lv<9>> S_minus, S_plus;
+    sc_out<sc_lv<8>> A_a;
+    sc_out<sc_lv<8>> A_b;
+    sc_out<sc_lv<8>> B_a;
+    sc_out<sc_lv<8>> B_b;
 
-    BalancedTernaryAdder8* design_ptr;
+    sc_in<sc_lv<9>> S_minus;
+    sc_in<sc_lv<9>> S_plus;
+
+    SignedDigitAdder8* design_ptr;
 
     unsigned int number_of_errors;
 
-    unsigned int a_start;
-    unsigned int a_end;
+    unsigned long long a_start;
+    unsigned long long a_end;
+    bool quiet;
 
     SC_CTOR(Testbench)
         : design_ptr(nullptr),
           number_of_errors(0),
           a_start(0),
-          a_end(256)
+          a_end(POW3_8),
+          quiet(false)
     {
         SC_THREAD(stimulus);
     }
 
     void stimulus() {
-        DualRail8 zero = encode_unsigned_to_balanced_ternary_8(0);
+        int zero_digits[8];
+        for (int i = 0; i < 8; i++) zero_digits[i] = 0;
+        DigitRails8 zero = encode_digits_8(zero_digits);
 
         A_a.write(zero.rail_a);
         A_b.write(zero.rail_b);
@@ -363,21 +419,27 @@ SC_MODULE(Testbench) {
 
         design_ptr->reset_counters();
 
-        for (unsigned int a_value = a_start; a_value < a_end; a_value++) {
-            for (unsigned int b_value = 0; b_value < 256; b_value++) {
-                apply_test(a_value, b_value);
+        for (unsigned long long a_idx = a_start; a_idx < a_end; a_idx++) {
+            for (unsigned long long b_idx = 0; b_idx < POW3_8; b_idx++) {
+                apply_test(a_idx, b_idx);
             }
         }
 
         assert(number_of_errors == 0);
-        design_ptr->print_report();
+        if (!quiet) {
+            design_ptr->print_report();
+        }
 
         sc_stop();
     }
 
-    void apply_test(unsigned int a_value, unsigned int b_value) {
-        DualRail8 encoded_a = encode_unsigned_to_balanced_ternary_8(a_value);
-        DualRail8 encoded_b = encode_unsigned_to_balanced_ternary_8(b_value);
+    void apply_test(unsigned long long a_idx, unsigned long long b_idx) {
+        int a_digits[8], b_digits[8];
+        digits_from_index_8(a_idx, a_digits);
+        digits_from_index_8(b_idx, b_digits);
+
+        DigitRails8 encoded_a = encode_digits_8(a_digits);
+        DigitRails8 encoded_b = encode_digits_8(b_digits);
 
         A_a.write(encoded_a.rail_a);
         A_b.write(encoded_a.rail_b);
@@ -386,8 +448,8 @@ SC_MODULE(Testbench) {
 
         wait(20, SC_NS);
 
-        int expected_result = static_cast<int>(a_value + b_value);
-        int actual_result = decode_dual_rail_9(S_plus.read(), S_minus.read());
+        long long expected_result = digits_value_8(a_digits) + digits_value_8(b_digits);
+        long long actual_result = decode_dual_rail_9(S_plus.read(), S_minus.read());
 
         if (expected_result != actual_result) {
             number_of_errors++;
@@ -396,13 +458,19 @@ SC_MODULE(Testbench) {
 };
 
 // ============================================================================
-// 4. MAIN
+// 4. MAIN ENTRY POINT
 // ============================================================================
-int sc_main(int argc, char* argv[]) {
+
+// Elaborates a fresh adder + testbench and simulates exactly one a-index
+// slice [a_start, a_end) to completion in the calling process. Used both
+// for manual external partitioning (one process, prints its own report)
+// and as the body of each forked worker in the auto-parallel default path.
+static void run_slice(unsigned long long partition_index, unsigned long long num_partitions,
+                       bool quiet, uint64_t& out_switches, unsigned int& out_errors) {
     sc_signal<sc_lv<8>> A_a, A_b, B_a, B_b;
     sc_signal<sc_lv<9>> S_minus, S_plus;
 
-    BalancedTernaryAdder8 adder("BalancedTernaryAdder8");
+    SignedDigitAdder8 adder("SignedDigitAdder8");
     Testbench tb("TB");
 
     tb.design_ptr = &adder;
@@ -421,18 +489,79 @@ int sc_main(int argc, char* argv[]) {
     tb.S_minus(S_minus);
     tb.S_plus(S_plus);
 
-    // Optional partitioning: "ter_8bit <partition_index> <num_partitions>"
-    // restricts this process to a slice of the a-value range, so the
-    // exhaustive sweep can be split across parallel processes.
-    if (argc == 3) {
-        unsigned int partition_index = static_cast<unsigned int>(std::stoul(argv[1]));
-        unsigned int num_partitions = static_cast<unsigned int>(std::stoul(argv[2]));
-        unsigned int slice = 256U / num_partitions;
-        tb.a_start = partition_index * slice;
-        tb.a_end = (partition_index == num_partitions - 1) ? 256U : (partition_index + 1) * slice;
-    }
+    unsigned long long slice = POW3_8 / num_partitions;
+    tb.a_start = partition_index * slice;
+    tb.a_end = (partition_index == num_partitions - 1) ? POW3_8 : (partition_index + 1) * slice;
+    tb.quiet = quiet;
 
     sc_start();
+
+    out_switches = adder.total_switches();
+    out_errors = tb.number_of_errors;
+}
+
+int sc_main(int argc, char* argv[]) {
+    // Manual external partitioning: "ter_8bit <partition_index> <num_partitions>"
+    // runs exactly that slice of the 3^8 a-digit-pattern space in this
+    // single process and prints its own partial report.
+    if (argc == 3) {
+        unsigned long long partition_index = std::stoull(argv[1]);
+        unsigned long long num_partitions = std::stoull(argv[2]);
+        uint64_t switches = 0; unsigned int errors = 0;
+        run_slice(partition_index, num_partitions, /*quiet=*/false, switches, errors);
+        assert(errors == 0);
+        return 0;
+    }
+
+    // Default (no args): fan the exhaustive sweep out across every
+    // available CPU core, the same way as rca_glitch.cpp / ter's own
+    // 16-bit binary-weighted predecessor.
+    unsigned int num_workers = std::thread::hardware_concurrency();
+    if (num_workers == 0) num_workers = 1;
+    num_workers = static_cast<unsigned int>(std::min<unsigned long long>(num_workers, POW3_8));
+
+    std::vector<int> read_fd(num_workers);
+    std::vector<pid_t> worker_pid(num_workers);
+
+    for (unsigned int i = 0; i < num_workers; i++) {
+        int fds[2];
+        if (pipe(fds) != 0) { perror("pipe"); return 1; }
+
+        pid_t child = fork();
+        if (child < 0) { perror("fork"); return 1; }
+
+        if (child == 0) {
+            close(fds[0]);
+            uint64_t switches = 0; unsigned int errors = 0;
+            run_slice(i, num_workers, /*quiet=*/true, switches, errors);
+            uint64_t payload[2] = { switches, errors };
+            ssize_t written = write(fds[1], payload, sizeof(payload));
+            (void)written;
+            close(fds[1]);
+            _exit(0);
+        }
+
+        close(fds[1]);
+        read_fd[i] = fds[0];
+        worker_pid[i] = child;
+    }
+
+    uint64_t total_switches = 0;
+    unsigned int total_errors = 0;
+    for (unsigned int i = 0; i < num_workers; i++) {
+        uint64_t payload[2] = { 0, 0 };
+        ssize_t got = read(read_fd[i], payload, sizeof(payload));
+        if (got == static_cast<ssize_t>(sizeof(payload))) {
+            total_switches += payload[0];
+            total_errors += static_cast<unsigned int>(payload[1]);
+        }
+        close(read_fd[i]);
+        int status = 0;
+        waitpid(worker_pid[i], &status, 0);
+    }
+
+    assert(total_errors == 0);
+    std::cout << "TER-8: GATES=96 SWITCHES=" << total_switches << " DELAY=4ns\n";
 
     return 0;
 }

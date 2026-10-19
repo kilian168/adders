@@ -5,6 +5,7 @@
 #include <string>
 #include <cassert>
 #include <algorithm>
+#include <cstdint>
 #include <cstdio>
 #include <thread>
 #include <vector>
@@ -53,7 +54,7 @@ SC_MODULE(Gate) {
     bool old_value;
     bool pending_value;
     unsigned int calls;
-    unsigned int switches;
+    uint64_t switches;
 
     SC_HAS_PROCESS(Gate);
 
@@ -127,7 +128,7 @@ SC_MODULE(FullAdder) {
         g_or1->in1(c1); g_or1->in2(c2); g_or1->out(cout);
     }
 
-    unsigned int total_switches() const {
+    uint64_t total_switches() const {
         return g_xor1->switches + g_and1->switches + g_xor2->switches + g_and2->switches + g_or1->switches;
     }
 
@@ -211,8 +212,8 @@ SC_MODULE(RippleCarryAdder16) {
         Cout.write(c[15].read());
     }
 
-    unsigned int total_switches() const {
-        unsigned int total = 0;
+    uint64_t total_switches() const {
+        uint64_t total = 0;
         for (int i = 0; i < 16; i++) {
             total += fa[i]->total_switches();
         }
@@ -307,7 +308,7 @@ SC_MODULE(Testbench) {
 // worker in the auto-parallel default path (quiet, reports back via
 // out params instead of stdout).
 static void run_slice(unsigned int partition_index, unsigned int num_partitions,
-                       bool quiet, unsigned int& out_switches, unsigned int& out_errors) {
+                       bool quiet, uint64_t& out_switches, unsigned int& out_errors) {
     sc_signal<sc_lv<16>> A;
     sc_signal<sc_lv<16>> B;
 
@@ -347,7 +348,7 @@ int sc_main(int argc, char* argv[]) {
     if (argc == 3) {
         unsigned int partition_index = static_cast<unsigned int>(std::stoul(argv[1]));
         unsigned int num_partitions = static_cast<unsigned int>(std::stoul(argv[2]));
-        unsigned int switches = 0, errors = 0;
+        uint64_t switches = 0; unsigned int errors = 0;
         run_slice(partition_index, num_partitions, /*quiet=*/false, switches, errors);
         assert(errors == 0);
         return 0;
@@ -377,9 +378,9 @@ int sc_main(int argc, char* argv[]) {
 
         if (child == 0) {
             close(fds[0]);
-            unsigned int switches = 0, errors = 0;
+            uint64_t switches = 0; unsigned int errors = 0;
             run_slice(i, num_workers, /*quiet=*/true, switches, errors);
-            unsigned int payload[2] = { switches, errors };
+            uint64_t payload[2] = { switches, errors };
             ssize_t written = write(fds[1], payload, sizeof(payload));
             (void)written;
             close(fds[1]);
@@ -391,14 +392,14 @@ int sc_main(int argc, char* argv[]) {
         worker_pid[i] = child;
     }
 
-    unsigned int total_switches = 0;
+    uint64_t total_switches = 0;
     unsigned int total_errors = 0;
     for (unsigned int i = 0; i < num_workers; i++) {
-        unsigned int payload[2] = { 0, 0 };
+        uint64_t payload[2] = { 0, 0 };
         ssize_t got = read(read_fd[i], payload, sizeof(payload));
         if (got == static_cast<ssize_t>(sizeof(payload))) {
             total_switches += payload[0];
-            total_errors += payload[1];
+            total_errors += static_cast<unsigned int>(payload[1]);
         }
         close(read_fd[i]);
         int status = 0;

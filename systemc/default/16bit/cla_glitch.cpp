@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <string>
 #include <cassert>
+#include <cstdint>
 
 // ==========================================
 // Helper functions
@@ -38,7 +39,7 @@ SC_MODULE(Gate) {
     bool old_value;
     bool pending_value;
     unsigned int calls;
-    unsigned int switches;
+    uint64_t switches;
 
     SC_HAS_PROCESS(Gate);
 
@@ -190,8 +191,8 @@ SC_MODULE(ClaBlock4) {
         GG.write(c4o3.read());
     }
 
-    unsigned int total_block_switches() const {
-        unsigned int t = 0;
+    uint64_t total_block_switches() const {
+        uint64_t t = 0;
         for (int i = 0; i < 4; i++) t += g_p[i]->switches + g_g[i]->switches + g_s[i]->switches;
         t += g_c1a->switches + g_c1o->switches;
         t += g_c2a1->switches + g_c2a2->switches + g_c2a3->switches + g_c2o1->switches + g_c2o2->switches;
@@ -341,8 +342,8 @@ SC_MODULE(ClaTree) {
         Cout.write(cout_sig->read());
     }
 
-    unsigned int total_unit_switches() const {
-        unsigned int t = 0;
+    uint64_t total_unit_switches() const {
+        uint64_t t = 0;
         for (auto* g : gates) t += g->switches;
         return t;
     }
@@ -426,10 +427,10 @@ SC_MODULE(CarryLookaheadAdder16) {
     }
 
     void print_report() {
-        unsigned int block_sw = 0;
+        uint64_t block_sw = 0;
         for (int i = 0; i < NBLK; i++) block_sw += blk[i]->total_block_switches();
-        unsigned int unit_sw  = clu->total_unit_switches();
-        unsigned int total_sw = block_sw + unit_sw;
+        uint64_t unit_sw  = clu->total_unit_switches();
+        uint64_t total_sw = block_sw + unit_sw;
         std::cout << "CLA-16: GATES=169 (4x38 blocks + 17 CLA-tree)"
                   << " SWITCHES=" << total_sw
                   << " (blocks=" << block_sw << " tree=" << unit_sw << ")"
