@@ -1,4 +1,4 @@
-// ter_glitch.cpp -- 12-digit redundant signed-digit ("PMM") adder,
+// ter_glitch.cpp -- 12-digit redundant signed-digit ("PPM") adder,
 // Monte Carlo random sampling over the genuine digit-space.
 // Gate-level port of the reference VHDL (8 chained 1-bit DIG_Add full
 // adders for N=4, generalized to N digits here): each operand digit i
@@ -228,7 +228,7 @@ SC_MODULE(BsdBinaryFullAdder) {
 };
 
 // ============================================================================
-// 2. 12-DIGIT SIGNED-DIGIT ("PMM") ADDER -- exact port of the reference VHDL
+// 2. 12-DIGIT SIGNED-DIGIT ("PPM") ADDER -- exact port of the reference VHDL
 // ============================================================================
 SC_MODULE(SignedDigitAdder12) {
     sc_in<sc_lv<12>> A_a;

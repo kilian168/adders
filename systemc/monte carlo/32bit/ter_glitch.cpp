@@ -1,12 +1,22 @@
-// main.cpp
+// ter_glitch.cpp -- 32-digit redundant signed-digit ("PPM") adder,
+// Monte Carlo random sampling over the genuine digit-space.
+// Gate-level port of the reference VHDL (8 chained 1-bit DIG_Add full
+// adders for N=4, generalized to N digits here): each operand digit i
+// is dual-rail encoded as (rail_a, rail_b) with digit = rail_a+rail_b-1,
+// i.e. -1 -> (0,0), 0 -> (0,1) [or equivalently (1,0)], +1 -> (1,1).
+// Place values are binary (2^i), not base-3 -- confirmed against the
+// reference schematic. Each sample draws every digit of A and B
+// independently and uniformly from {-1,0,+1}, so exhaustive-infeasible
+// widths (12, 16, 32, ...) still get genuine coverage of the redundant
+// input space the circuit actually sees.
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <random>
-#include <algorithm>
 #include <cassert>
-#include <cstdio>
+#include <cstdint>
+#include <algorithm>
+#include <random>
 #include <thread>
 #include <vector>
 #include <sys/wait.h>
@@ -15,38 +25,34 @@
 // ============================================================================
 // 0. HELPER STRUCTS AND FUNCTIONS
 // ============================================================================
-struct DualRail32 {
+struct DigitRails32 {
     sc_lv<32> rail_a;
     sc_lv<32> rail_b;
 };
 
-// Encodes each bit of `value` as a dual-rail digit at binary place value 2^i
-// (despite the function's name, the circuit's digits are binary-weighted,
-// not base-3 - confirmed against the reference schematic). Coding per digit:
-// 0 -> (rail_a=0, rail_b=1), 1 -> (rail_a=1, rail_b=1). rail_b is therefore
-// always 1; only rail_a carries the bit value.
-static DualRail32 encode_unsigned_to_balanced_ternary_32(unsigned long long value) {
-    DualRail32 encoded;
+// Encodes an array of N signed digits (each -1, 0, or +1) into dual rails,
+// one canonical encoding per digit value: -1->(0,0), 0->(0,1), +1->(1,1).
+static DigitRails32 encode_digits_32(const int digits[32]) {
+    DigitRails32 encoded;
     encoded.rail_a = "00000000000000000000000000000000";
     encoded.rail_b = "00000000000000000000000000000000";
-
-    if (value > 4294967295ULL) {
-        std::cerr << "Fehler: Der 32-Bit-Test erwartet Werte im Bereich 0..4294967295.\n";
-        sc_stop();
-        return encoded;
-    }
-
     for (int i = 0; i < 32; i++) {
-        bool bit = ((value >> i) & 1ULL) != 0ULL;
-        encoded.rail_a[i] = bit;
-        encoded.rail_b[i] = true;
+        int d = digits[i];
+        encoded.rail_a[i] = (d == 1);
+        encoded.rail_b[i] = (d != -1);
     }
-
     return encoded;
 }
 
-// Decodes the 33-digit dual-rail result: each (S_plus[i], S_minus[i]) pair
-// is a digit at binary place value 2^i, coded 00=-1, 11=+1, 01/10=0
+// Numeric value of a digit pattern at binary place values (2^i).
+static long long digits_value_32(const int digits[32]) {
+    long long value = 0;
+    for (int i = 0; i < 32; i++) value += static_cast<long long>(digits[i]) * (1LL << i);
+    return value;
+}
+
+// Decodes the (N+1)-digit dual-rail result: each (S_plus[i], S_minus[i])
+// pair is a digit at binary place value 2^i, coded 00=-1, 11=+1, 01/10=0
 // (same coding as the operand rails).
 static long long decode_dual_rail_33(const sc_lv<33>& s_plus, const sc_lv<33>& s_minus) {
     long long value = 0;
@@ -77,7 +83,7 @@ SC_MODULE(Gate) {
     bool old_value;
     bool pending_value;
     unsigned int calls;
-    unsigned int switches;
+    uint64_t switches;
 
     SC_HAS_PROCESS(Gate);
 
@@ -129,7 +135,7 @@ SC_MODULE(Gate3Or) {
     bool old_value;
     bool pending_value;
     unsigned int calls;
-    unsigned int switches;
+    uint64_t switches;
 
     SC_CTOR(Gate3Or) : old_value(false), pending_value(false), calls(0), switches(0) {
         SC_METHOD(eval);
@@ -163,14 +169,18 @@ SC_MODULE(Gate3Or) {
 };
 
 // ============================================================================
-// 2. GATE-LEVEL BINARY FULL ADDER (6 gates)
+// 2. GATE-LEVEL BINARY FULL ADDER (6 gates) -- one instance == one DIG_Add
 //    xor1 = XOR(a,b)        and1 = AND(a,b)
 //    and2 = AND(a,c)        and3 = AND(b,c)
 //    sum  = XOR(xor1,c)     carry = OR3(and1,and2,and3)
 // ============================================================================
 SC_MODULE(BsdBinaryFullAdder) {
-    sc_in<bool> input_a, input_b, input_c;
-    sc_out<bool> sum_out, carry_out;
+    sc_in<bool> input_a;
+    sc_in<bool> input_b;
+    sc_in<bool> input_c;
+
+    sc_out<bool> sum_out;
+    sc_out<bool> carry_out;
 
     sc_signal<bool> xor1_sig, and1_sig, and2_sig, and3_sig;
 
@@ -197,7 +207,7 @@ SC_MODULE(BsdBinaryFullAdder) {
         g_or1->in1(and1_sig); g_or1->in2(and2_sig); g_or1->in3(and3_sig); g_or1->out(carry_out);
     }
 
-    unsigned int total_switches() const {
+    uint64_t total_switches() const {
         return g_xor1->switches + g_and1->switches + g_and2->switches +
                g_and3->switches + g_xor2->switches + g_or1->switches;
     }
@@ -218,11 +228,16 @@ SC_MODULE(BsdBinaryFullAdder) {
 };
 
 // ============================================================================
-// 2. 32-TRIT BALANCED TERNARY ADDER MODULE
+// 2. 32-DIGIT SIGNED-DIGIT ("PPM") ADDER -- exact port of the reference VHDL
 // ============================================================================
-SC_MODULE(BalancedTernaryAdder32) {
-    sc_in<sc_lv<32>> A_a, A_b, B_a, B_b;
-    sc_out<sc_lv<33>> S_minus, S_plus;
+SC_MODULE(SignedDigitAdder32) {
+    sc_in<sc_lv<32>> A_a;
+    sc_in<sc_lv<32>> A_b;
+    sc_in<sc_lv<32>> B_a;
+    sc_in<sc_lv<32>> B_b;
+
+    sc_out<sc_lv<33>> S_minus;
+    sc_out<sc_lv<33>> S_plus;
 
     sc_signal<bool> sa_a[32];
     sc_signal<bool> sa_b[32];
@@ -240,13 +255,17 @@ SC_MODULE(BalancedTernaryAdder32) {
     BsdBinaryFullAdder* stage1_adders[32];
     BsdBinaryFullAdder* stage2_adders[32];
 
-    SC_CTOR(BalancedTernaryAdder32) {
-        const_one.write(true);
+    void drive_const_one() { const_one.write(true); }
+
+    SC_CTOR(SignedDigitAdder32) {
+        SC_METHOD(drive_const_one);
 
         for (int i = 0; i < 32; i++) {
             std::string stage1_name = "S1_FA" + std::to_string(i + 1);
             stage1_adders[i] = new BsdBinaryFullAdder(stage1_name.c_str());
 
+            // Stage 1 FA(i): a=A_a[i], b=B_a[i], c=A_b[i] -- matches gate0..gate3
+            // of the reference VHDL (DIG_Add port map a=>Aia, b=>Bia, c_i=>Aib).
             stage1_adders[i]->input_a(sa_a[i]);
             stage1_adders[i]->input_b(sb_a[i]);
             stage1_adders[i]->input_c(sa_b[i]);
@@ -256,14 +275,16 @@ SC_MODULE(BalancedTernaryAdder32) {
             std::string stage2_name = "S2_FA" + std::to_string(i + 1);
             stage2_adders[i] = new BsdBinaryFullAdder(stage2_name.c_str());
 
+            // Stage 2 FA(i): a=(i==0 ? 1 : stage1_carry[i-1]), b=stage1_sum[i],
+            // c=B_b[i] -- matches gate4..gate7 (a=>s_prev/n1, b=>s_even, c_i=>Bib).
             if (i == 0) {
                 stage2_adders[i]->input_a(const_one);
             } else {
                 stage2_adders[i]->input_a(stage1_carry[i - 1]);
             }
 
-            stage2_adders[i]->input_b(sb_b[i]);
-            stage2_adders[i]->input_c(stage1_sum[i]);
+            stage2_adders[i]->input_b(stage1_sum[i]);
+            stage2_adders[i]->input_c(sb_b[i]);
             stage2_adders[i]->sum_out(stage2_sum[i]);
             stage2_adders[i]->carry_out(stage2_carry[i]);
         }
@@ -317,8 +338,8 @@ SC_MODULE(BalancedTernaryAdder32) {
         }
     }
 
-    unsigned int total_switches() const {
-        unsigned int total_switches = 0;
+    uint64_t total_switches() const {
+        uint64_t total_switches = 0;
         for (int i = 0; i < 32; i++) {
             total_switches += stage1_adders[i]->total_switches();
             total_switches += stage2_adders[i]->total_switches();
@@ -326,7 +347,7 @@ SC_MODULE(BalancedTernaryAdder32) {
         return total_switches;
     }
 
-    ~BalancedTernaryAdder32() {
+    ~SignedDigitAdder32() {
         for (int i = 0; i < 32; i++) {
             delete stage1_adders[i];
             delete stage2_adders[i];
@@ -335,17 +356,15 @@ SC_MODULE(BalancedTernaryAdder32) {
 };
 
 // ============================================================================
-// 3. TESTBENCH — Monte Carlo random sampling
-//    Draws num_samples uniformly random (a, b) pairs instead of
-//    exhaustively covering the whole input space: at 32 bits exhaustive
-//    coverage (2^32 x 2^32 cases) is computationally infeasible, so
-//    Monte Carlo sampling is the only tractable option.
+// 3. TESTBENCH -- Monte Carlo random sampling over the genuine
+//    redundant digit-space: each sample draws every digit of A and B
+//    independently and uniformly from {-1,0,+1}.
 // ============================================================================
 SC_MODULE(Testbench) {
     sc_out<sc_lv<32>> A_a, A_b, B_a, B_b;
     sc_in<sc_lv<33>> S_minus, S_plus;
 
-    BalancedTernaryAdder32* design_ptr;
+    SignedDigitAdder32* design_ptr;
 
     unsigned int number_of_errors;
 
@@ -362,7 +381,9 @@ SC_MODULE(Testbench) {
     }
 
     void stimulus() {
-        DualRail32 zero = encode_unsigned_to_balanced_ternary_32(0ULL);
+        int zero_digits[32];
+        for (int i = 0; i < 32; i++) zero_digits[i] = 0;
+        DigitRails32 zero = encode_digits_32(zero_digits);
 
         A_a.write(zero.rail_a);
         A_b.write(zero.rail_b);
@@ -374,20 +395,21 @@ SC_MODULE(Testbench) {
         design_ptr->reset_counters();
 
         std::mt19937_64 rng(rng_seed);
-        std::uniform_int_distribution<unsigned long long> dist(0ULL, 4294967295ULL);
+        std::uniform_int_distribution<int> trit_dist(-1, 1);
 
         for (unsigned long long i = 0; i < num_samples; i++) {
-            unsigned long long a_value = dist(rng);
-            unsigned long long b_value = dist(rng);
-            apply_test(a_value, b_value);
+            int a_digits[32], b_digits[32];
+            for (int d = 0; d < 32; d++) a_digits[d] = trit_dist(rng);
+            for (int d = 0; d < 32; d++) b_digits[d] = trit_dist(rng);
+            apply_test(a_digits, b_digits);
         }
 
         sc_stop();
     }
 
-    void apply_test(unsigned long long a_value, unsigned long long b_value) {
-        DualRail32 encoded_a = encode_unsigned_to_balanced_ternary_32(a_value);
-        DualRail32 encoded_b = encode_unsigned_to_balanced_ternary_32(b_value);
+    void apply_test(const int a_digits[32], const int b_digits[32]) {
+        DigitRails32 encoded_a = encode_digits_32(a_digits);
+        DigitRails32 encoded_b = encode_digits_32(b_digits);
 
         A_a.write(encoded_a.rail_a);
         A_b.write(encoded_a.rail_b);
@@ -396,7 +418,7 @@ SC_MODULE(Testbench) {
 
         wait(20, SC_NS);
 
-        long long expected_result = static_cast<long long>(a_value) + static_cast<long long>(b_value);
+        long long expected_result = digits_value_32(a_digits) + digits_value_32(b_digits);
         long long actual_result = decode_dual_rail_33(S_plus.read(), S_minus.read());
 
         if (expected_result != actual_result) {
@@ -406,18 +428,18 @@ SC_MODULE(Testbench) {
 };
 
 // ============================================================================
-// 4. MAIN — Monte Carlo, auto-parallel across all CPU cores
+// 4. MAIN -- Monte Carlo, auto-parallel across all CPU cores
 // ============================================================================
 
 // Elaborates a fresh adder + testbench and simulates exactly
 // samples_for_this_worker random test vectors, seeded independently so
 // parallel workers never repeat each other's samples.
 static void run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker,
-                       unsigned long long& out_switches, unsigned int& out_errors) {
+                       uint64_t& out_switches, unsigned int& out_errors) {
     sc_signal<sc_lv<32>> A_a, A_b, B_a, B_b;
     sc_signal<sc_lv<33>> S_minus, S_plus;
 
-    BalancedTernaryAdder32 adder("BalancedTernaryAdder32");
+    SignedDigitAdder32 adder("SignedDigitAdder32");
     Testbench tb("TB");
 
     tb.design_ptr = &adder;
@@ -477,10 +499,10 @@ int sc_main(int argc, char* argv[]) {
 
         if (child == 0) {
             close(fds[0]);
-            unsigned long long switches = 0;
+            uint64_t switches = 0;
             unsigned int errors = 0;
             run_slice(samples_for_worker, base_seed + i, switches, errors);
-            unsigned long long payload[2] = { switches, static_cast<unsigned long long>(errors) };
+            uint64_t payload[2] = { switches, static_cast<uint64_t>(errors) };
             ssize_t written = write(fds[1], payload, sizeof(payload));
             (void)written;
             close(fds[1]);
@@ -492,10 +514,10 @@ int sc_main(int argc, char* argv[]) {
         worker_pid[i] = child;
     }
 
-    unsigned long long total_switches = 0;
-    unsigned long long total_errors = 0;
+    uint64_t total_switches = 0;
+    uint64_t total_errors = 0;
     for (unsigned int i = 0; i < num_workers; i++) {
-        unsigned long long payload[2] = { 0, 0 };
+        uint64_t payload[2] = { 0, 0 };
         ssize_t got = read(read_fd[i], payload, sizeof(payload));
         if (got == static_cast<ssize_t>(sizeof(payload))) {
             total_switches += payload[0];
