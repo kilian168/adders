@@ -185,8 +185,8 @@ BsdBinaryFullAdder stage1_adders_7
 BsdBinaryFullAdder stage2_adders_0
 (
   .input_a(const_one),
-  .input_b(sb_b[0]),
-  .input_c(stage1_sum[0]),
+  .input_b(stage1_sum[0]),
+  .input_c(sb_b[0]),
   .sum_out(stage2_sum[0]),
   .carry_out(stage2_carry[0])
 );
@@ -194,8 +194,8 @@ BsdBinaryFullAdder stage2_adders_0
 BsdBinaryFullAdder stage2_adders_1
 (
   .input_a(stage1_carry[0]),
-  .input_b(sb_b[1]),
-  .input_c(stage1_sum[1]),
+  .input_b(stage1_sum[1]),
+  .input_c(sb_b[1]),
   .sum_out(stage2_sum[1]),
   .carry_out(stage2_carry[1])
 );
@@ -203,8 +203,8 @@ BsdBinaryFullAdder stage2_adders_1
 BsdBinaryFullAdder stage2_adders_2
 (
   .input_a(stage1_carry[1]),
-  .input_b(sb_b[2]),
-  .input_c(stage1_sum[2]),
+  .input_b(stage1_sum[2]),
+  .input_c(sb_b[2]),
   .sum_out(stage2_sum[2]),
   .carry_out(stage2_carry[2])
 );
@@ -212,8 +212,8 @@ BsdBinaryFullAdder stage2_adders_2
 BsdBinaryFullAdder stage2_adders_3
 (
   .input_a(stage1_carry[2]),
-  .input_b(sb_b[3]),
-  .input_c(stage1_sum[3]),
+  .input_b(stage1_sum[3]),
+  .input_c(sb_b[3]),
   .sum_out(stage2_sum[3]),
   .carry_out(stage2_carry[3])
 );
@@ -221,8 +221,8 @@ BsdBinaryFullAdder stage2_adders_3
 BsdBinaryFullAdder stage2_adders_4
 (
   .input_a(stage1_carry[3]),
-  .input_b(sb_b[4]),
-  .input_c(stage1_sum[4]),
+  .input_b(stage1_sum[4]),
+  .input_c(sb_b[4]),
   .sum_out(stage2_sum[4]),
   .carry_out(stage2_carry[4])
 );
@@ -230,8 +230,8 @@ BsdBinaryFullAdder stage2_adders_4
 BsdBinaryFullAdder stage2_adders_5
 (
   .input_a(stage1_carry[4]),
-  .input_b(sb_b[5]),
-  .input_c(stage1_sum[5]),
+  .input_b(stage1_sum[5]),
+  .input_c(sb_b[5]),
   .sum_out(stage2_sum[5]),
   .carry_out(stage2_carry[5])
 );
@@ -239,8 +239,8 @@ BsdBinaryFullAdder stage2_adders_5
 BsdBinaryFullAdder stage2_adders_6
 (
   .input_a(stage1_carry[5]),
-  .input_b(sb_b[6]),
-  .input_c(stage1_sum[6]),
+  .input_b(stage1_sum[6]),
+  .input_c(sb_b[6]),
   .sum_out(stage2_sum[6]),
   .carry_out(stage2_carry[6])
 );
@@ -248,8 +248,8 @@ BsdBinaryFullAdder stage2_adders_6
 BsdBinaryFullAdder stage2_adders_7
 (
   .input_a(stage1_carry[6]),
-  .input_b(sb_b[7]),
-  .input_c(stage1_sum[7]),
+  .input_b(stage1_sum[7]),
+  .input_c(sb_b[7]),
   .sum_out(stage2_sum[7]),
   .carry_out(stage2_carry[7])
 );

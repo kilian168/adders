@@ -74,57 +74,57 @@ module BalancedTernaryAdder8(A_a, A_b, B_a, B_b, S_minus, S_plus);
   BsdBinaryFullAdder stage2_adders_0 (
     .carry_out(S_minus[1]),
     .input_a(1'hx),
-    .input_b(B_b[0]),
-    .input_c(stage1_sum[0]),
+    .input_b(stage1_sum[0]),
+    .input_c(B_b[0]),
     .sum_out(S_plus[0])
   );
   BsdBinaryFullAdder stage2_adders_1 (
     .carry_out(S_minus[2]),
     .input_a(stage1_carry[0]),
-    .input_b(B_b[1]),
-    .input_c(stage1_sum[1]),
+    .input_b(stage1_sum[1]),
+    .input_c(B_b[1]),
     .sum_out(S_plus[1])
   );
   BsdBinaryFullAdder stage2_adders_2 (
     .carry_out(S_minus[3]),
     .input_a(stage1_carry[1]),
-    .input_b(B_b[2]),
-    .input_c(stage1_sum[2]),
+    .input_b(stage1_sum[2]),
+    .input_c(B_b[2]),
     .sum_out(S_plus[2])
   );
   BsdBinaryFullAdder stage2_adders_3 (
     .carry_out(S_minus[4]),
     .input_a(stage1_carry[2]),
-    .input_b(B_b[3]),
-    .input_c(stage1_sum[3]),
+    .input_b(stage1_sum[3]),
+    .input_c(B_b[3]),
     .sum_out(S_plus[3])
   );
   BsdBinaryFullAdder stage2_adders_4 (
     .carry_out(S_minus[5]),
     .input_a(stage1_carry[3]),
-    .input_b(B_b[4]),
-    .input_c(stage1_sum[4]),
+    .input_b(stage1_sum[4]),
+    .input_c(B_b[4]),
     .sum_out(S_plus[4])
   );
   BsdBinaryFullAdder stage2_adders_5 (
     .carry_out(S_minus[6]),
     .input_a(stage1_carry[4]),
-    .input_b(B_b[5]),
-    .input_c(stage1_sum[5]),
+    .input_b(stage1_sum[5]),
+    .input_c(B_b[5]),
     .sum_out(S_plus[5])
   );
   BsdBinaryFullAdder stage2_adders_6 (
     .carry_out(S_minus[7]),
     .input_a(stage1_carry[5]),
-    .input_b(B_b[6]),
-    .input_c(stage1_sum[6]),
+    .input_b(stage1_sum[6]),
+    .input_c(B_b[6]),
     .sum_out(S_plus[6])
   );
   BsdBinaryFullAdder stage2_adders_7 (
     .carry_out(S_minus[8]),
     .input_a(stage1_carry[6]),
-    .input_b(B_b[7]),
-    .input_c(stage1_sum[7]),
+    .input_b(stage1_sum[7]),
+    .input_c(B_b[7]),
     .sum_out(S_plus[7])
   );
   assign stage1_carry[7] = S_plus[8];

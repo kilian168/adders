@@ -133,8 +133,8 @@ SC_MODULE(BalancedTernaryAdder2) {
             } else {
                 stage2_adders[i]->input_a(stage1_carry[i - 1]);
             }
-            stage2_adders[i]->input_b(sb_b[i]);
-            stage2_adders[i]->input_c(stage1_sum[i]);
+            stage2_adders[i]->input_b(stage1_sum[i]);
+            stage2_adders[i]->input_c(sb_b[i]);
             stage2_adders[i]->sum_out(stage2_sum[i]);
             stage2_adders[i]->carry_out(stage2_carry[i]);
         }
