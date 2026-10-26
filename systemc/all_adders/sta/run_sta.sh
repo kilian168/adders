@@ -45,7 +45,7 @@ with open(dst, 'w') as f:
 " "$1" "$2"
 }
 
-widths=(2 4 8 12 16 32)
+widths=(2 4 8 12 16 32 64)
 # arch -> top module name template ('%d' replaced by width)
 declare -A TOPFMT=(
   [rca]="RippleCarryAdder%d"

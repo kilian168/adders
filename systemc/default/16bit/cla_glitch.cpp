@@ -464,7 +464,7 @@ SC_MODULE(Testbench) {
     unsigned int b_end;
 
     SC_CTOR(Testbench)
-        : cla_ptr(nullptr), number_of_errors(0), a_start(0), a_end(256), b_end(256)
+        : cla_ptr(nullptr), number_of_errors(0), a_start(0), a_end(65536), b_end(65536)
     { SC_THREAD(stimulus); }
 
     void stimulus() {

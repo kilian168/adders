@@ -1,6 +1,11 @@
+g++ -std=c++17 -I/usr/include -o rca_4bit rca_glitch.cpp -L/usr/lib -Wl,-rpath,/usr/lib -lsystemc
+\n=======================================================
+ STARTING 4-BIT RIPPLE CARRY ADDER SIMULATION
+=======================================================
+./rca_4bit
 
-        SystemC 2.3.3-Accellera --- Jun  2 2026 08:31:26
-        Copyright (c) 1996-2018 by all Contributors,
+        SystemC 3.0.2-Accellera --- Apr  2 2026 17:01:13
+        Copyright (c) 1996-2025 by all Contributors,
         ALL RIGHTS RESERVED
 
 Info: /OSCI/SystemC: Simulation stopped by user.
@@ -26,4 +31,180 @@ Info: /OSCI/SystemC: Simulation stopped by user.
 Info: /OSCI/SystemC: Simulation stopped by user.
 
 Info: /OSCI/SystemC: Simulation stopped by user.
-CLA-4-MC: GATES=38 SAMPLES=200000 SWITCHES=3190826 AVG_SWITCHES=15.9541 DELAY=2ns
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+RCA-4-MC: GATES=20 SAMPLES=1000000 SWITCHES=11369851 AVG_SWITCHES=11.3699 DELAY=8ns
+g++ -std=c++17 -I/usr/include -o ter_4bit ter_glitch.cpp -L/usr/lib -Wl,-rpath,/usr/lib -lsystemc
+\n=======================================================
+ STARTING 4-TRIT BALANCED TERNARY ADDER SIMULATION
+=======================================================
+./ter_4bit
+
+        SystemC 3.0.2-Accellera --- Apr  2 2026 17:01:13
+        Copyright (c) 1996-2025 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+TER-4-MC: GATES=48 SAMPLES=1000000 SWITCHES=31798007 AVG_SWITCHES=31.798 DELAY=4ns
+g++ -std=c++17 -I/usr/include -o cla_4bit cla_glitch.cpp -L/usr/lib -Wl,-rpath,/usr/lib -lsystemc
+\n=======================================================
+ STARTING 4-BIT CARRY LOOKAHEAD ADDER SIMULATION
+=======================================================
+./cla_4bit
+
+        SystemC 3.0.2-Accellera --- Apr  2 2026 17:01:13
+        Copyright (c) 1996-2025 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+CLA-4-MC: GATES=38 SAMPLES=1000000 SWITCHES=15956085 AVG_SWITCHES=15.9561 DELAY=2ns
+g++ -std=c++17 -I/usr/include -o sdtc_pm_4bit sdtc_glitch_pm.cpp -L/usr/lib -Wl,-rpath,/usr/lib -lsystemc
+\n=======================================================
+ STARTING 4-BIT SIGNED-DIGIT / TWO'S-COMPLEMENT ADDER (PM) SIMULATION
+=======================================================
+./sdtc_pm_4bit
+
+        SystemC 3.0.2-Accellera --- Apr  2 2026 17:01:13
+        Copyright (c) 1996-2025 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+SDTC-PM-4-MC: GATES=29 SAMPLES=1000000 SWITCHES=17497205 AVG_SWITCHES=17.4972 DELAY=3ns
+g++ -std=c++17 -I/usr/include -o sdtc_ppm_4bit sdtc_glitch_ppm.cpp -L/usr/lib -Wl,-rpath,/usr/lib -lsystemc
+\n=======================================================
+ STARTING 4-BIT SIGNED-DIGIT / TWO'S-COMPLEMENT ADDER (PPM) SIMULATION
+=======================================================
+./sdtc_ppm_4bit
+
+        SystemC 3.0.2-Accellera --- Apr  2 2026 17:01:13
+        Copyright (c) 1996-2025 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+SDTC-PPM-4-MC: GATES=21 SAMPLES=1000000 SWITCHES=12754365 AVG_SWITCHES=12.7544 DELAY=3ns

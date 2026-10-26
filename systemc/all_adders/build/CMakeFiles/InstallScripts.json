@@ -7,7 +7,8 @@
 		"/mnt/storage/bachelor/adders/systemc/all_adders/build/8bit/cmake_install.cmake",
 		"/mnt/storage/bachelor/adders/systemc/all_adders/build/12bit/cmake_install.cmake",
 		"/mnt/storage/bachelor/adders/systemc/all_adders/build/16bit/cmake_install.cmake",
-		"/mnt/storage/bachelor/adders/systemc/all_adders/build/32bit/cmake_install.cmake"
+		"/mnt/storage/bachelor/adders/systemc/all_adders/build/32bit/cmake_install.cmake",
+		"/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

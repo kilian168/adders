@@ -1,0 +1,1 @@
+/home/kilian/Projects/systemc-compiler/bin/clang++ -stdlib=libc++ -O3 -DNDEBUG -stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw -Xlinker --dependency-file=CMakeFiles/sdtc_pm_64bit.dir/link.d CMakeFiles/sdtc_pm_64bit.dir/sdtc_glitch_pm.cpp.o -o sdtc_pm_64bit  /home/kilian/Projects/systemc-compiler/lib/libsystemc.a

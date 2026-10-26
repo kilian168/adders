@@ -50,6 +50,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/mnt/storage/bachelor/adders/systemc/all_adders/build/12bit/cmake_install.cmake")
   include("/mnt/storage/bachelor/adders/systemc/all_adders/build/16bit/cmake_install.cmake")
   include("/mnt/storage/bachelor/adders/systemc/all_adders/build/32bit/cmake_install.cmake")
+  include("/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/cmake_install.cmake")
 
 endif()
 

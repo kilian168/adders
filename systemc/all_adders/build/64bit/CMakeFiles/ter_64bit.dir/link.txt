@@ -1,0 +1,1 @@
+/home/kilian/Projects/systemc-compiler/bin/clang++ -stdlib=libc++ -O3 -DNDEBUG -stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw -Xlinker --dependency-file=CMakeFiles/ter_64bit.dir/link.d CMakeFiles/ter_64bit.dir/ter_glitch.cpp.o -o ter_64bit  /home/kilian/Projects/systemc-compiler/lib/libsystemc.a

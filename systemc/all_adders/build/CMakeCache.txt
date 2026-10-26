@@ -276,6 +276,15 @@ all_adders_4bit_IS_TOP_LEVEL:STATIC=OFF
 all_adders_4bit_SOURCE_DIR:STATIC=/mnt/storage/bachelor/adders/systemc/all_adders/4bit
 
 //Value Computed by CMake
+all_adders_64bit_BINARY_DIR:STATIC=/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit
+
+//Value Computed by CMake
+all_adders_64bit_IS_TOP_LEVEL:STATIC=OFF
+
+//Value Computed by CMake
+all_adders_64bit_SOURCE_DIR:STATIC=/mnt/storage/bachelor/adders/systemc/all_adders/64bit
+
+//Value Computed by CMake
 all_adders_8bit_BINARY_DIR:STATIC=/mnt/storage/bachelor/adders/systemc/all_adders/build/8bit
 
 //Value Computed by CMake
@@ -413,7 +422,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=7
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=8
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP

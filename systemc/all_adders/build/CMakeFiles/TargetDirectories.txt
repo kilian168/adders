@@ -79,3 +79,16 @@
 /mnt/storage/bachelor/adders/systemc/all_adders/build/32bit/CMakeFiles/test.dir
 /mnt/storage/bachelor/adders/systemc/all_adders/build/32bit/CMakeFiles/edit_cache.dir
 /mnt/storage/bachelor/adders/systemc/all_adders/build/32bit/CMakeFiles/rebuild_cache.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/rca_64bit.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/rca_64bit_sctool.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/cla_64bit.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/cla_64bit_sctool.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/ter_64bit.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/ter_64bit_sctool.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/sdtc_pm_64bit.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/sdtc_pm_64bit_sctool.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/sdtc_ppm_64bit.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/sdtc_ppm_64bit_sctool.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/test.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/edit_cache.dir
+/mnt/storage/bachelor/adders/systemc/all_adders/build/64bit/CMakeFiles/rebuild_cache.dir

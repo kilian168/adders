@@ -906,6 +906,136 @@ sdtc_ppm_32bit_sctool/fast:
 	$(MAKE) $(MAKESILENT) -f 32bit/CMakeFiles/sdtc_ppm_32bit_sctool.dir/build.make 32bit/CMakeFiles/sdtc_ppm_32bit_sctool.dir/build
 .PHONY : sdtc_ppm_32bit_sctool/fast
 
+#=============================================================================
+# Target rules for targets named rca_64bit
+
+# Build rule for target.
+rca_64bit: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 rca_64bit
+.PHONY : rca_64bit
+
+# fast build rule for target.
+rca_64bit/fast:
+	$(MAKE) $(MAKESILENT) -f 64bit/CMakeFiles/rca_64bit.dir/build.make 64bit/CMakeFiles/rca_64bit.dir/build
+.PHONY : rca_64bit/fast
+
+#=============================================================================
+# Target rules for targets named rca_64bit_sctool
+
+# Build rule for target.
+rca_64bit_sctool: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 rca_64bit_sctool
+.PHONY : rca_64bit_sctool
+
+# fast build rule for target.
+rca_64bit_sctool/fast:
+	$(MAKE) $(MAKESILENT) -f 64bit/CMakeFiles/rca_64bit_sctool.dir/build.make 64bit/CMakeFiles/rca_64bit_sctool.dir/build
+.PHONY : rca_64bit_sctool/fast
+
+#=============================================================================
+# Target rules for targets named cla_64bit
+
+# Build rule for target.
+cla_64bit: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cla_64bit
+.PHONY : cla_64bit
+
+# fast build rule for target.
+cla_64bit/fast:
+	$(MAKE) $(MAKESILENT) -f 64bit/CMakeFiles/cla_64bit.dir/build.make 64bit/CMakeFiles/cla_64bit.dir/build
+.PHONY : cla_64bit/fast
+
+#=============================================================================
+# Target rules for targets named cla_64bit_sctool
+
+# Build rule for target.
+cla_64bit_sctool: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cla_64bit_sctool
+.PHONY : cla_64bit_sctool
+
+# fast build rule for target.
+cla_64bit_sctool/fast:
+	$(MAKE) $(MAKESILENT) -f 64bit/CMakeFiles/cla_64bit_sctool.dir/build.make 64bit/CMakeFiles/cla_64bit_sctool.dir/build
+.PHONY : cla_64bit_sctool/fast
+
+#=============================================================================
+# Target rules for targets named ter_64bit
+
+# Build rule for target.
+ter_64bit: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ter_64bit
+.PHONY : ter_64bit
+
+# fast build rule for target.
+ter_64bit/fast:
+	$(MAKE) $(MAKESILENT) -f 64bit/CMakeFiles/ter_64bit.dir/build.make 64bit/CMakeFiles/ter_64bit.dir/build
+.PHONY : ter_64bit/fast
+
+#=============================================================================
+# Target rules for targets named ter_64bit_sctool
+
+# Build rule for target.
+ter_64bit_sctool: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ter_64bit_sctool
+.PHONY : ter_64bit_sctool
+
+# fast build rule for target.
+ter_64bit_sctool/fast:
+	$(MAKE) $(MAKESILENT) -f 64bit/CMakeFiles/ter_64bit_sctool.dir/build.make 64bit/CMakeFiles/ter_64bit_sctool.dir/build
+.PHONY : ter_64bit_sctool/fast
+
+#=============================================================================
+# Target rules for targets named sdtc_pm_64bit
+
+# Build rule for target.
+sdtc_pm_64bit: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sdtc_pm_64bit
+.PHONY : sdtc_pm_64bit
+
+# fast build rule for target.
+sdtc_pm_64bit/fast:
+	$(MAKE) $(MAKESILENT) -f 64bit/CMakeFiles/sdtc_pm_64bit.dir/build.make 64bit/CMakeFiles/sdtc_pm_64bit.dir/build
+.PHONY : sdtc_pm_64bit/fast
+
+#=============================================================================
+# Target rules for targets named sdtc_pm_64bit_sctool
+
+# Build rule for target.
+sdtc_pm_64bit_sctool: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sdtc_pm_64bit_sctool
+.PHONY : sdtc_pm_64bit_sctool
+
+# fast build rule for target.
+sdtc_pm_64bit_sctool/fast:
+	$(MAKE) $(MAKESILENT) -f 64bit/CMakeFiles/sdtc_pm_64bit_sctool.dir/build.make 64bit/CMakeFiles/sdtc_pm_64bit_sctool.dir/build
+.PHONY : sdtc_pm_64bit_sctool/fast
+
+#=============================================================================
+# Target rules for targets named sdtc_ppm_64bit
+
+# Build rule for target.
+sdtc_ppm_64bit: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sdtc_ppm_64bit
+.PHONY : sdtc_ppm_64bit
+
+# fast build rule for target.
+sdtc_ppm_64bit/fast:
+	$(MAKE) $(MAKESILENT) -f 64bit/CMakeFiles/sdtc_ppm_64bit.dir/build.make 64bit/CMakeFiles/sdtc_ppm_64bit.dir/build
+.PHONY : sdtc_ppm_64bit/fast
+
+#=============================================================================
+# Target rules for targets named sdtc_ppm_64bit_sctool
+
+# Build rule for target.
+sdtc_ppm_64bit_sctool: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 sdtc_ppm_64bit_sctool
+.PHONY : sdtc_ppm_64bit_sctool
+
+# fast build rule for target.
+sdtc_ppm_64bit_sctool/fast:
+	$(MAKE) $(MAKESILENT) -f 64bit/CMakeFiles/sdtc_ppm_64bit_sctool.dir/build.make 64bit/CMakeFiles/sdtc_ppm_64bit_sctool.dir/build
+.PHONY : sdtc_ppm_64bit_sctool/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -925,6 +1055,8 @@ help:
 	@echo "... cla_32bit_sctool"
 	@echo "... cla_4bit"
 	@echo "... cla_4bit_sctool"
+	@echo "... cla_64bit"
+	@echo "... cla_64bit_sctool"
 	@echo "... cla_8bit"
 	@echo "... cla_8bit_sctool"
 	@echo "... rca_12bit"
@@ -937,6 +1069,8 @@ help:
 	@echo "... rca_32bit_sctool"
 	@echo "... rca_4bit"
 	@echo "... rca_4bit_sctool"
+	@echo "... rca_64bit"
+	@echo "... rca_64bit_sctool"
 	@echo "... rca_8bit"
 	@echo "... rca_8bit_sctool"
 	@echo "... sdtc_pm_12bit"
@@ -949,6 +1083,8 @@ help:
 	@echo "... sdtc_pm_32bit_sctool"
 	@echo "... sdtc_pm_4bit"
 	@echo "... sdtc_pm_4bit_sctool"
+	@echo "... sdtc_pm_64bit"
+	@echo "... sdtc_pm_64bit_sctool"
 	@echo "... sdtc_pm_8bit"
 	@echo "... sdtc_pm_8bit_sctool"
 	@echo "... sdtc_ppm_12bit"
@@ -961,6 +1097,8 @@ help:
 	@echo "... sdtc_ppm_32bit_sctool"
 	@echo "... sdtc_ppm_4bit"
 	@echo "... sdtc_ppm_4bit_sctool"
+	@echo "... sdtc_ppm_64bit"
+	@echo "... sdtc_ppm_64bit_sctool"
 	@echo "... sdtc_ppm_8bit"
 	@echo "... sdtc_ppm_8bit_sctool"
 	@echo "... ter_12bit"
@@ -973,6 +1111,8 @@ help:
 	@echo "... ter_32bit_sctool"
 	@echo "... ter_4bit"
 	@echo "... ter_4bit_sctool"
+	@echo "... ter_64bit"
+	@echo "... ter_64bit_sctool"
 	@echo "... ter_8bit"
 	@echo "... ter_8bit_sctool"
 .PHONY : help
