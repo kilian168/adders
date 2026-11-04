@@ -1,0 +1,7 @@
+
+        SystemC 3.0.2-Accellera --- Apr  2 2026 17:01:13
+        Copyright (c) 1996-2025 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+CLA-12-EXH-pathEDP: VECTORS=16777216 AVG_SWITCHES=12.9174 AVG_DELAY_ns=0.528989 AVG_EDP_correct=7.45931 AVG_EDP_naive=6.83316 pct_diff=-8.39428%

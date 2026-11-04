@@ -1,0 +1,23 @@
+=== 16bit sequential done, launching MC TER fix: Wed Nov  4 12:08:46 PM CET 2026 ===
+=== starting ter_mc_2: Wed Nov  4 12:08:46 PM CET 2026 ===
+=== finished ter_mc_2: Wed Nov  4 12:08:47 PM CET 2026 ===
+TER-2-MC-pathEDP: SAMPLES=1000000 AVG_SWITCHES=10.0663 AVG_DELAY_ns=0.637089 AVG_EDP_correct=7.50006 AVG_EDP_naive=6.41313 pct_diff=-14.4923%
+=== starting ter_mc_4: Wed Nov  4 12:08:47 PM CET 2026 ===
+=== finished ter_mc_4: Wed Nov  4 12:08:47 PM CET 2026 ===
+TER-4-MC-pathEDP: SAMPLES=1000000 AVG_SWITCHES=20.688 AVG_DELAY_ns=0.772266 AVG_EDP_correct=16.4124 AVG_EDP_naive=15.9766 pct_diff=-2.65522%
+=== starting ter_mc_8: Wed Nov  4 12:08:47 PM CET 2026 ===
+=== finished ter_mc_8: Wed Nov  4 12:08:48 PM CET 2026 ===
+TER-8-MC-pathEDP: SAMPLES=1000000 AVG_SWITCHES=41.9336 AVG_DELAY_ns=0.810734 AVG_EDP_correct=34.0607 AVG_EDP_naive=33.997 pct_diff=-0.187088%
+=== starting ter_mc_12: Wed Nov  4 12:08:48 PM CET 2026 ===
+=== finished ter_mc_12: Wed Nov  4 12:08:49 PM CET 2026 ===
+TER-12-MC-pathEDP: SAMPLES=1000000 AVG_SWITCHES=63.183 AVG_DELAY_ns=0.816167 AVG_EDP_correct=51.5926 AVG_EDP_naive=51.5679 pct_diff=-0.0477492%
+=== starting ter_mc_16: Wed Nov  4 12:08:49 PM CET 2026 ===
+=== finished ter_mc_16: Wed Nov  4 12:08:50 PM CET 2026 ===
+TER-16-MC-pathEDP: SAMPLES=1000000 AVG_SWITCHES=84.4259 AVG_DELAY_ns=0.818164 AVG_EDP_correct=69.0884 AVG_EDP_naive=69.0743 pct_diff=-0.0204157%
+=== starting ter_mc_32: Wed Nov  4 12:08:50 PM CET 2026 ===
+=== finished ter_mc_32: Wed Nov  4 12:08:54 PM CET 2026 ===
+TER-32-MC-pathEDP: SAMPLES=1000000 AVG_SWITCHES=169.419 AVG_DELAY_ns=0.819867 AVG_EDP_correct=138.903 AVG_EDP_naive=138.901 pct_diff=-0.00125866%
+=== starting ter_mc_64: Wed Nov  4 12:08:54 PM CET 2026 ===
+=== finished ter_mc_64: Wed Nov  4 12:09:01 PM CET 2026 ===
+TER-64-MC-pathEDP: SAMPLES=1000000 AVG_SWITCHES=339.402 AVG_DELAY_ns=0.819999 AVG_EDP_correct=278.31 AVG_EDP_naive=278.31 pct_diff=-9.16279e-06%
+ALL_MC_TER_FIX_DONE

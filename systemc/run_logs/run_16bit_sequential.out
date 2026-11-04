@@ -1,0 +1,16 @@
+=== starting rca_16: Wed Nov  4 10:40:44 AM CET 2026 ===
+=== finished rca_16: Wed Nov  4 10:56:20 AM CET 2026 ===
+RCA-16-EXH-pathEDP: VECTORS=4294967296 AVG_SWITCHES=12.3311 AVG_DELAY_ns=0.565017 AVG_EDP_correct=7.23026 AVG_EDP_naive=6.96727 pct_diff=-3.63739%
+=== starting cla_16: Wed Nov  4 10:56:20 AM CET 2026 ===
+=== finished cla_16: Wed Nov  4 11:17:21 AM CET 2026 ===
+CLA-16-EXH-pathEDP: VECTORS=4294967296 AVG_SWITCHES=12.9285 AVG_DELAY_ns=0.528827 AVG_EDP_correct=7.44875 AVG_EDP_naive=6.83694 pct_diff=-8.21355%
+=== starting ter_16: Wed Nov  4 11:17:21 AM CET 2026 ===
+=== finished ter_16: Wed Nov  4 11:43:52 AM CET 2026 ===
+TER-16-EXH-pathEDP: VECTORS=4294967296 AVG_SWITCHES=17.4996 AVG_DELAY_ns=0.788333 AVG_EDP_correct=13.8992 AVG_EDP_naive=13.7955 pct_diff=-0.745445%
+=== starting sdtc_pm_16: Wed Nov  4 11:43:52 AM CET 2026 ===
+=== finished sdtc_pm_16: Wed Nov  4 11:55:31 AM CET 2026 ===
+SDTC-PM-16-EXH-pathEDP: VECTORS=4294967296 AVG_SWITCHES=4.00009 AVG_DELAY_ns=0.226668 AVG_EDP_correct=0.968987 AVG_EDP_naive=0.906694 pct_diff=-6.42869%
+=== starting sdtc_ppm_16: Wed Nov  4 11:55:31 AM CET 2026 ===
+=== finished sdtc_ppm_16: Wed Nov  4 12:08:44 PM CET 2026 ===
+SDTC-PPM-16-EXH-pathEDP: VECTORS=4294967296 AVG_SWITCHES=6.00003 AVG_DELAY_ns=0.42 AVG_EDP_correct=2.62001 AVG_EDP_naive=2.52001 pct_diff=-3.81681%
+ALL_16BIT_SEQUENTIAL_DONE

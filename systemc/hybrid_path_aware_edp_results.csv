@@ -1,0 +1,43 @@
+"# Per-sample path-aware EDP -- hybrid testbenches (A=Monte Carlo random every step,"
+"# B=full sweep in either natural +1 order or Gray-code order), RCA/CLA/TER, 2/4/8-bit."
+"# Each combination run as 1000 independent trials (distinct seeds 1-1000, 2^N steps"
+# per trial). For each trial: per-sample switches_i*delay_i computed and averaged WITHIN
+"# that trial (same per-sample methodology as the exhaustive/Monte Carlo pathEDP work),"
+# then that per-trial average is itself averaged across all 1000 trials. AvgEDP_Naive =
+"# mean(switches across trials) * mean(delay across trials), shown for comparison."
+#
+"# SD/TC-PM and SD/TC-PPM: ""A""=SD (Monte Carlo random every step), ""B""=TC (swept),"
+"# both using the same canonical 2^N x 2^N encoding (SD_a = value's own bits, SD_b = 0"
+"# always) as their exhaustive-natural-order and Gray-exhaustive tables."
+
+Variant,Architecture,Width,Trials,AvgSwitches,AvgDelay_ns,AvgEDP_Correct,AvgEDP_Naive,PctDiff
+BNaturalSweep,RCA,2,1000,4.1082,0.368302,1.7243,1.5131,-12.251
+BNaturalSweep,CLA,2,1000,4.6898,0.389367,2.1961,1.826,-16.8494
+BNaturalSweep,TER,2,1000,10.3145,0.700362,7.726,7.2239,-6.4989
+BNaturalSweep,RCA,4,1000,10.8962,0.850254,9.7194,9.2645,-4.6801
+BNaturalSweep,CLA,4,1000,14.8994,0.784401,12.3909,11.6871,-5.6799
+BNaturalSweep,TER,4,1000,20.2656,0.775323,16.0974,15.7124,-2.3917
+BNaturalSweep,RCA,8,1000,25.1391,2.019383,51.7063,50.7655,-1.8195
+BNaturalSweep,CLA,8,1000,34.1852,1.362527,47.6471,46.5783,-2.2433
+BNaturalSweep,TER,8,1000,38.3231,0.807779,31.0683,30.9566,-0.3597
+BGraySweep,RCA,2,1000,4.171,0.370352,1.8765,1.5447,-17.678
+BGraySweep,CLA,2,1000,4.652,0.39891,2.3169,1.8557,-19.9043
+BGraySweep,TER,2,1000,9.757,0.691397,7.3457,6.746,-8.1639
+BGraySweep,RCA,4,1000,10.3293,0.830454,9.2822,8.578,-7.5867
+BGraySweep,CLA,4,1000,14.1864,0.782351,11.9512,11.0988,-7.1325
+BGraySweep,TER,4,1000,18.802,0.763908,14.9035,14.363,-3.6268
+BGraySweep,RCA,8,1000,23.7908,1.975131,48.1541,46.9898,-2.4178
+BGraySweep,CLA,8,1000,32.6534,1.355197,45.3094,44.2518,-2.3342
+BGraySweep,TER,8,1000,36.5253,0.805969,29.575,29.4382,-0.4623
+BNaturalSweep,SD/TC-PM,2,1000,7.681,0.335125,2.8821,2.5741,-10.6857
+BNaturalSweep,SD/TC-PM,4,1000,14.0177,0.414875,6.0599,5.8156,-4.0305
+BNaturalSweep,SD/TC-PM,8,1000,25.4725,0.457469,11.744,11.6529,-0.7759
+BNaturalSweep,SD/TC-PPM,2,1000,4.759,0.30671,1.7757,1.4596,-17.8
+BNaturalSweep,SD/TC-PPM,4,1000,8.6738,0.380014,3.5301,3.2961,-6.6278
+BNaturalSweep,SD/TC-PPM,8,1000,13.8759,0.401732,5.7384,5.5744,-2.859
+BGraySweep,SD/TC-PM,2,1000,7.1665,0.333027,2.7323,2.3866,-12.6514
+BGraySweep,SD/TC-PM,4,1000,12.7514,0.414636,5.5654,5.2872,-4.9987
+BGraySweep,SD/TC-PM,8,1000,23.7739,0.457832,10.9754,10.8845,-0.8288
+BGraySweep,SD/TC-PPM,2,1000,4.2775,0.29327,1.4618,1.2545,-14.1846
+BGraySweep,SD/TC-PPM,4,1000,6.8121,0.351856,2.4789,2.3969,-3.3085
+BGraySweep,SD/TC-PPM,8,1000,10.9969,0.374199,4.1257,4.115,-0.2578

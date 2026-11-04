@@ -1,0 +1,12 @@
+"# Why EDP must be averaged per-width, not computed from averaged switches/delay."
+"# 'Correct' = mean(switches_w * delay_w) across all 7 widths (2..64-bit), i.e. mean of the"
+# per-width EDP values already in monte_carlo_results_sta.csv.
+# 'Naive (wrong)' = mean(switches across widths) * mean(delay across widths) -- invalid
+"# whenever switches and delay are correlated across widths (true for RCA/CLA, both grow"
+"# with N; NOT true for TER, whose delay is a flat 4ns at every width, hence 0% error there)."
+Architecture,Correct_AvgEDP_PerWidthThenMean,Naive_AvgSwitches_x_AvgDelay,PctError
+CLA,277.6296,188.7725,-32.01
+RCA,950.4436,443.5269,-53.33
+SD/TC-PM,39.8353,39.8353,-0.0
+SD/TC-PPM,28.0224,28.0224,0.0
+TER,85.8797,85.8797,-0.0

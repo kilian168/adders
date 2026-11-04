@@ -1,0 +1,39 @@
+"# Distinct timing paths per design, enumerated exhaustively via OpenSTA report_checks"
+# (-group_path_count/-endpoint_path_count set very high -- every unique Startpoint->Endpoint
+"# path reported, not just the single worst one). Full per-path data in all_critical_paths.csv."
+Architecture,Width,NumPaths,MaxDelay_ns,MinDelay_ns,MeanDelay_ns_AllPaths
+cla,2,48,0.63,0.1,0.321
+cla,4,232,1.01,0.1,0.5313
+cla,8,1112,1.5,0.1,0.7646
+cla,12,2760,1.78,0.1,0.9173
+cla,16,5208,2.11,0.1,1.0218
+cla,32,24216,2.72,0.1,1.2924
+cla,64,111512,3.34,0.1,1.5686
+rca,2,48,0.54,0.1,0.2879
+rca,4,192,1.13,0.1,0.4467
+rca,8,768,2.33,0.1,0.7674
+rca,12,1728,3.53,0.1,1.0842
+rca,16,3072,4.73,0.1,1.3994
+rca,32,12288,9.52,0.1,2.6555
+rca,64,49152,19.11,0.1,5.1637
+sdtc_pm,2,70,0.47,0.0,0.2396
+sdtc_pm,4,138,0.47,0.0,0.243
+sdtc_pm,8,274,0.47,0.0,0.2447
+sdtc_pm,12,410,0.47,0.0,0.2453
+sdtc_pm,16,546,0.47,0.0,0.2456
+sdtc_pm,32,1090,0.47,0.0,0.246
+sdtc_pm,64,2178,0.47,0.0,0.2462
+sdtc_ppm,2,70,0.46,0.0,0.2304
+sdtc_ppm,4,138,0.46,0.0,0.2337
+sdtc_ppm,8,274,0.46,0.0,0.2354
+sdtc_ppm,12,410,0.46,0.0,0.2359
+sdtc_ppm,16,546,0.46,0.0,0.2362
+sdtc_ppm,32,1090,0.46,0.0,0.2366
+sdtc_ppm,64,2178,0.46,0.0,0.2368
+ter,2,278,0.82,0.02,0.4972
+ter,4,678,0.82,0.02,0.5039
+ter,8,1478,0.82,0.02,0.5064
+ter,12,2278,0.82,0.02,0.5072
+ter,16,3078,0.82,0.02,0.5075
+ter,32,6278,0.82,0.02,0.508
+ter,64,12678,0.82,0.02,0.5083

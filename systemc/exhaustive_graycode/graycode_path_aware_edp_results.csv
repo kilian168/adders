@@ -1,0 +1,24 @@
+"# Per-vector path-aware EDP -- exhaustive GRAY-CODE order (2^N x 2^N value pairs,"
+# consecutive vectors differ by exactly one bit of the combined A||B word).
+"# Single continuous process throughout, preserving cross-vector correlation."
+#
+"# SD/TC-PM and SD/TC-PPM use the same canonical 2^N x 2^N encoding as their"
+"# exhaustive-natural-order table (SD_a = value's own bits, SD_b = 0 always), so the"
+"# combined word being Gray-coded is (SD_value||TC_value), matching RCA/CLA/TER's (A||B)."
+
+Architecture,Width,Vectors,AvgSwitches,AvgDelay_ns,AvgEDP_Correct,AvgEDP_Naive,PctDiff
+RCA,2,16,3.25,0.38875,1.4487,1.2634,-12.7912
+CLA,2,16,4.0,0.41125,1.8894,1.645,-12.9342
+TER,2,16,9.0,0.783125,7.0525,7.0481,-0.062
+RCA,4,256,4.8516,0.533594,3.2011,2.5888,-19.1288
+CLA,4,256,7.0547,0.557266,4.6394,3.9313,-15.2615
+TER,4,256,9.9375,0.783008,7.8058,7.7811,-0.3157
+RCA,8,65536,5.7646,0.61062,4.7713,3.52,-26.2262
+CLA,8,65536,8.0609,0.605601,6.1604,4.8817,-20.7569
+TER,8,65536,9.9998,0.782539,7.8503,7.8252,-0.3194
+SD/TC-PM,2,16,2.6875,0.249375,0.8431,0.6702,-20.5106
+SD/TC-PPM,2,16,2.6875,0.3375,1.08,0.907,-16.0156
+SD/TC-PM,4,256,2.2305,0.229102,0.5871,0.511,-12.957
+SD/TC-PPM,4,256,2.9336,0.390234,1.2171,1.1448,-5.942
+SD/TC-PM,8,65536,2.0156,0.215989,0.4732,0.4353,-7.9953
+SD/TC-PPM,8,65536,2.9961,0.404118,1.2574,1.2108,-3.7054
