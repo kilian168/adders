@@ -1,0 +1,50 @@
+# CSD/NAF vs. "regular" (dropped-NAF/canonical) encoding -- Monte Carlo switching
+# activity comparison, 1,000,000 samples each (seed=42), widths 2/4/8-bit.
+#
+# "Regular" = each value's own binary bits as signed digits (0/+1 only, never -1),
+# exactly N digit positions -- the scheme already used elsewhere in this project
+# (TER-BIN, SD-TC canonical tables).
+# "NAF/CSD" = the textbook Canonical Signed Digit / Non-Adjacent Form recoding
+# (minimum nonzero digits, no two adjacent digits both nonzero), needing N+1
+# digit positions. Both encode the SAME uniform-random value range 0..2^N-1;
+# only the digit representation differs.
+#
+# RCA/CLA have no signed-digit port at all -- included unchanged for reference.
+#
+# SD/TC-PPM has NO "NAF/CSD" row: its hardware is a plain binary full-adder
+# cascade computing SD_a(i)+SD_b(i)+TC(i) (two non-negative addends), with no
+# way to represent a digit's -1 state at the gate level -- unlike SD/TC-PM,
+# which genuinely computes SD_a(i)-SD_b(i) per digit. True NAF is architecturally
+# impossible for PPM as built, not merely untested.
+#
+# Result: NAF/CSD INCREASES average switching activity relative to the regular
+# encoding at every width tested, for both TER and SD/TC-PM -- the opposite of
+# the hoped-for reduction. This matches the theoretical expectation: NAF's
+# sparsity (fewer nonzero digits per value) only reduces switching when
+# consecutive test vectors are correlated (e.g. Gray-code/hybrid sweeps); Monte
+# Carlo samples are independent, so each digit position still flips with ~50%
+# probability regardless of encoding, and NAF simply adds one more digit
+# position (N+1 vs N) that can switch, with no compensating benefit.
+
+Architecture,Width,Samples,Encoding,AvgSwitches,PctChangeVsRegular
+RCA,2,1000000,n/a (no signed-digit port),4.44294,
+RCA,4,1000000,n/a (no signed-digit port),11.3699,
+RCA,8,1000000,n/a (no signed-digit port),27.3008,
+CLA,2,1000000,n/a (no signed-digit port),5.16216,
+CLA,4,1000000,n/a (no signed-digit port),15.9561,
+CLA,8,1000000,n/a (no signed-digit port),37.9229,
+TER,2,1000000,Regular (N digits),10.0663,
+TER,2,1000000,NAF/CSD (N+1 digits),17.1148,70.03
+TER,4,1000000,Regular (N digits),20.688,
+TER,4,1000000,NAF/CSD (N+1 digits),29.298,41.63
+TER,8,1000000,Regular (N digits),41.9336,
+TER,8,1000000,NAF/CSD (N+1 digits),53.6193,27.87
+SD/TC-PM,2,1000000,Regular (N digits),7.75012,
+SD/TC-PM,2,1000000,NAF/CSD (N+1 digits),10.8751,40.32
+SD/TC-PM,4,1000000,Regular (N digits),15.0029,
+SD/TC-PM,4,1000000,NAF/CSD (N+1 digits),18.3296,22.17
+SD/TC-PM,8,1000000,Regular (N digits),29.501,
+SD/TC-PM,8,1000000,NAF/CSD (N+1 digits),32.8245,11.27
+SD/TC-PPM,2,1000000,Regular (N digits),5.5027,
+SD/TC-PPM,4,1000000,Regular (N digits),10.5028,
+SD/TC-PPM,8,1000000,Regular (N digits),20.5009,
