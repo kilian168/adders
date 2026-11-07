@@ -380,17 +380,17 @@ static void init_path_delay_table() {
 }
 
 // ============================================================================
-// TESTBENCH -- exhaustive 2^N x 2^N sweep, matching TER's "dropped NAF"
+// TESTBENCH -- exhaustive 2^N x 2^N sweep, matching SD's "dropped NAF"
 // approach: SD_a/SD_b together are a REDUNDANT dual-rail signed-digit
 // encoding of ONE operand (digit i = SD_a(i) - SD_b(i) in {-1,0,+1},
-// same structure as TER's A_a/A_b), so instead of exhaustively covering
+// same structure as SD's A_a/A_b), so instead of exhaustively covering
 // every (SD_a, SD_b) combination (2^N x 2^N on their own, on top of TC's
 // own 2^N -- 2^(3N) total), each SD value v is encoded canonically:
 // SD_a = v's own bits, SD_b = 0 always (never uses the -1 digit state,
-// exactly like TER-BIN's plain-binary-digit encoding). That leaves a
+// exactly like SD-BIN's plain-binary-digit encoding). That leaves a
 // genuine 2-operand sweep: SD value x TC value, 2^N x 2^N total vectors.
 // Single continuous process (no forking) to preserve cross-vector
-// correlation, same as RCA/CLA/TER's exhaustive methodology.
+// correlation, same as RCA/CLA/SD's exhaustive methodology.
 // ============================================================================
 
 SC_MODULE(Testbench) {

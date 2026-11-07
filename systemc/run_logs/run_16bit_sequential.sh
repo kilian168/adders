@@ -18,7 +18,7 @@ run() {
 
 run rca_16   ./default/16bit/rca_16bit_pathEDP
 run cla_16   ./default/16bit/cla_16bit_pathEDP
-run ter_16   ./default/16bit/ter_2n_16bit_pathEDP
+run sd_16   ./default/16bit/sd_2n_16bit_pathEDP
 run sdtc_pm_16  ./default/16bit/sdtc_pm_16bit_pathEDP
 run sdtc_ppm_16 ./default/16bit/sdtc_ppm_16bit_pathEDP
 

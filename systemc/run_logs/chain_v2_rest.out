@@ -1,0 +1,5 @@
+=== RCA/CLA-16 done, launching SD-16 and SDTC-PM-16: Sat Nov  7 04:46:23 PM CET 2026 ===
+=== SD-16 done: Sat Nov  7 05:16:05 PM CET 2026 ===
+./run_logs/chain_v2_rest.sh: line 8: 111209 Killed                     /tmp/v2_sdtc_pm_16 > run_logs/v2_sdtc_pm_16.log 2>&1
+=== SDTC-PM-16 done: Sat Nov  7 05:30:46 PM CET 2026 ===
+ALL_V2_DONE

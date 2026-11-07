@@ -458,7 +458,7 @@ static void init_path_delay_table() {
 // independent uniform random N-bit values (same as the original Monte
 // Carlo methodology -- SD_a/SD_b are not drawn as independent redundant
 // digits here, just plain N-bit values, so there's no NAF-style encoding
-// question for this adder the way there was for TER).
+// question for this adder the way there was for SD).
 // ============================================================================
 SC_MODULE(Testbench) {
     sc_out<sc_lv<16>> SD_a, SD_b, TC;

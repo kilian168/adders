@@ -1,4 +1,4 @@
-"# Per-vector path-aware EDP -- RCA/CLA/TER EXHAUSTIVE sweeps, 2/4/8/12/16-bit."
+"# Per-vector path-aware EDP -- RCA/CLA/SD EXHAUSTIVE sweeps, 2/4/8/12/16-bit."
 "# RCA/CLA: full 2^N x 2^N value sweep (unsigned 0..2^N-1 per operand), single"
 "# continuous process at 2/4/8-bit (matches the established exhaustive_results.csv"
 "# methodology exactly -- no forking, since forking into independent fresh-started"
@@ -9,14 +9,14 @@
 "# process would have at that point, before counting -- verified byte-exact against"
 # the single-process reference at 8/12-bit before being trusted at 16-bit).
 #
-"# TER: FIXED 2026-11-04 to use the SAME unsigned 0..2^N-1 value range per operand as"
-"# RCA/CLA at every width (dropped-NAF/TER-BIN encoding: each value's own plain binary"
-"# bits as signed digits, never using the -1 digit state), via ter_2n_glitch_pathEDP.cpp."
-"# Previously, the TER-2/4/8 rows below used a DIFFERENT, inconsistent methodology (full"
+"# SD: FIXED 2026-11-04 to use the SAME unsigned 0..2^N-1 value range per operand as"
+"# RCA/CLA at every width (dropped-NAF/SD-BIN encoding: each value's own plain binary"
+"# bits as signed digits, never using the -1 digit state), via sd_2n_glitch_pathEDP.cpp."
+"# Previously, the SD-2/4/8 rows below used a DIFFERENT, inconsistent methodology (full"
 "# 3^N x 3^N REDUNDANT signed-digit sweep, representing operand values over a signed,"
 "# roughly -(2^N-1)..+(2^N-1) range -- see git history for the old numbers), while only"
-"# TER-12/16 used the corrected unsigned range. All widths now use the same range and"
-"# the same single-continuous-process methodology as RCA/CLA (TER-12/16 additionally"
+"# SD-12/16 used the corrected unsigned range. All widths now use the same range and"
+"# the same single-continuous-process methodology as RCA/CLA (SD-12/16 additionally"
 # auto-parallelize via the same warm-start fork, verified exact against single-process.
 #
 # For each vector: gate switches reset before that vector (switches_i = that vector's
@@ -28,16 +28,16 @@
 Architecture,Width,Vectors,AvgSwitches,AvgDelay_ns_PerVectorRealPath,AvgEDP_Correct_MeanOfPerVectorProduct,AvgEDP_Naive_AvgSwitchesTimesAvgDelay,PctDiff
 RCA,2,16,4.5625,0.4225,2.0863,1.9277,-7.6019
 CLA,2,16,5.125,0.440625,2.5025,2.2582,-9.7621
-TER,2,16,11.0,0.790625,8.6963,8.6969,0.0072
+SD,2,16,11.0,0.790625,8.6963,8.6969,0.0072
 RCA,4,256,9.2461,0.56457,5.6153,5.2201,-7.038
 CLA,4,256,10.4961,0.536992,6.261,5.6363,-9.977
-TER,4,256,15.5,0.789141,12.2982,12.2317,-0.5409
+SD,4,256,15.5,0.789141,12.2982,12.2317,-0.5409
 RCA,8,65536,12.0098,0.569796,7.356,6.8431,-6.9725
 CLA,8,65536,12.7439,0.530894,7.4668,6.7656,-9.3908
-TER,8,65536,17.3965,0.788352,13.8166,13.7145,-0.7383
+SD,8,65536,17.3965,0.788352,13.8166,13.7145,-0.7383
 RCA,12,16777216,12.3053,0.565558,7.2718,6.9593,-4.2971
 CLA,12,16777216,12.9174,0.528989,7.4593,6.8332,-8.3943
-TER,12,16777216,17.4941,0.788335,13.8947,13.7912,-0.7454
+SD,12,16777216,17.4941,0.788335,13.8947,13.7912,-0.7454
 RCA,16,4294967296,12.3311,0.565017,7.2303,6.9673,-3.6374
 CLA,16,4294967296,12.9285,0.528827,7.4488,6.8369,-8.2136
-TER,16,4294967296,17.4996,0.788333,13.8992,13.7955,-0.7454
+SD,16,4294967296,17.4996,0.788333,13.8992,13.7955,-0.7454

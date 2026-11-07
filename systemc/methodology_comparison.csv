@@ -1,12 +1,12 @@
-# Switching-activity methodology comparison -- RCA vs CLA vs TER, 2/4/8-bit
+# Switching-activity methodology comparison -- RCA vs CLA vs SD, 2/4/8-bit
 # Five different ways of applying test vectors to the SAME circuits (RCA, CLA, and
-# TER's no-NAF/plain-binary-digit "dropped NAF" variant), to isolate how much of
+# SD's no-NAF/plain-binary-digit "dropped NAF" variant), to isolate how much of
 # "average switching activity" is actually just an artifact of vector ORDER/
 # correlation rather than a property of the circuit itself.
 #
 # 1) Exhaustive (natural order): every one of the 2^N x 2^N (A,B) pairs tested
 #    once, nested-loop order (B increments fastest, A increments every 2^N steps).
-#    Source: default/{2,4,8}bit/{rca,cla,ter_2n}_glitch.cpp
+#    Source: default/{2,4,8}bit/{rca,cla,sd_2n}_glitch.cpp
 #    Saved in full (with delay/EDP) at: default/exhaustive_results.csv
 #
 # 2) Exhaustive (Gray code): the SAME 2^N x 2^N (A,B) pairs, same full coverage,
@@ -19,14 +19,14 @@
 # 3) Monte Carlo (1,000,000 samples): A and B drawn independently and uniformly
 #    at random every sample, fixed RNG seed=42 for reproducibility. Represents
 #    a fully decorrelated, realistic random workload (opposite extreme from
-#    Gray code). FIXED 2026-11-04: TER's Monte Carlo now draws A/B uniformly
+#    Gray code). FIXED 2026-11-04: SD's Monte Carlo now draws A/B uniformly
 #    over the SAME unsigned 0..2^N-1 range as the other four methodologies
-#    (dropped-NAF/TER-BIN encoding) -- previously it sampled the FULL REDUNDANT
-#    {-1,0,+1}^N digit space directly (the original ter_glitch.cpp methodology),
+#    (dropped-NAF/SD-BIN encoding) -- previously it sampled the FULL REDUNDANT
+#    {-1,0,+1}^N digit space directly (the original sd_glitch.cpp methodology),
 #    a different, broader signed input universe that made it incomparable to
 #    RCA/CLA/SD-TC's Monte Carlo numbers.
 #    Source: monte carlo/{2,4,8,...}bit/*.cpp
-#    Saved in full at: monte carlo/monte_carlo_results.csv (old TER-only numbers
+#    Saved in full at: monte carlo/monte_carlo_results.csv (old SD-only numbers
 #    there are now stale; see monte carlo/path_aware_edp_results.csv for current)
 #
 # 4) Hybrid, B natural sweep (1000-trial mean): A is Monte Carlo (fresh random
@@ -50,13 +50,13 @@
 Width,Architecture,Exhaustive_NaturalOrder,Exhaustive_GrayCode,MonteCarlo_1M,Hybrid_BNaturalSweep_1000TrialMean,Hybrid_BGraySweep_1000TrialMean
 2,RCA,4.5625,3.2500,4.4429,4.1082,4.1710
 2,CLA,5.1250,4.0000,5.1622,4.6898,4.6520
-2,TER,11.0000,9.0000,10.0663,10.3145,9.7570
+2,SD,11.0000,9.0000,10.0663,10.3145,9.7570
 4,RCA,9.2461,4.8516,11.3699,10.8962,10.3293
 4,CLA,10.4961,7.0547,15.9561,14.8994,14.1864
-4,TER,15.5000,9.9375,20.6880,20.2656,18.8020
+4,SD,15.5000,9.9375,20.6880,20.2656,18.8020
 8,RCA,12.0098,5.7646,27.3008,25.1391,23.7907
 8,CLA,12.7439,8.0609,37.9229,34.1852,32.6534
-8,TER,17.3965,9.9998,41.9336,38.3231,36.5253
+8,SD,17.3965,9.9998,41.9336,38.3231,36.5253
 
 # === TABLE 2: 1000-trial statistics for the two hybrid methodologies ===
 # Mean/StdDev/Min/Max of (switches / 2^N steps) across 1000 independent trials
@@ -67,17 +67,17 @@ Width,Architecture,Variant,Mean,StdDev,Min,Max
 2,RCA,BGraySweep,4.1710,1.4467,1.0000,7.0000
 2,CLA,BNaturalSweep,4.6898,1.5790,1.2500,9.0000
 2,CLA,BGraySweep,4.6520,1.4222,1.2500,7.7500
-2,TER,BNaturalSweep,10.3145,2.1122,5.0000,15.5000
-2,TER,BGraySweep,9.7570,2.2220,4.5000,15.0000
+2,SD,BNaturalSweep,10.3145,2.1122,5.0000,15.5000
+2,SD,BGraySweep,9.7570,2.2220,4.5000,15.0000
 4,RCA,BNaturalSweep,10.8962,1.5317,5.3125,15.8125
 4,RCA,BGraySweep,10.3293,1.5272,6.1250,15.5000
 4,CLA,BNaturalSweep,14.8994,1.8583,8.5625,20.5625
 4,CLA,BGraySweep,14.1864,1.9257,8.6250,21.0000
-4,TER,BNaturalSweep,20.2656,1.5477,13.8750,24.8750
-4,TER,BGraySweep,18.8020,1.7015,13.0000,24.3750
+4,SD,BNaturalSweep,20.2656,1.5477,13.8750,24.8750
+4,SD,BGraySweep,18.8020,1.7015,13.0000,24.3750
 8,RCA,BNaturalSweep,25.1391,0.7758,22.5195,27.5508
 8,RCA,BGraySweep,23.7907,0.7253,21.2344,26.3125
 8,CLA,BNaturalSweep,34.1852,0.9655,30.7891,37.2969
 8,CLA,BGraySweep,32.6534,0.9086,29.9219,35.1641
-8,TER,BNaturalSweep,38.3231,0.6233,36.2812,40.2500
-8,TER,BGraySweep,36.5253,0.6469,34.4375,38.3828
+8,SD,BNaturalSweep,38.3231,0.6233,36.2812,40.2500
+8,SD,BGraySweep,36.5253,0.6469,34.4375,38.3828

@@ -475,12 +475,12 @@ static void init_path_delay_table() {
 // independent uniform random N-bit values (same as the original Monte
 // Carlo methodology -- SD_a/SD_b are not drawn as independent redundant
 // digits here, just plain N-bit values, so there's no NAF-style encoding
-// question for this adder the way there was for TER).
+// question for this adder the way there was for SD).
 // ============================================================================
 
 // ============================================================================
 // TESTBENCH -- exhaustive 2^N x 2^N sweep (canonical SD encoding: SD_a = value's
-// own bits, SD_b = 0 always, matching TER-BIN/the 2/4/8-bit canonical tables).
+// own bits, SD_b = 0 always, matching SD-BIN/the 2/4/8-bit canonical tables).
 // Auto-parallel across CPU cores via sd_value partitioning; each worker warms
 // up to the TRUE predecessor vector (sd_start-1, 65536-1) before its own counted
 // slice (or the all-zero state for worker 0), so per-vector switches/delay

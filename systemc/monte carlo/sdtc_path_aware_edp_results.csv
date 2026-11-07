@@ -1,6 +1,6 @@
 # Per-sample/per-vector path-aware EDP -- SD/TC-PM and SD/TC-PPM adders.
 # SD_a/SD_b together are a REDUNDANT dual-rail signed-digit encoding of ONE operand
-"# (digit i = SD_a(i) - SD_b(i) in {-1,0,+1}), structurally identical to TER's A_a/A_b."
+"# (digit i = SD_a(i) - SD_b(i) in {-1,0,+1}), structurally identical to SD's A_a/A_b."
 # TC is a separate plain two's-complement operand.
 #
 "# Monte Carlo table: matches the ORIGINAL Monte Carlo methodology exactly -- SD_a, SD_b,"
@@ -27,11 +27,11 @@ SD/TC-PPM,32,1000000,98.5121,0.46,45.3155,45.3155,-2e-06
 SD/TC-PM,64,1000000,272.513,0.47,128.081,128.081,0.0
 SD/TC-PPM,64,1000000,196.508,0.46,90.3935,90.3935,-0.0
 
-"# Exhaustive table: 2^N x 2^N sweep (SD value x TC value), matching TER-BIN's 'dropped NAF'"
+"# Exhaustive table: 2^N x 2^N sweep (SD value x TC value), matching SD-BIN's 'dropped NAF'"
 "# approach -- SD_a = the value's own bits, SD_b = 0 always (never uses the -1 digit"
 "# state), instead of exhaustively covering all 2^(3N) (SD_a, SD_b, TC) combinations."
 "# 2/4/8-bit: single continuous process (no forking). 12/16-bit: auto-parallelized"
-"# warm-start fork (same technique as RCA/CLA/TER -- each worker takes a contiguous"
+"# warm-start fork (same technique as RCA/CLA/SD -- each worker takes a contiguous"
 "# SD-value slice, first silently replaying the true predecessor vector (sd_start-1,"
 "# max_TC) to reach the exact circuit state a continuous process would have reached,"
 "# before counting). Verified byte-exact against the single-process reference at 8-bit"

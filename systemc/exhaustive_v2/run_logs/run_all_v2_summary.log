@@ -1,0 +1,49 @@
+=== starting rca_2: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished rca_2: Sat Nov  7 04:45:47 PM CET 2026 ===
+RCA-2-EXHV2-pathEDP: VECTORS=16 AVG_SWITCHES=4.6875 AVG_DELAY_ns=0.44375 AVG_EDP_correct=2.36625 AVG_EDP_naive=2.08008 pct_diff=-12.0939%
+=== starting cla_2: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished cla_2: Sat Nov  7 04:45:47 PM CET 2026 ===
+CLA-2-EXHV2-pathEDP: VECTORS=16 AVG_SWITCHES=5.375 AVG_DELAY_ns=0.471875 AVG_EDP_correct=2.915 AVG_EDP_naive=2.53633 pct_diff=-12.9905%
+=== starting sd_2: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished sd_2: Sat Nov  7 04:45:47 PM CET 2026 ===
+SD-2-EXHV2-pathEDP: VECTORS=16 AVG_SWITCHES=6.5 AVG_DELAY_ns=0.51125 AVG_EDP_correct=3.93688 AVG_EDP_naive=3.32313 pct_diff=-15.5898%
+=== starting sdtc_pm_2: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished sdtc_pm_2: Sat Nov  7 04:45:47 PM CET 2026 ===
+SDTC-PM-2-EXHV2-pathEDP: VECTORS=16 AVG_SWITCHES=4.375 AVG_DELAY_ns=0.23 AVG_EDP_correct=1.24687 AVG_EDP_naive=1.00625 pct_diff=-19.2982%
+=== starting rca_4: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished rca_4: Sat Nov  7 04:45:47 PM CET 2026 ===
+RCA-4-EXHV2-pathEDP: VECTORS=256 AVG_SWITCHES=9.25391 AVG_DELAY_ns=0.574961 AVG_EDP_correct=6.08973 AVG_EDP_naive=5.32063 pct_diff=-12.6293%
+=== starting cla_4: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished cla_4: Sat Nov  7 04:45:47 PM CET 2026 ===
+CLA-4-EXHV2-pathEDP: VECTORS=256 AVG_SWITCHES=10.5273 AVG_DELAY_ns=0.546523 AVG_EDP_correct=6.57277 AVG_EDP_naive=5.75344 pct_diff=-12.4656%
+=== starting sd_4: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished sd_4: Sat Nov  7 04:45:47 PM CET 2026 ===
+SD-4-EXHV2-pathEDP: VECTORS=256 AVG_SWITCHES=11.6719 AVG_DELAY_ns=0.632969 AVG_EDP_correct=8.69789 AVG_EDP_naive=7.38793 pct_diff=-15.0606%
+=== starting sdtc_pm_4: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished sdtc_pm_4: Sat Nov  7 04:45:47 PM CET 2026 ===
+SDTC-PM-4-EXHV2-pathEDP: VECTORS=256 AVG_SWITCHES=4.64844 AVG_DELAY_ns=0.23832 AVG_EDP_correct=1.28844 AVG_EDP_naive=1.10782 pct_diff=-14.0186%
+=== starting rca_8: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished rca_8: Sat Nov  7 04:45:47 PM CET 2026 ===
+RCA-8-EXHV2-pathEDP: VECTORS=65536 AVG_SWITCHES=12.0098 AVG_DELAY_ns=0.57055 AVG_EDP_correct=7.46244 AVG_EDP_naive=6.85222 pct_diff=-8.17723%
+=== starting cla_8: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished cla_8: Sat Nov  7 04:45:47 PM CET 2026 ===
+CLA-8-EXHV2-pathEDP: VECTORS=65536 AVG_SWITCHES=12.744 AVG_DELAY_ns=0.531571 AVG_EDP_correct=7.51483 AVG_EDP_naive=6.77437 pct_diff=-9.85325%
+=== starting sd_8: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished sd_8: Sat Nov  7 04:45:47 PM CET 2026 ===
+SD-8-EXHV2-pathEDP: VECTORS=65536 AVG_SWITCHES=11.9827 AVG_DELAY_ns=0.599936 AVG_EDP_correct=8.84808 AVG_EDP_naive=7.18886 pct_diff=-18.7523%
+=== starting sdtc_pm_8: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished sdtc_pm_8: Sat Nov  7 04:45:47 PM CET 2026 ===
+SDTC-PM-8-EXHV2-pathEDP: VECTORS=65536 AVG_SWITCHES=4.42032 AVG_DELAY_ns=0.232921 AVG_EDP_correct=1.101 AVG_EDP_naive=1.02958 pct_diff=-6.48618%
+=== starting rca_12: Sat Nov  7 04:45:47 PM CET 2026 ===
+=== finished rca_12: Sat Nov  7 04:45:55 PM CET 2026 ===
+RCA-12-EXH-pathEDP: VECTORS=16777216 AVG_SWITCHES=12.3053 AVG_DELAY_ns=0.565605 AVG_EDP_correct=7.28351 AVG_EDP_naive=6.95992 pct_diff=-4.44272%
+=== starting cla_12: Sat Nov  7 04:45:55 PM CET 2026 ===
+=== finished cla_12: Sat Nov  7 04:46:04 PM CET 2026 ===
+CLA-12-EXH-pathEDP: VECTORS=16777216 AVG_SWITCHES=12.9174 AVG_DELAY_ns=0.529033 AVG_EDP_correct=7.46433 AVG_EDP_naive=6.83373 pct_diff=-8.4482%
+=== starting sd_12: Sat Nov  7 04:46:04 PM CET 2026 ===
+=== finished sd_12: Sat Nov  7 04:46:11 PM CET 2026 ===
+SD-12-EXHV2-pathEDP: VECTORS=16777216 AVG_SWITCHES=11.9521 AVG_DELAY_ns=0.598016 AVG_EDP_correct=8.81905 AVG_EDP_naive=7.14755 pct_diff=-18.9533%
+=== starting sdtc_pm_12: Sat Nov  7 04:46:11 PM CET 2026 ===
+=== finished sdtc_pm_12: Sat Nov  7 04:46:14 PM CET 2026 ===
+SDTC-PM-12-EXHV2-pathEDP: VECTORS=16777216 AVG_SWITCHES=4.4013 AVG_DELAY_ns=0.232527 AVG_EDP_correct=1.08391 AVG_EDP_naive=1.02342 pct_diff=-5.58109%
+ALL_EXHV2_DONE: Sat Nov  7 04:46:14 PM CET 2026
