@@ -33,8 +33,33 @@ static const unsigned long long EXH_MASK = 15ULL;
 static const unsigned int EXH_TOP = 8U;
 static const unsigned int EXH_LOW = 7U;
 static inline unsigned int exh_map(unsigned long long i) { return static_cast<unsigned int>((i + EXH_OFFSET) & EXH_MASK); }
-static inline unsigned int exh_sda(unsigned int p) { return (p & EXH_LOW); }
-static inline unsigned int exh_sdb(unsigned int p) { return (EXH_LOW | ((p & EXH_TOP) ? 0U : EXH_TOP)); }
+
+// Genuine NAF fed through PPM's UNCHANGED hardware via SD's own dual-rail
+// code (rail_a=(d==1), rail_b=(d!=-1) -- a real -1 is (0,0), reachable at
+// any digit position). Decode constant becomes 2^(N+1)-1 instead of 2^N.
+static void naf_digits_signed_ppm(long long v, int digits[4]) {
+    for (int i = 0; i < 4; i++) {
+        if (v & 1) {
+            int d = 2 - static_cast<int>(v & 3);
+            digits[i] = d;
+            v = (v - d) / 2;
+        } else {
+            digits[i] = 0;
+            v = v / 2;
+        }
+    }
+}
+static inline long long exh_signed(unsigned int p) { return (p & EXH_TOP) ? static_cast<long long>(p) - static_cast<long long>(EXH_MASK) - 1 : static_cast<long long>(p); }
+static inline unsigned int exh_sda(unsigned int p) {
+    int digits[4]; naf_digits_signed_ppm(exh_signed(p), digits);
+    unsigned int r = 0; for (int i = 0; i < 4; i++) if (digits[i] == 1) r |= (1U << i);
+    return r;
+}
+static inline unsigned int exh_sdb(unsigned int p) {
+    int digits[4]; naf_digits_signed_ppm(exh_signed(p), digits);
+    unsigned int r = 0; for (int i = 0; i < 4; i++) if (digits[i] != -1) r |= (1U << i);
+    return r;
+}
 
 // ==========================================
 // Helper functions
@@ -454,7 +479,7 @@ SC_MODULE(Testbench) {
 
         wait(200, SC_NS);
 
-        long long expected_result = (static_cast<long long>(sda_value) + static_cast<long long>(sdb_value))
+        long long expected_result = (static_cast<long long>(sda_value) + static_cast<long long>(sdb_value) - ((1LL << 4) - 1))
                                    + to_signed_twos_complement_4bit(tc_value);
 
         sc_lv<5> sum_a_val = Sum_a.read();
@@ -464,7 +489,7 @@ SC_MODULE(Testbench) {
 
         long long actual_result = static_cast<long long>(actual_sum_a)
                                  + static_cast<long long>(actual_sum_b)
-                                 - (1LL << 4);
+                                 - ((1LL << 5) - 1);
 
         if (expected_result != actual_result) {
             number_of_errors++;

@@ -71,11 +71,28 @@ static DigitRails2 encode_digits_2(const int digits[N]) {
 // Plain binary digit extraction: digits[i] = bit i of v, so each digit is
 // 0 or +1 (never -1). No NAF conversion, no adjacency constraint -- a run
 // of consecutive 1-bits (e.g. 1111 for 15) is left exactly as-is.
+// Kept for reference; superseded below by genuine NAF (naf_digits_signed).
 static void binary_digits(long long v, int digits[N]) {
     for (int i = 0; i < N - 1; i++) digits[i] = static_cast<int>((v >> i) & 1LL);
     digits[N - 1] = -static_cast<int>((v >> (N - 1)) & 1LL);   // top digit has weight -2^(N-1)
 }
 static long long signed_value_n(unsigned long long v) { return ((v >> (N - 1)) & 1ULL) ? static_cast<long long>(v) - (1LL << N) : static_cast<long long>(v); }
+
+// Genuine Non-Adjacent Form: true redundant signed-digit encoding (real -1
+// digits, not just a relabeled top bit). Verified to fit in exactly N digit
+// positions for every value in the signed N-bit range -2^(N-1)..2^(N-1)-1.
+static void naf_digits_signed(long long v, int digits[N]) {
+    for (int i = 0; i < N; i++) {
+        if (v & 1) {
+            int d = 2 - static_cast<int>(v & 3);
+            digits[i] = d;
+            v = (v - d) / 2;
+        } else {
+            digits[i] = 0;
+            v = v / 2;
+        }
+    }
+}
 
 // Decodes the (N+1)-digit dual-rail result: each (S_plus[i], S_minus[i])
 // pair is a digit at binary place value 2^i, coded 00=-1, 11=+1, 01/10=0.
@@ -561,7 +578,7 @@ SC_MODULE(Testbench) {
 
     void stimulus() {
         int zero_digits[8];
-        binary_digits(static_cast<long long>(exh_map(0)), zero_digits);
+        naf_digits_signed(signed_value_n(exh_map(0)), zero_digits);
         DigitRails2 zero = encode_digits_2(zero_digits);
 
         A_a.write(zero.rail_a);
@@ -589,8 +606,8 @@ SC_MODULE(Testbench) {
         design_ptr->reset_counters();
 
         int a_digits[8], b_digits[8];
-        binary_digits(static_cast<long long>(value_a), a_digits);
-        binary_digits(static_cast<long long>(value_b), b_digits);
+        naf_digits_signed(signed_value_n(value_a), a_digits);
+        naf_digits_signed(signed_value_n(value_b), b_digits);
 
         DigitRails2 encoded_a = encode_digits_2(a_digits);
         DigitRails2 encoded_b = encode_digits_2(b_digits);

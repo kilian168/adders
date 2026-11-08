@@ -68,6 +68,21 @@ static long long to_signed_twos_complement_8bit(unsigned int value) {
     return v;
 }
 
+// Genuine Non-Adjacent Form: true redundant signed digits (real -1 states).
+// Fits in exactly 8 digit positions for the signed 8-bit range.
+static void naf_digits_signed_pm(long long v, int digits[8]) {
+    for (int i = 0; i < 8; i++) {
+        if (v & 1) {
+            int d = 2 - static_cast<int>(v & 3);
+            digits[i] = d;
+            v = (v - d) / 2;
+        } else {
+            digits[i] = 0;
+            v = v / 2;
+        }
+    }
+}
+
 // ==========================================
 // 1a. GENERIC GATE-LEVEL PRIMITIVE
 //     Each instance is exactly one 2-input AND/OR/XOR gate.
@@ -463,10 +478,16 @@ SC_MODULE(Testbench) {
         prev_sum_a = static_cast<unsigned int>(to_unsigned_9bit(Sum_a.read()));
         prev_sum_b = static_cast<unsigned int>(to_unsigned_9bit(Sum_b.read()));
 
+        std::uniform_int_distribution<long long> sd_dist(-128LL, 127LL);
         for (unsigned long long i = 0; i < num_samples; i++) {
-            unsigned int sd_pattern = static_cast<unsigned int>(dist(rng));
-            unsigned int sda_value = sd_pattern & ((static_cast<unsigned int>(1) << (8-1)) - 1);  // top digit -1 (value = SD_a - SD_b)
-            unsigned int sdb_value = sd_pattern & (static_cast<unsigned int>(1) << (8-1));
+            long long sd_value = sd_dist(rng);
+            int digits[8];
+            naf_digits_signed_pm(sd_value, digits);
+            unsigned int sda_value = 0, sdb_value = 0;
+            for (int k = 0; k < 8; k++) {
+                if (digits[k] == 1) sda_value |= (1U << k);
+                else if (digits[k] == -1) sdb_value |= (1U << k);
+            }
             unsigned int tc_value  = static_cast<unsigned int>(dist(rng));
             apply_test(sda_value, sdb_value, tc_value);
         }

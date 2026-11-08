@@ -67,6 +67,21 @@ static long long to_signed_twos_complement_32bit(unsigned int value) {
     }
     return v;
 }
+// Genuine NAF: true redundant signed digits (real -1 states), not a
+// relabeled top bit. Fits in exactly 32 digit positions for this range.
+static void naf_digits_signed_pm(long long v, int digits[32]) {
+    for (int i = 0; i < 32; i++) {
+        if (v & 1) {
+            int d = 2 - static_cast<int>(v & 3);
+            digits[i] = d;
+            v = (v - d) / 2;
+        } else {
+            digits[i] = 0;
+            v = v / 2;
+        }
+    }
+}
+
 
 // ==========================================
 // 1a. GENERIC GATE-LEVEL PRIMITIVE
@@ -607,10 +622,16 @@ SC_MODULE(Testbench) {
         prev_sum_a = to_unsigned_33bit(Sum_a.read());
         prev_sum_b = to_unsigned_33bit(Sum_b.read());
 
+        std::uniform_int_distribution<long long> sd_dist(-2147483648LL, 2147483647LL);
         for (unsigned long long i = 0; i < num_samples; i++) {
-            unsigned int sd_pattern = static_cast<unsigned int>(dist(rng));
-            unsigned int sda_value = sd_pattern & ((static_cast<unsigned int>(1) << (32-1)) - 1);  // top digit -1 (value = SD_a - SD_b)
-            unsigned int sdb_value = sd_pattern & (static_cast<unsigned int>(1) << (32-1));
+            long long sd_value = sd_dist(rng);
+            int digits[32];
+            naf_digits_signed_pm(sd_value, digits);
+            unsigned int sda_value = 0, sdb_value = 0;
+            for (int k = 0; k < 32; k++) {
+                if (digits[k] == 1) sda_value |= (1U << k);
+                else if (digits[k] == -1) sdb_value |= (1U << k);
+            }
             unsigned int tc_value  = static_cast<unsigned int>(dist(rng));
             apply_test(sda_value, sdb_value, tc_value);
         }

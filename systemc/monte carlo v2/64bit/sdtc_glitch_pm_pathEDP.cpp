@@ -74,6 +74,21 @@ static __int128 to_signed_twos_complement_64bit(unsigned long long value) {
     return v;
 }
 
+// Genuine NAF: true redundant signed digits (real -1 states), not a
+// relabeled top bit. Fits in exactly 64 digit positions for this range.
+static void naf_digits_signed_pm(long long v, int digits[64]) {
+    for (int i = 0; i < 64; i++) {
+        if (v & 1) {
+            int d = 2 - static_cast<int>(v & 3);
+            digits[i] = d;
+            v = (v - d) / 2;
+        } else {
+            digits[i] = 0;
+            v = v / 2;
+        }
+    }
+}
+
 // ==========================================
 // 1a. GENERIC GATE-LEVEL PRIMITIVE
 //     Each instance is exactly one 2-input AND/OR/XOR gate.
@@ -805,10 +820,17 @@ SC_MODULE(Testbench) {
         prev_sum_a = to_unsigned_65bit(Sum_a.read());
         prev_sum_b = to_unsigned_65bit(Sum_b.read());
 
+        std::uniform_int_distribution<long long> sd_dist(
+            static_cast<long long>(-9223372036854775807LL - 1), 9223372036854775807LL);
         for (unsigned long long i = 0; i < num_samples; i++) {
-            unsigned long long sd_pattern = dist(rng);
-            unsigned long long sda_value = sd_pattern & ((static_cast<unsigned long long>(1) << (64-1)) - 1);  // top digit -1 (value = SD_a - SD_b)
-            unsigned long long sdb_value = sd_pattern & (static_cast<unsigned long long>(1) << (64-1));
+            long long sd_value = sd_dist(rng);
+            int digits[64];
+            naf_digits_signed_pm(sd_value, digits);
+            unsigned long long sda_value = 0, sdb_value = 0;
+            for (int k = 0; k < 64; k++) {
+                if (digits[k] == 1) sda_value |= (1ULL << k);
+                else if (digits[k] == -1) sdb_value |= (1ULL << k);
+            }
             unsigned long long tc_value  = dist(rng);
             apply_test(sda_value, sdb_value, tc_value);
         }

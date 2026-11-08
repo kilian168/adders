@@ -1,0 +1,118 @@
+=== starting 16bit/sd_2n_glitch_pathEDP: Sat Nov  7 10:24:04 PM CET 2026 ===
+
+        SystemC 3.0.2-Accellera --- Nov  2 2026 17:43:17
+        Copyright (c) 1996-2025 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+SD-16-EXH-pathEDP: VECTORS=4294967296 AVG_SWITCHES=11.9501 AVG_DELAY_ns=0.597898 AVG_EDP_correct=8.81723 AVG_EDP_naive=7.14497 pct_diff=-18.9658%
+=== finished 16bit/sd_2n_glitch_pathEDP: Sat Nov  7 10:46:20 PM CET 2026 ===
+=== starting 16bit/sdtc_glitch_pm_pathEDP: Sat Nov  7 10:46:20 PM CET 2026 ===
+
+        SystemC 3.0.2-Accellera --- Nov  2 2026 17:43:17
+        Copyright (c) 1996-2025 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+SDTC-PM-16-EXH-pathEDP: VECTORS=4294967296 AVG_SWITCHES=4.40008 AVG_DELAY_ns=0.232502 AVG_EDP_correct=1.0826 AVG_EDP_naive=1.02303 pct_diff=-5.50318%
+=== finished 16bit/sdtc_glitch_pm_pathEDP: Sat Nov  7 11:02:51 PM CET 2026 ===
+=== starting 16bit/sdtc_glitch_ppm_pathEDP: Sat Nov  7 11:02:51 PM CET 2026 ===
+
+        SystemC 3.0.2-Accellera --- Nov  2 2026 17:43:17
+        Copyright (c) 1996-2025 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+
+Info: /OSCI/SystemC: Simulation stopped by user.
+SDTC-PPM-16-EXH-pathEDP: VECTORS=4294967296 AVG_SWITCHES=7.5999 AVG_DELAY_ns=0.4275 AVG_EDP_correct=3.35246 AVG_EDP_naive=3.24896 pct_diff=-3.08731%
+=== finished 16bit/sdtc_glitch_ppm_pathEDP: Sat Nov  7 11:21:21 PM CET 2026 ===
+ALL_16BIT_DONE

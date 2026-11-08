@@ -59,6 +59,22 @@ static void binary_digits(unsigned long long v, int digits[2]) {
     digits[2-1] = -static_cast<int>((v >> (2-1)) & 1ULL);
 }
 
+// Genuine Non-Adjacent Form: true redundant signed digits (real -1 states),
+// not a relabeled top bit. Fits in exactly 2 digit positions for the
+// signed 2-bit range.
+static void naf_digits_signed(long long v, int digits[2]) {
+    for (int i = 0; i < 2; i++) {
+        if (v & 1) {
+            int d = 2 - static_cast<int>(v & 3);
+            digits[i] = d;
+            v = (v - d) / 2;
+        } else {
+            digits[i] = 0;
+            v = v / 2;
+        }
+    }
+}
+
 static long long signed_value_2(unsigned long long v) {
     long long x = static_cast<long long>(v);
     return ((v >> (2-1)) & 1ULL) ? x - (static_cast<long long>(1) << 2) : x;
@@ -485,8 +501,8 @@ SC_MODULE(Testbench) {
         design_ptr->reset_counters();
 
         int a_digits[2], b_digits[2];
-        binary_digits(value_a, a_digits);
-        binary_digits(value_b, b_digits);
+        naf_digits_signed(signed_value_2(value_a), a_digits);
+        naf_digits_signed(signed_value_2(value_b), b_digits);
 
         DigitRails2 encoded_a = encode_digits_2(a_digits);
         DigitRails2 encoded_b = encode_digits_2(b_digits);

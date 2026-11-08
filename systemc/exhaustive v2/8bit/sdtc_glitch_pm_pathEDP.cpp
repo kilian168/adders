@@ -35,8 +35,33 @@ static const unsigned long long EXH_MASK = 255ULL;
 static const unsigned int EXH_TOP = 128U;
 static const unsigned int EXH_LOW = 127U;
 static inline unsigned int exh_map(unsigned long long i) { return static_cast<unsigned int>((i + EXH_OFFSET) & EXH_MASK); }
-static inline unsigned int exh_sda(unsigned int p) { return (p & EXH_LOW); }
-static inline unsigned int exh_sdb(unsigned int p) { return (p & EXH_TOP); }
+
+// Genuine NAF: true redundant signed digits (real -1 states), not a
+// relabeled top bit. Fits in exactly 8 digit positions for this range.
+static void naf_digits_signed_pm(long long v, int digits[8]) {
+    for (int i = 0; i < 8; i++) {
+        if (v & 1) {
+            int d = 2 - static_cast<int>(v & 3);
+            digits[i] = d;
+            v = (v - d) / 2;
+        } else {
+            digits[i] = 0;
+            v = v / 2;
+        }
+    }
+}
+static inline long long exh_signed(unsigned int p) { return (p & EXH_TOP) ? static_cast<long long>(p) - static_cast<long long>(EXH_MASK) - 1 : static_cast<long long>(p); }
+// PM's own dual-rail convention: SD_a(i)=(d==1), SD_b(i)=(d==-1).
+static inline unsigned int exh_sda(unsigned int p) {
+    int digits[8]; naf_digits_signed_pm(exh_signed(p), digits);
+    unsigned int r = 0; for (int i = 0; i < 8; i++) if (digits[i] == 1) r |= (1U << i);
+    return r;
+}
+static inline unsigned int exh_sdb(unsigned int p) {
+    int digits[8]; naf_digits_signed_pm(exh_signed(p), digits);
+    unsigned int r = 0; for (int i = 0; i < 8; i++) if (digits[i] == -1) r |= (1U << i);
+    return r;
+}
 
 // ==========================================
 // Helper functions

@@ -63,6 +63,23 @@ static void binary_digits(unsigned long long v, int digits[64]) {
     digits[64-1] = -static_cast<int>((v >> (64-1)) & 1ULL);
 }
 
+// Genuine Non-Adjacent Form: true redundant signed digits (real -1 states),
+// not a relabeled top bit. Fits in exactly 64 digit positions for the
+// signed 64-bit range. __int128 input since signed_value_64 needs the
+// extra headroom for the sign-extension subtraction.
+static void naf_digits_signed_64(__int128 v, int digits[64]) {
+    for (int i = 0; i < 64; i++) {
+        if (v & 1) {
+            int d = 2 - static_cast<int>(v & 3);
+            digits[i] = d;
+            v = (v - d) / 2;
+        } else {
+            digits[i] = 0;
+            v = v / 2;
+        }
+    }
+}
+
 static __int128 signed_value_64(unsigned long long v) {
     __int128 x = static_cast<__int128>(v);
     return ((v >> (64-1)) & 1ULL) ? x - (static_cast<__int128>(1) << 64) : x;
@@ -1350,8 +1367,8 @@ SC_MODULE(Testbench) {
         design_ptr->reset_counters();
 
         int a_digits[64], b_digits[64];
-        binary_digits(value_a, a_digits);
-        binary_digits(value_b, b_digits);
+        naf_digits_signed_64(signed_value_64(value_a), a_digits);
+        naf_digits_signed_64(signed_value_64(value_b), b_digits);
 
         DigitRails64 encoded_a = encode_digits_64(a_digits);
         DigitRails64 encoded_b = encode_digits_64(b_digits);

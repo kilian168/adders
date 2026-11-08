@@ -12,13 +12,19 @@ for w in [2,4,8,12,16,32,64]:
         m=re.search(r"pathEDP: SAMPLES=(\d+) AVG_SWITCHES=(\S+) AVG_DELAY_ns=(\S+) AVG_EDP_correct=(\S+) AVG_EDP_naive=(\S+) pct_diff=(\S+)%",out)
         assert m,(exe,out[-300:])
         n,s,d,e,nv,p=m.groups()
-        if label=="SD/TC-PPM": rng=f"SD operand {lo}..{hi} (digits -1,0,+1 via a+b-1); TC {lo}..{hi}"
+        if label=="SD/TC-PPM": rng=f"SD operand {lo}..{hi} (genuine NAF via SD's dual-rail code); TC {lo}..{hi}"
         elif label.startswith('SD/TC'): rng=f"SD operand {lo}..{hi}; TC {lo}..{hi}"
         else: rng=f"{lo}..{hi}"
         rows.append([label,w,n,s,d,e,nv,p,rng]); print(label,w,s,d,e,flush=True)
 with open(f"{here}/path_aware_edp_results_v2.csv","w",newline="") as f:
-    f.write("# Monte Carlo v2 (common range): every adder gets uniformly random N-bit patterns read as two's complement, i.e. the signed range -2^(N-1)..2^(N-1)-1 (seed 42, 1e6 samples).\n"
-            "# RCA/CLA: the bit patterns directly. SD: the same value as N signed digits (bits 0..N-2 = 0/+1, top digit 0/-1, so SD operand weights are binary, digit set {-1,0,+1}).\n"
-            "# SD/TC-PM: SD_a = low N-1 bits, SD_b = top bit (value SD_a - SD_b), TC = random N-bit two's complement. SD/TC-PPM: digit = SD_a(i) + SD_b(i) - 1 in {-1,0,+1} (dual-rail coding as in the SD adder; the constant -1 per digit is outside the adder). Same encoding of the value as the SD adder: lower digits (a,b)=(bit,1), top digit (0,1)/(0,0). All operands of all adders span -2^(N-1)..2^(N-1)-1.\n"
+    f.write("# Monte Carlo v2 (common range, genuine NAF): every adder's operands are uniformly random over the\n"
+            "# signed range -2^(N-1)..2^(N-1)-1 (seed 42, 1e6 samples). RCA/CLA: two's-complement bit patterns directly.\n"
+            "# SD, SD/TC-PM, SD/TC-PPM: each sampled value is converted to its genuine Non-Adjacent Form (true\n"
+            "# redundant signed digits, real -1 states at any position -- not a relabeled top bit), which always fits\n"
+            "# in exactly N digit positions for this range. SD and PM use their own native dual-rail digit cells\n"
+            "# (SD: rail_a=(d==1),rail_b=(d!=-1); PM: SD_a=(d==1),SD_b=(d==-1), computing SD_a-SD_b+TC).\n"
+            "# PPM's hardware is unchanged (still a plain full adder, SD_a+SD_b+TC) -- it is fed SD's own dual-rail\n"
+            "# code directly (SD_a=(d==1),SD_b=(d!=-1)) with the decode constant updated to 2^(N+1)-1 (was 2^N),\n"
+            "# verified correct against this exact cell (0/2,000,000 mismatches in a standalone check).\n"
             "# Per-sample products switches_i*delay_i averaged (AvgEDP_Correct); AvgEDP_Naive = mean(switches)*mean(delay).\n")
     w_=csv.writer(f); w_.writerow(["Architecture","Width","Samples","AvgSwitches","AvgDelay_ns","AvgEDP_Correct","AvgEDP_Naive","PctDiff","ValueRange"]); w_.writerows(rows)
