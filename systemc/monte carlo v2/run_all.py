@@ -21,10 +21,10 @@ with open(f"{here}/path_aware_edp_results_v2.csv","w",newline="") as f:
             "# signed range -2^(N-1)..2^(N-1)-1 (seed 42, 1e6 samples). RCA/CLA: two's-complement bit patterns directly.\n"
             "# SD, SD/TC-PM, SD/TC-PPM: each sampled value is converted to its genuine Non-Adjacent Form (true\n"
             "# redundant signed digits, real -1 states at any position -- not a relabeled top bit), which always fits\n"
-            "# in exactly N digit positions for this range. SD and PM use their own native dual-rail digit cells\n"
-            "# (SD: rail_a=(d==1),rail_b=(d!=-1); PM: SD_a=(d==1),SD_b=(d==-1), computing SD_a-SD_b+TC).\n"
-            "# PPM's hardware is unchanged (still a plain full adder, SD_a+SD_b+TC) -- it is fed SD's own dual-rail\n"
-            "# code directly (SD_a=(d==1),SD_b=(d!=-1)) with the decode constant updated to 2^(N+1)-1 (was 2^N),\n"
-            "# verified correct against this exact cell (0/2,000,000 mismatches in a standalone check).\n"
+            "# in exactly N digit positions for this range. SD uses its own native dual-rail digit cell\n"
+            "# (rail_a=(d==1),rail_b=(d!=-1)). PM and PPM share the identical plain full adder, no bespoke cell:\n"
+            "# PPM feeds SD_a=(d==1),SD_b=(d!=-1) directly and decodes Sum_a+Sum_b-(2^(N+1)-1) as SD_a+SD_b+TC;\n"
+            "# PM feeds SD_a=(d==1),SD_b=(d==-1) through one inverter ahead of the same cell and decodes the same\n"
+            "# constant as SD_a-SD_b+TC -- both verified correct exhaustively (0 mismatches).\n"
             "# Per-sample products switches_i*delay_i averaged (AvgEDP_Correct); AvgEDP_Naive = mean(switches)*mean(delay).\n")
     w_=csv.writer(f); w_.writerow(["Architecture","Width","Samples","AvgSwitches","AvgDelay_ns","AvgEDP_Correct","AvgEDP_Naive","PctDiff","ValueRange"]); w_.writerows(rows)

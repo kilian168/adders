@@ -215,49 +215,46 @@ SC_MODULE(FullAdder) {
     sc_in<bool> a, b, cin;
     sc_out<bool> sum, cout;
 
-    sc_signal<bool> s1, notB, term1, notS1, term2;
+    sc_signal<bool> notB, s1, c1, c2;
 
-    Gate *g_xor1, *g_and1, *g_and2, *g_or1, *g_xor2;
-    GateNot *g_notB, *g_notS1;
+    GateNot *g_notB;
+    Gate *g_xor1, *g_and1, *g_xor2, *g_and2, *g_or1;
 
     SC_CTOR(FullAdder) {
-        g_xor1 = new Gate("XOR1", GATE_XOR);
-        g_xor1->in1(cin); g_xor1->in2(b); g_xor1->out(s1);
-
         g_notB = new GateNot("NOTB");
         g_notB->in1(b); g_notB->out(notB);
 
+        g_xor1 = new Gate("XOR1", GATE_XOR);
+        g_xor1->in1(a); g_xor1->in2(notB); g_xor1->out(s1);
+
         g_and1 = new Gate("AND1", GATE_AND);
-        g_and1->in1(cin); g_and1->in2(notB); g_and1->out(term1);
-
-        g_notS1 = new GateNot("NOTS1");
-        g_notS1->in1(s1); g_notS1->out(notS1);
-
-        g_and2 = new Gate("AND2", GATE_AND);
-        g_and2->in1(notS1); g_and2->in2(a); g_and2->out(term2);
-
-        g_or1 = new Gate("OR1", GATE_OR);
-        g_or1->in1(term1); g_or1->in2(term2); g_or1->out(cout);
+        g_and1->in1(a); g_and1->in2(notB); g_and1->out(c1);
 
         g_xor2 = new Gate("XOR2", GATE_XOR);
-        g_xor2->in1(s1); g_xor2->in2(a); g_xor2->out(sum);
+        g_xor2->in1(s1); g_xor2->in2(cin); g_xor2->out(sum);
+
+        g_and2 = new Gate("AND2", GATE_AND);
+        g_and2->in1(s1); g_and2->in2(cin); g_and2->out(c2);
+
+        g_or1 = new Gate("OR1", GATE_OR);
+        g_or1->in1(c1); g_or1->in2(c2); g_or1->out(cout);
     }
 
     uint64_t total_switches() const {
-        return g_xor1->switches + g_notB->switches + g_and1->switches +
-               g_notS1->switches + g_and2->switches + g_or1->switches + g_xor2->switches;
+        return g_notB->switches + g_xor1->switches + g_and1->switches +
+               g_xor2->switches + g_and2->switches + g_or1->switches;
     }
 
     ~FullAdder() {
-        delete g_xor1; delete g_notB; delete g_and1; delete g_notS1;
-        delete g_and2; delete g_or1; delete g_xor2;
+        delete g_notB; delete g_xor1; delete g_and1;
+        delete g_xor2; delete g_and2; delete g_or1;
     }
 };
 
 // ==========================================
 // 3. 64-BIT SIGNED-DIGIT / TWO'S-COMPLEMENT ADDER
 //    64 independent digit cells (7 gates each), one per digit, with NO
-//    carry chain between them. Gate count: 64 x 7 (digit cells) + 1 (NOT) = 449
+//    carry chain between them. Gate count: 64 x 6 (digit cells) + 1 (NOT) = 385
 // ==========================================
 SC_MODULE(SdTcAdder64) {
     sc_in<sc_lv<64>> SD_a;
@@ -830,17 +827,14 @@ SC_MODULE(Testbench) {
                                   - static_cast<__int128>(sdb_value)
                                   + to_signed_twos_complement_64bit(tc_value);
 
-        unsigned long long tc_top = (tc_value >> (64 - 1)) & 1ULL;
-        __int128 sign_term = tc_top ? -(static_cast<__int128>(1) << 64) : (static_cast<__int128>(1) << 64);
-
         sc_lv<65> sum_a_val = Sum_a.read();
         sc_lv<65> sum_b_val = Sum_b.read();
         __uint128_t actual_sum_a = to_unsigned_65bit(sum_a_val);
         __uint128_t actual_sum_b = to_unsigned_65bit(sum_b_val);
 
-        __int128 actual_result = static_cast<__int128>(actual_sum_b)
-                                - static_cast<__int128>(actual_sum_a)
-                                + sign_term;
+        __int128 actual_result = static_cast<__int128>(actual_sum_a)
+                                + static_cast<__int128>(actual_sum_b)
+                                - ((static_cast<__int128>(1) << 65) - 1);
 
         if (expected_result != actual_result) {
             number_of_errors++;

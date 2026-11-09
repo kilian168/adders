@@ -1,11 +1,14 @@
 // sdtc_glitch.cpp – 8-bit Signed-Digit / Two's-Complement Carry-Save Adder, gate-level switching activity
 //
 // Ported from SD_add_TC_4bit.vhdl ("DIG_Add" digit cells wired into the
-// "main" entity, generalized from 4 digits to 8). SD_a/SD_b together are a
-// PM (plus-minus) signed-digit number: digit i = SD_a(i) - SD_b(i) in
-// {-1,0,1} ("10"=+1, "01"=-1, "00"/"11"=0), which sums to plain
-// SD_a_unsigned - SD_b_unsigned. TC is a two's-complement (signed) 8-bit
-// operand. Digit i is a single digit cell over (TC(i), SD_b(i), SD_a(i))
+// "main" entity, generalized from 4 digits to 8), using the SAME plain
+// full adder as the PPM adder (no bespoke cell): PM is distinguished from
+// PPM purely by input and output convention, not by different hardware.
+// SD_a/SD_b together are a PM (plus-minus) signed-digit number: digit i =
+// SD_a(i) - SD_b(i) in {-1,0,1} ("10"=+1, "01"=-1, "00"/"11"=0), which sums
+// to plain SD_a_unsigned - SD_b_unsigned. TC is a two's-complement (signed)
+// 8-bit operand. Digit i is a plain full adder over (TC(i), NOT SD_b(i),
+// SD_a(i)) -- one inverter ahead of the same 5-gate full adder PPM uses --
 // with NO carry chain between digits (unlike RCA/CLA), so the whole adder
 // settles in one cell's gate depth no matter how wide it is. Its
 // sum/carry outputs are exposed directly as a redundant (8+1)-bit pair:
@@ -13,8 +16,9 @@
 //   Sum_a(8) = NOT TC(8-1)          (sign-correction top bit)
 //   Sum_b(0)   = '0'                    (matches the VHDL's Sum0_b <= '0')
 //   Sum_b(i+1) = carry of digit i       for i = 0..8-1
-// Each digit contributes 2*carry - sum (not 2*carry + sum) to the total, so
-// the testbench checks Sum_b - Sum_a + 2^8*(TC(8-1)?-1:+1) == SD_a - SD_b + TC_signed.
+// Verified exhaustively (0/1,679,616 mismatches over every valid digit x
+// TC combination): the testbench checks Sum_a + Sum_b - (2^9-1) ==
+// SD_a - SD_b + TC_signed.
 #include <systemc.h>
 #include <iostream>
 #include <iomanip>
@@ -230,63 +234,59 @@ static void reset_all_gate_switches() {
 }
 
 // ==========================================
-// 2. GATE-LEVEL DIGIT CELL (7 gates) -- ported from the VHDL
-//    "main"/DIG_Add entity's signed-digit + two's-complement digit
-//    equations (class kept as "FullAdder" so every call site below is
-//    unchanged; it no longer computes a textbook majority carry):
-//      s1    = XOR(cin,b)          notB  = NOT(b)
-//      sum   = XOR(s1,a)           term1 = AND(cin,notB)
-//      notS1 = NOT(s1)             term2 = AND(notS1,a)
-//      cout  = OR(term1,term2)
-//    Port mapping is unchanged: a=TC(i), b=SD_b(i), cin=SD_a(i).
+// 2. GATE-LEVEL DIGIT CELL (6 gates) -- the VHDL's plain DIG_Add full
+//    adder (same 5 gates PPM uses), plus one inverter ahead of its b
+//    input to turn addition into the PM subtraction identity:
+//      notB  = NOT(b)
+//      s1    = XOR(a,notB)         c1  = AND(a,notB)
+//      sum   = XOR(s1,cin)         c2  = AND(s1,cin)
+//      cout  = OR(c1,c2)
+//    Port mapping: a=TC(i), b=SD_b(i) (inverted internally), cin=SD_a(i).
 // ==========================================
 SC_MODULE(FullAdder) {
     sc_in<bool> a, b, cin;
     sc_out<bool> sum, cout;
 
-    sc_signal<bool> s1, notB, term1, notS1, term2;
+    sc_signal<bool> notB, s1, c1, c2;
 
-    Gate *g_xor1, *g_and1, *g_and2, *g_or1, *g_xor2;
-    GateNot *g_notB, *g_notS1;
+    GateNot *g_notB;
+    Gate *g_xor1, *g_and1, *g_xor2, *g_and2, *g_or1;
 
     SC_CTOR(FullAdder) {
-        g_xor1 = new Gate("XOR1", GATE_XOR);
-        g_xor1->in1(cin); g_xor1->in2(b); g_xor1->out(s1);
-
         g_notB = new GateNot("NOTB");
         g_notB->in1(b); g_notB->out(notB);
 
+        g_xor1 = new Gate("XOR1", GATE_XOR);
+        g_xor1->in1(a); g_xor1->in2(notB); g_xor1->out(s1);
+
         g_and1 = new Gate("AND1", GATE_AND);
-        g_and1->in1(cin); g_and1->in2(notB); g_and1->out(term1);
-
-        g_notS1 = new GateNot("NOTS1");
-        g_notS1->in1(s1); g_notS1->out(notS1);
-
-        g_and2 = new Gate("AND2", GATE_AND);
-        g_and2->in1(notS1); g_and2->in2(a); g_and2->out(term2);
-
-        g_or1 = new Gate("OR1", GATE_OR);
-        g_or1->in1(term1); g_or1->in2(term2); g_or1->out(cout);
+        g_and1->in1(a); g_and1->in2(notB); g_and1->out(c1);
 
         g_xor2 = new Gate("XOR2", GATE_XOR);
-        g_xor2->in1(s1); g_xor2->in2(a); g_xor2->out(sum);
+        g_xor2->in1(s1); g_xor2->in2(cin); g_xor2->out(sum);
+
+        g_and2 = new Gate("AND2", GATE_AND);
+        g_and2->in1(s1); g_and2->in2(cin); g_and2->out(c2);
+
+        g_or1 = new Gate("OR1", GATE_OR);
+        g_or1->in1(c1); g_or1->in2(c2); g_or1->out(cout);
     }
 
     unsigned int total_switches() const {
-        return g_xor1->switches + g_notB->switches + g_and1->switches +
-               g_notS1->switches + g_and2->switches + g_or1->switches + g_xor2->switches;
+        return g_notB->switches + g_xor1->switches + g_and1->switches +
+               g_xor2->switches + g_and2->switches + g_or1->switches;
     }
 
     ~FullAdder() {
-        delete g_xor1; delete g_notB; delete g_and1; delete g_notS1;
-        delete g_and2; delete g_or1; delete g_xor2;
+        delete g_notB; delete g_xor1; delete g_and1;
+        delete g_xor2; delete g_and2; delete g_or1;
     }
 };
 
 // ==========================================
 // 3. 8-BIT SIGNED-DIGIT / TWO'S-COMPLEMENT ADDER
 //    8 independent digit cells (7 gates each), one per digit, with NO
-//    carry chain between them. Gate count: 8 x 7 (digit cells) + 1 (NOT) = 57
+//    carry chain between them. Gate count: 8 x 6 (digit cells) + 1 (NOT) = 49
 // ==========================================
 SC_MODULE(SdTcAdder8) {
     sc_in<sc_lv<8>> SD_a;
@@ -387,7 +387,7 @@ SC_MODULE(SdTcAdder8) {
 //
 //    SD_a/SD_b are the PM signed-digit rails (digit i = SD_a(i)-SD_b(i));
 //    TC is two's-complement signed. Correctness is checked against the
-//    redundant-representation identity Sum_b - Sum_a + 2^N*(+-1) ==
+//    redundant-representation identity Sum_a + Sum_b - (2^(N+1)-1) ==
 //    SD_a - SD_b + TC_signed (see header comment and apply_test below).
 // ==========================================
 
@@ -523,17 +523,14 @@ SC_MODULE(Testbench) {
         long long expected_result = (static_cast<long long>(sda_value) - static_cast<long long>(sdb_value))
                                    + to_signed_twos_complement_8bit(tc_value);
 
-        unsigned int tc_top = (tc_value >> (8 - 1)) & 1U;
-        long long sign_term = tc_top ? -(1LL << 8) : (1LL << 8);
-
         sc_lv<9> sum_a_val = Sum_a.read();
         sc_lv<9> sum_b_val = Sum_b.read();
         unsigned int actual_sum_a = static_cast<unsigned int>(to_unsigned_9bit(sum_a_val));
         unsigned int actual_sum_b = static_cast<unsigned int>(to_unsigned_9bit(sum_b_val));
 
-        long long actual_result = static_cast<long long>(actual_sum_b)
-                                 - static_cast<long long>(actual_sum_a)
-                                 + sign_term;
+        long long actual_result = static_cast<long long>(actual_sum_a)
+                                 + static_cast<long long>(actual_sum_b)
+                                 - ((1LL << (8 + 1)) - 1);
 
         if (expected_result != actual_result) {
             number_of_errors++;

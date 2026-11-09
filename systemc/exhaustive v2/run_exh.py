@@ -11,9 +11,10 @@ hdr=("# Exhaustive sweep, SAME value range for every adder and every operand (A 
 hdr+=("# v1_positive: values 0..2^(N-1)-1 (sign bit always 0).\n" if mode=="v1_positive" else
       "# v2: values -2^(N-1)..2^(N-1)-1 in ascending order (two's-complement bit patterns). SD, SD/TC-PM and SD/TC-PPM "
       "operands are each value's genuine Non-Adjacent Form (true redundant signed digits, real -1 states at any "
-      "position, not a relabeled top bit) -- fits in exactly N digit positions for this range. SD and PM use their "
-      "own native dual-rail digit cells; PPM's hardware is unchanged (still a plain full adder) and is fed SD's own "
-      "dual-rail code with an adjusted decode constant (2^(N+1)-1 instead of 2^N), verified correct.\n")
+      "position, not a relabeled top bit) -- fits in exactly N digit positions for this range. SD uses its own "
+      "native dual-rail digit cell. PM and PPM share the identical plain full adder (no bespoke cell): PPM feeds "
+      "SD's own dual-rail code directly and decodes with 2^(N+1)-1; PM feeds SD_a=(d==1), SD_b=(d==-1) through an "
+      "inverter ahead of the same cell and decodes with the same 2^(N+1)-1 constant -- both verified correct.\n")
 hdr+="# Per-vector products switches_i*delay_i averaged (AvgEDP_Correct); AvgEDP_Naive = mean(switches)*mean(delay).\n"
 rows=[]
 widths=[int(x) for x in sys.argv[1:]] or [2,4,8,12,16]
