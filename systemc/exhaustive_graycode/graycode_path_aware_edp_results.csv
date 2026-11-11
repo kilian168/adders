@@ -1,24 +1,25 @@
-"# Per-vector path-aware EDP -- exhaustive GRAY-CODE order (2^N x 2^N value pairs,"
+# Per-vector path-aware EDP -- exhaustive GRAY-CODE order (2^N x 2^N value pairs,
 # consecutive vectors differ by exactly one bit of the combined A||B word).
-"# Single continuous process throughout, preserving cross-vector correlation."
+# Single continuous process throughout, preserving cross-vector correlation.
 #
-"# SD/TC-PM and SD/TC-PPM use the same canonical 2^N x 2^N encoding as their"
-"# exhaustive-natural-order table (SD_a = value's own bits, SD_b = 0 always), so the"
-"# combined word being Gray-coded is (SD_value||TC_value), matching RCA/CLA/SD's (A||B)."
-
+# Rebuilt against the now-correct exhaustive v1 positive / monte carlo v1 positive
+# conventions: SD, SD/TC-PM, SD/TC-PPM are 0..2^(N-1)-1 (positive only). SD/TC-PM uses
+# the plain full adder (inverter ahead of SD_b) shared with SD/TC-PPM, SD_a=value's own
+# bits, SD_b=0. SD/TC-PPM uses the same cell unmodified, SD_a=value's own bits,
+# SD_b=2^N-1 (constant). Both verified correct (0 mismatches) against this methodology.
 Architecture,Width,Vectors,AvgSwitches,AvgDelay_ns,AvgEDP_Correct,AvgEDP_Naive,PctDiff
-RCA,2,16,3.25,0.38875,1.4487,1.2634,-12.7912
-CLA,2,16,4.0,0.41125,1.8894,1.645,-12.9342
-SD,2,16,9.0,0.783125,7.0525,7.0481,-0.062
-RCA,4,256,4.8516,0.533594,3.2011,2.5888,-19.1288
-CLA,4,256,7.0547,0.557266,4.6394,3.9313,-15.2615
-SD,4,256,9.9375,0.783008,7.8058,7.7811,-0.3157
-RCA,8,65536,5.7646,0.61062,4.7713,3.52,-26.2262
-CLA,8,65536,8.0609,0.605601,6.1604,4.8817,-20.7569
-SD,8,65536,9.9998,0.782539,7.8503,7.8252,-0.3194
-SD/TC-PM,2,16,2.6875,0.249375,0.8431,0.6702,-20.5106
-SD/TC-PPM,2,16,2.6875,0.3375,1.08,0.907,-16.0156
-SD/TC-PM,4,256,2.2305,0.229102,0.5871,0.511,-12.957
-SD/TC-PPM,4,256,2.9336,0.390234,1.2171,1.1448,-5.942
-SD/TC-PM,8,65536,2.0156,0.215989,0.4732,0.4353,-7.9953
-SD/TC-PPM,8,65536,2.9961,0.404118,1.2574,1.2108,-3.7054
+RCA,2,4,3,0.32,1.3225,0.96,-27.4102
+CLA,2,4,3,0.3225,1.3275,0.9675,-27.1186
+SD,2,4,7,0.7825,5.4,5.4775,1.43519
+SD/TC-PM,2,4,2.75,0.1975,0.61,0.543125,-10.9631
+SD/TC-PPM,2,4,2.75,0.2475,1.035,0.680625,-34.2391
+RCA,4,64,4.59375,0.51875,2.92188,2.38301,-18.4425
+CLA,4,64,6.0625,0.535469,3.86641,3.24628,-16.0388
+SD,4,64,10.0625,0.784375,7.91125,7.89277,-0.233548
+SD/TC-PM,4,64,4.26562,0.239531,0.985469,1.02175,3.68167
+SD/TC-PPM,4,64,4.26562,0.381719,1.65703,1.62827,-1.73577
+RCA,8,16384,5.72644,0.609314,4.70718,3.4892,-25.875
+CLA,8,16384,7.92908,0.604042,6.03129,4.7895,-20.5891
+SD,8,16384,10.0149,0.782617,7.86284,7.83783,-0.318077
+SD/TC-PM,8,16384,4.4881,0.216964,0.953508,0.973753,2.1233
+SD/TC-PPM,8,16384,4.4881,0.403774,1.79175,1.81218,1.13997

@@ -544,9 +544,9 @@ SC_MODULE(Testbench) {
         design_ptr->reset_counters();
 
         std::mt19937_64 rng(rng_seed);
-        std::uniform_int_distribution<unsigned long long> dist(0ULL, 255ULL);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 127ULL);
 
-                for (unsigned long long i = 0; i < 256ULL; i++) {
+                for (unsigned long long i = 0; i < 128ULL; i++) {
             unsigned long long value_b = i ^ (i >> 1);  // Gray code: exactly 1 bit changes per step
             unsigned long long value_a = dist(rng);
             apply_test(value_a, value_b);
@@ -647,11 +647,11 @@ int sc_main(int argc, char* argv[]) {
 
     assert(tb.number_of_errors == 0);
 
-    double avg_switches = tb.sum_switches / 256.0;
-    double avg_delay    = tb.sum_delay    / 256.0;
-    double avg_edp_correct = tb.sum_edp   / 256.0;
+    double avg_switches = tb.sum_switches / 128.0;
+    double avg_delay    = tb.sum_delay / 128.0;
+    double avg_edp_correct = tb.sum_edp / 128.0;
 
-    std::cout << "SD-8-HYB-pathEDP: STEPS=256 SEED=" << tb.rng_seed
+    std::cout << "SD-8-HYB-pathEDP: STEPS=128 SEED=" << tb.rng_seed
               << " AVG_SWITCHES=" << avg_switches
               << " AVG_DELAY_ns=" << avg_delay
               << " AVG_EDP_correct=" << avg_edp_correct << "\n";

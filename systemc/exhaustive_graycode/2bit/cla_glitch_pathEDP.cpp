@@ -250,10 +250,10 @@ SC_MODULE(Testbench) {
         prev_sum = to_unsigned_2bit(Sum.read());
         prev_cout = Cout.read();
 
-        for (unsigned int i = 0; i < 16U; i++) {
+        for (unsigned int i = 0; i < 4U; i++) {
             unsigned int g = i ^ (i >> 1);
-            unsigned int a_value = (g >> 2) & 3U;
-            unsigned int b_value = g & 3U;
+            unsigned int a_value = (g >> 1) & 1U;
+            unsigned int b_value = g & 1U;
             apply_test(a_value, b_value);
         }
 
@@ -326,7 +326,7 @@ int sc_main(int argc, char* argv[]) {
 
     assert(tb.number_of_errors == 0);
 
-    unsigned long long vectors = 16ULL;
+    unsigned long long vectors = 4ULL;
     double avg_switches = tb.sum_switches / static_cast<double>(vectors);
     double avg_delay    = tb.sum_delay    / static_cast<double>(vectors);
     double avg_edp_correct = tb.sum_edp   / static_cast<double>(vectors);

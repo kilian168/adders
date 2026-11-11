@@ -415,17 +415,17 @@ SC_MODULE(Testbench) {
 
     void stimulus() {
         SD_a.write(make_4bit_vector(0));
-        SD_b.write(make_4bit_vector(0));
+        SD_b.write(make_4bit_vector(15));
         TC.write(make_4bit_vector(0));
         wait(200, SC_NS);
         prev_sd = 0; prev_tc = 0;
         prev_sum_a = static_cast<unsigned int>(to_unsigned_5bit(Sum_a.read()));
         prev_sum_b = static_cast<unsigned int>(to_unsigned_5bit(Sum_b.read()));
 
-        for (unsigned int i = 0; i < 256U; i++) {
+        for (unsigned int i = 0; i < 64U; i++) {
             unsigned int g = i ^ (i >> 1);
-            unsigned int sd_value = (g >> 4) & 15U;
-            unsigned int tc_value = g & 15U;
+            unsigned int sd_value = (g >> 3) & 7U;
+            unsigned int tc_value = g & 7U;
             apply_test(sd_value, tc_value);
         }
 
@@ -437,12 +437,13 @@ SC_MODULE(Testbench) {
         reset_all_gate_switches();
 
         SD_a.write(make_4bit_vector(sd_value));
-        SD_b.write(make_4bit_vector(0));
+        SD_b.write(make_4bit_vector(15));
         TC.write(make_4bit_vector(tc_value));
 
         wait(200, SC_NS);
 
         long long expected_result = static_cast<long long>(sd_value)
+                                   + 15LL
                                    + to_signed_twos_complement_4bit(tc_value);
 
         sc_lv<5> sum_a_val = Sum_a.read();
@@ -514,7 +515,7 @@ int sc_main(int argc, char* argv[]) {
 
     assert(tb.number_of_errors == 0);
 
-    unsigned long long vectors = 256ULL;
+    unsigned long long vectors = 64ULL;
     double avg_switches = tb.sum_switches / static_cast<double>(vectors);
     double avg_delay    = tb.sum_delay    / static_cast<double>(vectors);
     double avg_edp_correct = tb.sum_edp   / static_cast<double>(vectors);

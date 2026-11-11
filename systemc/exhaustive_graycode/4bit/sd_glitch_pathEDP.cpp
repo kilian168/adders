@@ -491,10 +491,10 @@ SC_MODULE(Testbench) {
 
         design_ptr->reset_counters();
 
-        for (unsigned long long i = 0; i < 256ULL; i++) {
+        for (unsigned long long i = 0; i < 64ULL; i++) {
             unsigned long long g = i ^ (i >> 1);
-            unsigned long long value_a = (g >> 4) & 15ULL;
-            unsigned long long value_b = g & 15ULL;
+            unsigned long long value_a = (g >> 3) & 7ULL;
+            unsigned long long value_b = g & 7ULL;
             apply_test(value_a, value_b);
         }
 
@@ -592,7 +592,7 @@ int sc_main(int argc, char* argv[]) {
 
     assert(tb.number_of_errors == 0);
 
-    unsigned long long vectors = 256ULL;
+    unsigned long long vectors = 64ULL;
     double avg_switches = tb.sum_switches / static_cast<double>(vectors);
     double avg_delay    = tb.sum_delay    / static_cast<double>(vectors);
     double avg_edp_correct = tb.sum_edp   / static_cast<double>(vectors);

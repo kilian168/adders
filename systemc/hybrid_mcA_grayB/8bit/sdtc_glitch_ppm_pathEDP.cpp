@@ -440,17 +440,17 @@ SC_MODULE(Testbench) {
 
     void stimulus() {
         std::mt19937_64 rng(rng_seed);
-        std::uniform_int_distribution<unsigned long long> dist(0ULL, 255ULL);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 127ULL);
 
         SD_a.write(make_8bit_vector(0));
-        SD_b.write(make_8bit_vector(0));
+        SD_b.write(make_8bit_vector(255));
         TC.write(make_8bit_vector(0));
         wait(200, SC_NS);
         prev_sd = 0; prev_tc = 0;
         prev_sum_a = static_cast<unsigned int>(to_unsigned_9bit(Sum_a.read()));
         prev_sum_b = static_cast<unsigned int>(to_unsigned_9bit(Sum_b.read()));
 
-        for (unsigned int i = 0; i < 256U; i++) {
+        for (unsigned int i = 0; i < 128U; i++) {
             unsigned int tc_value = i ^ (i >> 1);
             unsigned int sd_value = static_cast<unsigned int>(dist(rng));
             apply_test(sd_value, tc_value);
@@ -464,12 +464,13 @@ SC_MODULE(Testbench) {
         reset_all_gate_switches();
 
         SD_a.write(make_8bit_vector(sd_value));
-        SD_b.write(make_8bit_vector(0));
+        SD_b.write(make_8bit_vector(255));
         TC.write(make_8bit_vector(tc_value));
 
         wait(200, SC_NS);
 
         long long expected_result = static_cast<long long>(sd_value)
+                                   + 255LL
                                    + to_signed_twos_complement_8bit(tc_value);
 
         sc_lv<9> sum_a_val = Sum_a.read();
@@ -542,11 +543,11 @@ int sc_main(int argc, char* argv[]) {
 
     assert(tb.number_of_errors == 0);
 
-    double avg_switches = tb.sum_switches / 256.0;
-    double avg_delay    = tb.sum_delay    / 256.0;
-    double avg_edp_correct = tb.sum_edp   / 256.0;
+    double avg_switches = tb.sum_switches / 128.0;
+    double avg_delay    = tb.sum_delay / 128.0;
+    double avg_edp_correct = tb.sum_edp / 128.0;
 
-    std::cout << "SDTC-PPM-8-HYB-pathEDP: STEPS=256 SEED=" << tb.rng_seed
+    std::cout << "SDTC-PPM-8-HYB-pathEDP: STEPS=128 SEED=" << tb.rng_seed
               << " AVG_SWITCHES=" << avg_switches
               << " AVG_DELAY_ns=" << avg_delay
               << " AVG_EDP_correct=" << avg_edp_correct << "\n";

@@ -328,9 +328,9 @@ SC_MODULE(Testbench) {
         prev_cout = Cout.read();
 
         std::mt19937_64 rng(rng_seed);
-        std::uniform_int_distribution<unsigned long long> dist(0ULL, 15ULL);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 7ULL);
 
-                for (unsigned int b_value = 0; b_value < 16U; b_value++) {
+                for (unsigned int b_value = 0; b_value < 8U; b_value++) {
             unsigned int a_value = static_cast<unsigned int>(dist(rng));
             apply_test(a_value, b_value);
         }
@@ -405,11 +405,11 @@ int sc_main(int argc, char* argv[]) {
 
     assert(tb.number_of_errors == 0);
 
-    double avg_switches = tb.sum_switches / 16.0;
-    double avg_delay    = tb.sum_delay    / 16.0;
-    double avg_edp_correct = tb.sum_edp   / 16.0;
+    double avg_switches = tb.sum_switches / 8.0;
+    double avg_delay    = tb.sum_delay / 8.0;
+    double avg_edp_correct = tb.sum_edp / 8.0;
 
-    std::cout << "CLA-4-HYB-pathEDP: STEPS=16 SEED=" << tb.rng_seed
+    std::cout << "CLA-4-HYB-pathEDP: STEPS=8 SEED=" << tb.rng_seed
               << " AVG_SWITCHES=" << avg_switches
               << " AVG_DELAY_ns=" << avg_delay
               << " AVG_EDP_correct=" << avg_edp_correct << "\n";
