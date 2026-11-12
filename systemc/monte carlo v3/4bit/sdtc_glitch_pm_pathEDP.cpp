@@ -718,7 +718,7 @@ int sc_main(int argc, char* argv[]) {
     double avg_edp_naive   = avg_switches * avg_delay;
     double avg_nonzero_digits = total_sum_nonzero_digits / static_cast<double>(total_samples);
 
-    std::cout << "SDTC-PM-4-MC-pathEDP: MODE=" << mode_name(mode) << " SAMPLES=" << total_samples
+    std::cout << "SDTC-PM-4-MC-pathEDP: MODE=" << mode_name(mode) << " SAMPLES=" << total_samples << " ERRORS=" << total_errors
               << " AVG_SWITCHES=" << avg_switches
               << " AVG_DELAY_ns=" << avg_delay
               << " AVG_EDP_correct=" << avg_edp_correct
