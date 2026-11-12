@@ -1,0 +1,1183 @@
+// sd_glitch.cpp -- 32-digit redundant signed-digit ("PPM") adder,
+// Monte Carlo random sampling over the genuine digit-space.
+// Gate-level port of the reference VHDL (8 chained 1-bit DIG_Add full
+// adders for N=4, generalized to N digits here): each operand digit i
+// is dual-rail encoded as (rail_a, rail_b) with digit = rail_a+rail_b-1,
+// i.e. -1 -> (0,0), 0 -> (0,1) [or equivalently (1,0)], +1 -> (1,1).
+// Place values are binary (2^i), not base-3 -- confirmed against the
+// reference schematic. Each sample draws every digit of A and B
+// independently and uniformly from {-1,0,+1}, so exhaustive-infeasible
+// widths (12, 16, 32, ...) still get genuine coverage of the redundant
+// input space the circuit actually sees.
+#include <systemc.h>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <cassert>
+#include <cstdint>
+#include <algorithm>
+#include <random>
+#include <thread>
+#include <vector>
+#include <sys/wait.h>
+#include <unistd.h>
+
+// ============================================================================
+// 0. HELPER STRUCTS AND FUNCTIONS
+// ============================================================================
+struct DigitRails32 {
+    sc_lv<32> rail_a;
+    sc_lv<32> rail_b;
+};
+
+// Encodes an array of N signed digits (each -1, 0, or +1) into dual rails,
+// one canonical encoding per digit value: -1->(0,0), 0->(0,1), +1->(1,1).
+static DigitRails32 encode_digits_32(const int digits[32]) {
+    DigitRails32 encoded;
+    encoded.rail_a = "00000000000000000000000000000000";
+    encoded.rail_b = "00000000000000000000000000000000";
+    for (int i = 0; i < 32; i++) {
+        int d = digits[i];
+        encoded.rail_a[i] = (d == 1);
+        encoded.rail_b[i] = (d != -1);
+    }
+    return encoded;
+}
+
+// Numeric value of a digit pattern at binary place values (2^i).
+static long long digits_value_32(const int digits[32]) {
+    long long value = 0;
+    for (int i = 0; i < 32; i++) value += static_cast<long long>(digits[i]) * (1LL << i);
+    return value;
+}
+
+// Two's-complement bit pattern of an N-bit value as N signed digits: bits 0..N-2 are 0/+1, the top
+// digit is 0/-1 (weight -2^(N-1)). Represents exactly the signed range -2^(N-1)..2^(N-1)-1 of an
+// N-bit RCA/CLA reading the same bit pattern as two's complement.
+static void binary_digits(unsigned long long v, int digits[32]) {
+    for (int i = 0; i < 32-1; i++) digits[i] = static_cast<int>((v >> i) & 1ULL);
+    digits[32-1] = -static_cast<int>((v >> (32-1)) & 1ULL);
+}
+
+// Genuine Non-Adjacent Form: true redundant signed digits (real -1 states),
+// not a relabeled top bit. Fits in exactly 32 digit positions for the
+// signed 32-bit range.
+static void naf_digits_signed(long long v, int digits[32]) {
+    for (int i = 0; i < 32; i++) {
+        if (v & 1) {
+            int d = 2 - static_cast<int>(v & 3);
+            digits[i] = d;
+            v = (v - d) / 2;
+        } else {
+            digits[i] = 0;
+            v = v / 2;
+        }
+    }
+}
+
+static long long signed_value_32(unsigned long long v) {
+    long long x = static_cast<long long>(v);
+    return ((v >> (32-1)) & 1ULL) ? x - (static_cast<long long>(1) << 32) : x;
+}
+
+// v3: three ways to pick a 32-digit representation of the SAME value range
+// -2^31..2^31-1 as v2 (draw the value first, choose the representation
+// after -- no width change for RCA/CLA). "naf"/"binary" reproduce v2
+// exactly; "random" picks uniformly among all valid representations via the
+// two-candidate recurrence, using a SEPARATE rng stream (rep_rng) so the
+// value stream stays bit-identical across modes.
+enum class RepMode { NAF, BINARY, RANDOM };
+
+static RepMode parse_mode(const std::string& s) {
+    if (s == "naf") return RepMode::NAF;
+    if (s == "binary") return RepMode::BINARY;
+    if (s == "random") return RepMode::RANDOM;
+    std::cerr << "unknown mode '" << s << "' (expected naf|binary|random)\n";
+    std::exit(1);
+}
+
+static const char* mode_name(RepMode m) {
+    switch (m) {
+        case RepMode::NAF: return "naf";
+        case RepMode::BINARY: return "binary";
+        default: return "random";
+    }
+}
+
+// Random valid 32-digit representation of v, lowest digit first. At each
+// position, d=0 if v is even; if odd, the two candidates are d=+1 (remainder
+// (v-1)/2) and d=-1 (remainder (v+1)/2) -- both always exact divisions since
+// v is odd. A candidate is kept only if the remaining digits can still cover
+// its magnitude (|remainder| <= 2^rem-1); if both qualify, a coin flip on
+// rep_rng picks between them. At least one candidate is always feasible
+// (same guarantee NAF relies on), so v reaches exactly 0 after 32 digits.
+static void random_digits_signed(long long v, int digits[32], std::mt19937_64& rep_rng) {
+    std::uniform_int_distribution<int> coin(0, 1);
+    for (int i = 0; i < 32; i++) {
+        int rem = 32 - i - 1;
+        long long lim = (static_cast<long long>(1) << rem) - 1;
+        int d;
+        if ((v & 1) == 0) {
+            d = 0;
+        } else {
+            long long rest_plus  = (v - 1) / 2;
+            long long rest_minus = (v + 1) / 2;
+            bool plus_ok  = (rest_plus  >= -lim) && (rest_plus  <= lim);
+            bool minus_ok = (rest_minus >= -lim) && (rest_minus <= lim);
+            if (plus_ok && minus_ok) d = coin(rep_rng) ? 1 : -1;
+            else if (plus_ok)        d = 1;
+            else                     d = -1;
+        }
+        digits[i] = d;
+        v = (v - d) / 2;
+    }
+    assert(v == 0);
+}
+
+static void make_digits(RepMode mode, unsigned long long raw_value, int digits[32], std::mt19937_64& rep_rng) {
+    switch (mode) {
+        case RepMode::NAF:    naf_digits_signed(signed_value_32(raw_value), digits); break;
+        case RepMode::BINARY: binary_digits(raw_value, digits); break;
+        case RepMode::RANDOM: random_digits_signed(signed_value_32(raw_value), digits, rep_rng); break;
+    }
+}
+
+static int count_nonzero_32(const int digits[32]) {
+    int c = 0;
+    for (int i = 0; i < 32; i++) if (digits[i] != 0) c++;
+    return c;
+}
+
+// Decodes the (N+1)-digit dual-rail result: each (S_plus[i], S_minus[i])
+// pair is a digit at binary place value 2^i, coded 00=-1, 11=+1, 01/10=0
+// (same coding as the operand rails).
+static long long decode_dual_rail_33(const sc_lv<33>& s_plus, const sc_lv<33>& s_minus) {
+    long long value = 0;
+    for (int i = 0; i < 33; i++) {
+        bool p = s_plus[i].is_01() && s_plus[i].to_bool();
+        bool m = s_minus[i].is_01() && s_minus[i].to_bool();
+        int digit = (p && m) ? 1 : ((!p && !m) ? -1 : 0);
+        value += static_cast<long long>(digit) * (1LL << i);
+    }
+    return value;
+}
+
+// ============================================================================
+// 1. GENERIC GATE-LEVEL PRIMITIVES
+//    Each instance is exactly one logic gate, independently sensitive to
+//    each of its inputs (so inputs arriving at different simulated times
+//    each trigger their own evaluation and are counted as separate
+//    switches), with a 1ns delay between evaluation and output commit.
+// ============================================================================
+enum GateOp { GATE_AND, GATE_OR, GATE_XOR };
+
+SC_MODULE(Gate) {
+    sc_in<bool> in1, in2;
+    sc_out<bool> out;
+
+    GateOp op;
+    sc_event ev_commit;
+    bool old_value;
+    bool pending_value;
+    unsigned int calls;
+    uint64_t switches;
+
+    SC_HAS_PROCESS(Gate);
+
+    Gate(sc_module_name name, GateOp gate_op)
+        : sc_module(name), op(gate_op), old_value(false), pending_value(false),
+          calls(0), switches(0)
+    {
+        SC_METHOD(eval);
+        dont_initialize();
+        sensitive << in1 << in2;
+
+        SC_METHOD(commit);
+        dont_initialize();
+        sensitive << ev_commit;
+    }
+
+    void eval() {
+        calls++;
+        bool value_a = in1.read();
+        bool value_b = in2.read();
+        bool next;
+        if (op == GATE_AND)      next = value_a & value_b;
+        else if (op == GATE_OR)  next = value_a | value_b;
+        else /* GATE_XOR */      next = value_a ^ value_b;
+
+        if (next != old_value) {
+            old_value = next;
+            switches++;
+            pending_value = next;
+            ev_commit.notify(1, SC_NS);
+        }
+    }
+
+    void commit() {
+        out.write(pending_value);
+    }
+
+    void reset_counters() {
+        calls = 0;
+        switches = 0;
+    }
+};
+
+SC_MODULE(Gate3Or) {
+    sc_in<bool> in1, in2, in3;
+    sc_out<bool> out;
+
+    sc_event ev_commit;
+    bool old_value;
+    bool pending_value;
+    unsigned int calls;
+    uint64_t switches;
+
+    SC_CTOR(Gate3Or) : old_value(false), pending_value(false), calls(0), switches(0) {
+        SC_METHOD(eval);
+        dont_initialize();
+        sensitive << in1 << in2 << in3;
+
+        SC_METHOD(commit);
+        dont_initialize();
+        sensitive << ev_commit;
+    }
+
+    void eval() {
+        calls++;
+        bool next = in1.read() | in2.read() | in3.read();
+        if (next != old_value) {
+            old_value = next;
+            switches++;
+            pending_value = next;
+            ev_commit.notify(1, SC_NS);
+        }
+    }
+
+    void commit() {
+        out.write(pending_value);
+    }
+
+    void reset_counters() {
+        calls = 0;
+        switches = 0;
+    }
+};
+
+// ============================================================================
+// 2. GATE-LEVEL BINARY FULL ADDER (6 gates) -- one instance == one DIG_Add
+//    xor1 = XOR(a,b)        and1 = AND(a,b)
+//    and2 = AND(a,c)        and3 = AND(b,c)
+//    sum  = XOR(xor1,c)     carry = OR3(and1,and2,and3)
+// ============================================================================
+SC_MODULE(BsdBinaryFullAdder) {
+    sc_in<bool> input_a;
+    sc_in<bool> input_b;
+    sc_in<bool> input_c;
+
+    sc_out<bool> sum_out;
+    sc_out<bool> carry_out;
+
+    sc_signal<bool> xor1_sig, and1_sig, and2_sig, and3_sig;
+
+    Gate *g_xor1, *g_and1, *g_and2, *g_and3, *g_xor2;
+    Gate3Or *g_or1;
+
+    SC_CTOR(BsdBinaryFullAdder) {
+        g_xor1 = new Gate("XOR1", GATE_XOR);
+        g_xor1->in1(input_a); g_xor1->in2(input_b); g_xor1->out(xor1_sig);
+
+        g_and1 = new Gate("AND1", GATE_AND);
+        g_and1->in1(input_a); g_and1->in2(input_b); g_and1->out(and1_sig);
+
+        g_and2 = new Gate("AND2", GATE_AND);
+        g_and2->in1(input_a); g_and2->in2(input_c); g_and2->out(and2_sig);
+
+        g_and3 = new Gate("AND3", GATE_AND);
+        g_and3->in1(input_b); g_and3->in2(input_c); g_and3->out(and3_sig);
+
+        g_xor2 = new Gate("XOR2", GATE_XOR);
+        g_xor2->in1(xor1_sig); g_xor2->in2(input_c); g_xor2->out(sum_out);
+
+        g_or1 = new Gate3Or("OR1");
+        g_or1->in1(and1_sig); g_or1->in2(and2_sig); g_or1->in3(and3_sig); g_or1->out(carry_out);
+    }
+
+    uint64_t total_switches() const {
+        return g_xor1->switches + g_and1->switches + g_and2->switches +
+               g_and3->switches + g_xor2->switches + g_or1->switches;
+    }
+
+    void reset_counters() {
+        g_xor1->reset_counters();
+        g_and1->reset_counters();
+        g_and2->reset_counters();
+        g_and3->reset_counters();
+        g_xor2->reset_counters();
+        g_or1->reset_counters();
+    }
+
+    ~BsdBinaryFullAdder() {
+        delete g_xor1; delete g_and1; delete g_and2;
+        delete g_and3; delete g_xor2; delete g_or1;
+    }
+};
+
+// ============================================================================
+// 2. 32-DIGIT SIGNED-DIGIT ("PPM") ADDER -- exact port of the reference VHDL
+// ============================================================================
+SC_MODULE(SignedDigitAdder32) {
+    sc_in<sc_lv<32>> A_a;
+    sc_in<sc_lv<32>> A_b;
+    sc_in<sc_lv<32>> B_a;
+    sc_in<sc_lv<32>> B_b;
+
+    sc_out<sc_lv<33>> S_minus;
+    sc_out<sc_lv<33>> S_plus;
+
+    sc_signal<bool> sa_a[32];
+    sc_signal<bool> sa_b[32];
+    sc_signal<bool> sb_a[32];
+    sc_signal<bool> sb_b[32];
+
+    sc_signal<bool> stage1_sum[32];
+    sc_signal<bool> stage1_carry[32];
+
+    sc_signal<bool> stage2_sum[32];
+    sc_signal<bool> stage2_carry[32];
+
+    sc_signal<bool> const_one;
+
+    BsdBinaryFullAdder* stage1_adders[32];
+    BsdBinaryFullAdder* stage2_adders[32];
+
+    void drive_const_one() { const_one.write(true); }
+
+    SC_CTOR(SignedDigitAdder32) {
+        SC_METHOD(drive_const_one);
+
+        for (int i = 0; i < 32; i++) {
+            std::string stage1_name = "S1_FA" + std::to_string(i + 1);
+            stage1_adders[i] = new BsdBinaryFullAdder(stage1_name.c_str());
+
+            // Stage 1 FA(i): a=A_a[i], b=B_a[i], c=A_b[i] -- matches gate0..gate3
+            // of the reference VHDL (DIG_Add port map a=>Aia, b=>Bia, c_i=>Aib).
+            stage1_adders[i]->input_a(sa_a[i]);
+            stage1_adders[i]->input_b(sb_a[i]);
+            stage1_adders[i]->input_c(sa_b[i]);
+            stage1_adders[i]->sum_out(stage1_sum[i]);
+            stage1_adders[i]->carry_out(stage1_carry[i]);
+
+            std::string stage2_name = "S2_FA" + std::to_string(i + 1);
+            stage2_adders[i] = new BsdBinaryFullAdder(stage2_name.c_str());
+
+            // Stage 2 FA(i): a=(i==0 ? 1 : stage1_carry[i-1]), b=stage1_sum[i],
+            // c=B_b[i] -- matches gate4..gate7 (a=>s_prev/n1, b=>s_even, c_i=>Bib).
+            if (i == 0) {
+                stage2_adders[i]->input_a(const_one);
+            } else {
+                stage2_adders[i]->input_a(stage1_carry[i - 1]);
+            }
+
+            stage2_adders[i]->input_b(stage1_sum[i]);
+            stage2_adders[i]->input_c(sb_b[i]);
+            stage2_adders[i]->sum_out(stage2_sum[i]);
+            stage2_adders[i]->carry_out(stage2_carry[i]);
+        }
+
+        SC_METHOD(unpack_inputs);
+        dont_initialize();
+        sensitive << A_a << A_b << B_a << B_b;
+
+        SC_METHOD(pack_outputs);
+        dont_initialize();
+        for (int i = 0; i < 32; i++) {
+            sensitive << stage2_sum[i] << stage2_carry[i];
+        }
+        sensitive << stage1_carry[31];
+    }
+
+    void unpack_inputs() {
+        sc_lv<32> value_a_a = A_a.read();
+        sc_lv<32> value_a_b = A_b.read();
+        sc_lv<32> value_b_a = B_a.read();
+        sc_lv<32> value_b_b = B_b.read();
+
+        for (int i = 0; i < 32; i++) {
+            sa_a[i].write(value_a_a[i].is_01() ? value_a_a[i].to_bool() : false);
+            sa_b[i].write(value_a_b[i].is_01() ? value_a_b[i].to_bool() : false);
+            sb_a[i].write(value_b_a[i].is_01() ? value_b_a[i].to_bool() : false);
+            sb_b[i].write(value_b_b[i].is_01() ? value_b_b[i].to_bool() : false);
+        }
+    }
+
+    void pack_outputs() {
+        sc_lv<33> output_minus;
+        sc_lv<33> output_plus;
+
+        output_minus[0] = false;  // no carry-in below the least significant digit
+        for (int i = 0; i < 32; i++) {
+            output_minus[i + 1] = stage2_carry[i].read();
+            output_plus[i] = stage2_sum[i].read();
+        }
+
+        output_plus[32] = stage1_carry[31].read();
+
+        S_minus.write(output_minus);
+        S_plus.write(output_plus);
+    }
+
+    void reset_counters() {
+        for (int i = 0; i < 32; i++) {
+            stage1_adders[i]->reset_counters();
+            stage2_adders[i]->reset_counters();
+        }
+    }
+
+    uint64_t total_switches() const {
+        uint64_t total_switches = 0;
+        for (int i = 0; i < 32; i++) {
+            total_switches += stage1_adders[i]->total_switches();
+            total_switches += stage2_adders[i]->total_switches();
+        }
+        return total_switches;
+    }
+
+    ~SignedDigitAdder32() {
+        for (int i = 0; i < 32; i++) {
+            delete stage1_adders[i];
+            delete stage2_adders[i];
+        }
+    }
+};
+
+// ============================================================================
+// 3. TESTBENCH -- Monte Carlo random sampling over the genuine
+//    redundant digit-space: each sample draws every digit of A and B
+//    independently and uniformly from {-1,0,+1}.
+// ============================================================================
+
+// ============================================================================
+// Real OpenSTA (Nangate45) max delay per (startpoint pin, endpoint pin),
+// extracted from all_critical_paths.csv for SD-32 (445 structurally
+// connected pin pairs). Input pin index: 0..31=A_a[i], 32..63=A_b[i],
+// 64..95=B_a[i], 96..127=B_b[i]. Output pin index: 0..32=S_plus[i],
+// 33..65=S_minus[i].
+// ============================================================================
+static const int NUM_IN = 128;
+static const int NUM_OUT = 66;
+static double path_delay[NUM_IN][NUM_OUT];
+
+static void init_path_delay_table() {
+    for (int i = 0; i < NUM_IN; i++)
+        for (int o = 0; o < NUM_OUT; o++)
+            path_delay[i][o] = 0.0;
+
+    path_delay[0][34] = 0.71;
+    path_delay[0][35] = 0.82;
+    path_delay[0][0] = 0.76;
+    path_delay[0][1] = 0.79;
+    path_delay[10][44] = 0.76;
+    path_delay[10][45] = 0.82;
+    path_delay[10][10] = 0.76;
+    path_delay[10][11] = 0.79;
+    path_delay[11][45] = 0.76;
+    path_delay[11][46] = 0.82;
+    path_delay[11][11] = 0.76;
+    path_delay[11][12] = 0.79;
+    path_delay[12][46] = 0.76;
+    path_delay[12][47] = 0.82;
+    path_delay[12][12] = 0.76;
+    path_delay[12][13] = 0.79;
+    path_delay[13][47] = 0.76;
+    path_delay[13][48] = 0.82;
+    path_delay[13][13] = 0.76;
+    path_delay[13][14] = 0.79;
+    path_delay[14][48] = 0.76;
+    path_delay[14][49] = 0.82;
+    path_delay[14][14] = 0.76;
+    path_delay[14][15] = 0.79;
+    path_delay[15][49] = 0.76;
+    path_delay[15][50] = 0.82;
+    path_delay[15][15] = 0.76;
+    path_delay[15][16] = 0.79;
+    path_delay[16][50] = 0.76;
+    path_delay[16][51] = 0.82;
+    path_delay[16][16] = 0.76;
+    path_delay[16][17] = 0.79;
+    path_delay[17][51] = 0.76;
+    path_delay[17][52] = 0.82;
+    path_delay[17][17] = 0.76;
+    path_delay[17][18] = 0.79;
+    path_delay[18][52] = 0.76;
+    path_delay[18][53] = 0.82;
+    path_delay[18][18] = 0.76;
+    path_delay[18][19] = 0.79;
+    path_delay[19][53] = 0.76;
+    path_delay[19][54] = 0.82;
+    path_delay[19][19] = 0.76;
+    path_delay[19][20] = 0.79;
+    path_delay[1][35] = 0.76;
+    path_delay[1][36] = 0.82;
+    path_delay[1][1] = 0.76;
+    path_delay[1][2] = 0.79;
+    path_delay[20][54] = 0.76;
+    path_delay[20][55] = 0.82;
+    path_delay[20][20] = 0.76;
+    path_delay[20][21] = 0.79;
+    path_delay[21][55] = 0.76;
+    path_delay[21][56] = 0.82;
+    path_delay[21][21] = 0.76;
+    path_delay[21][22] = 0.79;
+    path_delay[22][56] = 0.76;
+    path_delay[22][57] = 0.82;
+    path_delay[22][22] = 0.76;
+    path_delay[22][23] = 0.79;
+    path_delay[23][57] = 0.76;
+    path_delay[23][58] = 0.82;
+    path_delay[23][23] = 0.76;
+    path_delay[23][24] = 0.79;
+    path_delay[24][58] = 0.76;
+    path_delay[24][59] = 0.82;
+    path_delay[24][24] = 0.76;
+    path_delay[24][25] = 0.79;
+    path_delay[25][59] = 0.76;
+    path_delay[25][60] = 0.82;
+    path_delay[25][25] = 0.76;
+    path_delay[25][26] = 0.79;
+    path_delay[26][60] = 0.76;
+    path_delay[26][61] = 0.82;
+    path_delay[26][26] = 0.76;
+    path_delay[26][27] = 0.79;
+    path_delay[27][61] = 0.76;
+    path_delay[27][62] = 0.82;
+    path_delay[27][27] = 0.76;
+    path_delay[27][28] = 0.79;
+    path_delay[28][62] = 0.76;
+    path_delay[28][63] = 0.82;
+    path_delay[28][28] = 0.76;
+    path_delay[28][29] = 0.79;
+    path_delay[29][63] = 0.76;
+    path_delay[29][64] = 0.82;
+    path_delay[29][29] = 0.76;
+    path_delay[29][30] = 0.79;
+    path_delay[2][36] = 0.76;
+    path_delay[2][37] = 0.82;
+    path_delay[2][2] = 0.76;
+    path_delay[2][3] = 0.79;
+    path_delay[30][64] = 0.76;
+    path_delay[30][65] = 0.82;
+    path_delay[30][30] = 0.76;
+    path_delay[30][31] = 0.79;
+    path_delay[31][65] = 0.76;
+    path_delay[31][31] = 0.76;
+    path_delay[31][32] = 0.37;
+    path_delay[3][37] = 0.76;
+    path_delay[3][38] = 0.82;
+    path_delay[3][3] = 0.76;
+    path_delay[3][4] = 0.79;
+    path_delay[4][38] = 0.76;
+    path_delay[4][39] = 0.82;
+    path_delay[4][4] = 0.76;
+    path_delay[4][5] = 0.79;
+    path_delay[5][39] = 0.76;
+    path_delay[5][40] = 0.82;
+    path_delay[5][5] = 0.76;
+    path_delay[5][6] = 0.79;
+    path_delay[6][40] = 0.76;
+    path_delay[6][41] = 0.82;
+    path_delay[6][6] = 0.76;
+    path_delay[6][7] = 0.79;
+    path_delay[7][41] = 0.76;
+    path_delay[7][42] = 0.82;
+    path_delay[7][7] = 0.76;
+    path_delay[7][8] = 0.79;
+    path_delay[8][43] = 0.82;
+    path_delay[8][42] = 0.76;
+    path_delay[8][8] = 0.76;
+    path_delay[8][9] = 0.79;
+    path_delay[9][43] = 0.76;
+    path_delay[9][44] = 0.82;
+    path_delay[9][10] = 0.79;
+    path_delay[9][9] = 0.76;
+    path_delay[32][34] = 0.53;
+    path_delay[32][35] = 0.82;
+    path_delay[32][0] = 0.59;
+    path_delay[32][1] = 0.79;
+    path_delay[42][44] = 0.59;
+    path_delay[42][45] = 0.82;
+    path_delay[42][10] = 0.59;
+    path_delay[42][11] = 0.79;
+    path_delay[43][45] = 0.59;
+    path_delay[43][46] = 0.82;
+    path_delay[43][11] = 0.59;
+    path_delay[43][12] = 0.79;
+    path_delay[44][46] = 0.59;
+    path_delay[44][47] = 0.82;
+    path_delay[44][12] = 0.59;
+    path_delay[44][13] = 0.79;
+    path_delay[45][47] = 0.59;
+    path_delay[45][48] = 0.82;
+    path_delay[45][13] = 0.59;
+    path_delay[45][14] = 0.79;
+    path_delay[46][48] = 0.59;
+    path_delay[46][49] = 0.82;
+    path_delay[46][14] = 0.59;
+    path_delay[46][15] = 0.79;
+    path_delay[47][49] = 0.59;
+    path_delay[47][50] = 0.82;
+    path_delay[47][15] = 0.59;
+    path_delay[47][16] = 0.79;
+    path_delay[48][50] = 0.59;
+    path_delay[48][51] = 0.82;
+    path_delay[48][16] = 0.59;
+    path_delay[48][17] = 0.79;
+    path_delay[49][51] = 0.59;
+    path_delay[49][52] = 0.82;
+    path_delay[49][17] = 0.59;
+    path_delay[49][18] = 0.79;
+    path_delay[50][52] = 0.59;
+    path_delay[50][53] = 0.82;
+    path_delay[50][18] = 0.59;
+    path_delay[50][19] = 0.79;
+    path_delay[51][53] = 0.59;
+    path_delay[51][54] = 0.82;
+    path_delay[51][19] = 0.59;
+    path_delay[51][20] = 0.79;
+    path_delay[33][35] = 0.59;
+    path_delay[33][36] = 0.82;
+    path_delay[33][1] = 0.59;
+    path_delay[33][2] = 0.79;
+    path_delay[52][54] = 0.59;
+    path_delay[52][55] = 0.82;
+    path_delay[52][20] = 0.59;
+    path_delay[52][21] = 0.79;
+    path_delay[53][55] = 0.59;
+    path_delay[53][56] = 0.82;
+    path_delay[53][21] = 0.59;
+    path_delay[53][22] = 0.79;
+    path_delay[54][56] = 0.59;
+    path_delay[54][57] = 0.82;
+    path_delay[54][22] = 0.59;
+    path_delay[54][23] = 0.79;
+    path_delay[55][57] = 0.59;
+    path_delay[55][58] = 0.82;
+    path_delay[55][23] = 0.59;
+    path_delay[55][24] = 0.79;
+    path_delay[56][58] = 0.59;
+    path_delay[56][59] = 0.82;
+    path_delay[56][24] = 0.59;
+    path_delay[56][25] = 0.79;
+    path_delay[57][59] = 0.59;
+    path_delay[57][60] = 0.82;
+    path_delay[57][25] = 0.59;
+    path_delay[57][26] = 0.79;
+    path_delay[58][60] = 0.59;
+    path_delay[58][61] = 0.82;
+    path_delay[58][26] = 0.59;
+    path_delay[58][27] = 0.79;
+    path_delay[59][61] = 0.59;
+    path_delay[59][62] = 0.82;
+    path_delay[59][27] = 0.59;
+    path_delay[59][28] = 0.79;
+    path_delay[60][62] = 0.59;
+    path_delay[60][63] = 0.82;
+    path_delay[60][28] = 0.59;
+    path_delay[60][29] = 0.79;
+    path_delay[61][63] = 0.59;
+    path_delay[61][64] = 0.82;
+    path_delay[61][29] = 0.59;
+    path_delay[61][30] = 0.79;
+    path_delay[34][36] = 0.59;
+    path_delay[34][37] = 0.82;
+    path_delay[34][2] = 0.59;
+    path_delay[34][3] = 0.79;
+    path_delay[62][64] = 0.59;
+    path_delay[62][65] = 0.82;
+    path_delay[62][30] = 0.59;
+    path_delay[62][31] = 0.79;
+    path_delay[63][65] = 0.59;
+    path_delay[63][31] = 0.59;
+    path_delay[63][32] = 0.38;
+    path_delay[35][37] = 0.59;
+    path_delay[35][38] = 0.82;
+    path_delay[35][3] = 0.59;
+    path_delay[35][4] = 0.79;
+    path_delay[36][38] = 0.59;
+    path_delay[36][39] = 0.82;
+    path_delay[36][4] = 0.59;
+    path_delay[36][5] = 0.79;
+    path_delay[37][39] = 0.59;
+    path_delay[37][40] = 0.82;
+    path_delay[37][5] = 0.59;
+    path_delay[37][6] = 0.79;
+    path_delay[38][40] = 0.59;
+    path_delay[38][41] = 0.82;
+    path_delay[38][6] = 0.59;
+    path_delay[38][7] = 0.79;
+    path_delay[39][41] = 0.59;
+    path_delay[39][42] = 0.82;
+    path_delay[39][7] = 0.59;
+    path_delay[39][8] = 0.79;
+    path_delay[40][43] = 0.82;
+    path_delay[40][42] = 0.59;
+    path_delay[40][8] = 0.59;
+    path_delay[40][9] = 0.79;
+    path_delay[41][43] = 0.59;
+    path_delay[41][44] = 0.82;
+    path_delay[41][10] = 0.79;
+    path_delay[41][9] = 0.59;
+    path_delay[64][34] = 0.72;
+    path_delay[64][35] = 0.81;
+    path_delay[64][0] = 0.77;
+    path_delay[64][1] = 0.78;
+    path_delay[74][44] = 0.78;
+    path_delay[74][45] = 0.81;
+    path_delay[74][10] = 0.77;
+    path_delay[74][11] = 0.78;
+    path_delay[75][45] = 0.78;
+    path_delay[75][46] = 0.81;
+    path_delay[75][11] = 0.77;
+    path_delay[75][12] = 0.78;
+    path_delay[76][46] = 0.78;
+    path_delay[76][47] = 0.81;
+    path_delay[76][12] = 0.77;
+    path_delay[76][13] = 0.78;
+    path_delay[77][47] = 0.78;
+    path_delay[77][48] = 0.81;
+    path_delay[77][13] = 0.77;
+    path_delay[77][14] = 0.78;
+    path_delay[78][48] = 0.78;
+    path_delay[78][49] = 0.81;
+    path_delay[78][14] = 0.77;
+    path_delay[78][15] = 0.78;
+    path_delay[79][49] = 0.78;
+    path_delay[79][50] = 0.81;
+    path_delay[79][15] = 0.77;
+    path_delay[79][16] = 0.78;
+    path_delay[80][50] = 0.78;
+    path_delay[80][51] = 0.81;
+    path_delay[80][16] = 0.77;
+    path_delay[80][17] = 0.78;
+    path_delay[81][51] = 0.78;
+    path_delay[81][52] = 0.81;
+    path_delay[81][17] = 0.77;
+    path_delay[81][18] = 0.78;
+    path_delay[82][52] = 0.78;
+    path_delay[82][53] = 0.81;
+    path_delay[82][18] = 0.77;
+    path_delay[82][19] = 0.78;
+    path_delay[83][53] = 0.78;
+    path_delay[83][54] = 0.81;
+    path_delay[83][19] = 0.77;
+    path_delay[83][20] = 0.78;
+    path_delay[65][35] = 0.78;
+    path_delay[65][36] = 0.81;
+    path_delay[65][1] = 0.77;
+    path_delay[65][2] = 0.78;
+    path_delay[84][54] = 0.78;
+    path_delay[84][55] = 0.81;
+    path_delay[84][20] = 0.77;
+    path_delay[84][21] = 0.78;
+    path_delay[85][55] = 0.78;
+    path_delay[85][56] = 0.81;
+    path_delay[85][21] = 0.77;
+    path_delay[85][22] = 0.78;
+    path_delay[86][56] = 0.78;
+    path_delay[86][57] = 0.81;
+    path_delay[86][22] = 0.77;
+    path_delay[86][23] = 0.78;
+    path_delay[87][57] = 0.78;
+    path_delay[87][58] = 0.81;
+    path_delay[87][23] = 0.77;
+    path_delay[87][24] = 0.78;
+    path_delay[88][58] = 0.78;
+    path_delay[88][59] = 0.81;
+    path_delay[88][24] = 0.77;
+    path_delay[88][25] = 0.78;
+    path_delay[89][59] = 0.78;
+    path_delay[89][60] = 0.81;
+    path_delay[89][25] = 0.77;
+    path_delay[89][26] = 0.78;
+    path_delay[90][60] = 0.78;
+    path_delay[90][61] = 0.81;
+    path_delay[90][26] = 0.77;
+    path_delay[90][27] = 0.78;
+    path_delay[91][61] = 0.78;
+    path_delay[91][62] = 0.81;
+    path_delay[91][27] = 0.77;
+    path_delay[91][28] = 0.78;
+    path_delay[92][62] = 0.78;
+    path_delay[92][63] = 0.81;
+    path_delay[92][28] = 0.77;
+    path_delay[92][29] = 0.78;
+    path_delay[93][63] = 0.78;
+    path_delay[93][64] = 0.81;
+    path_delay[93][29] = 0.77;
+    path_delay[93][30] = 0.78;
+    path_delay[66][36] = 0.78;
+    path_delay[66][37] = 0.81;
+    path_delay[66][2] = 0.77;
+    path_delay[66][3] = 0.78;
+    path_delay[94][64] = 0.78;
+    path_delay[94][65] = 0.81;
+    path_delay[94][30] = 0.77;
+    path_delay[94][31] = 0.78;
+    path_delay[95][65] = 0.78;
+    path_delay[95][31] = 0.77;
+    path_delay[95][32] = 0.37;
+    path_delay[67][37] = 0.78;
+    path_delay[67][38] = 0.81;
+    path_delay[67][3] = 0.77;
+    path_delay[67][4] = 0.78;
+    path_delay[68][38] = 0.78;
+    path_delay[68][39] = 0.81;
+    path_delay[68][4] = 0.77;
+    path_delay[68][5] = 0.78;
+    path_delay[69][39] = 0.78;
+    path_delay[69][40] = 0.81;
+    path_delay[69][5] = 0.77;
+    path_delay[69][6] = 0.78;
+    path_delay[70][40] = 0.78;
+    path_delay[70][41] = 0.81;
+    path_delay[70][6] = 0.77;
+    path_delay[70][7] = 0.78;
+    path_delay[71][41] = 0.78;
+    path_delay[71][42] = 0.81;
+    path_delay[71][7] = 0.77;
+    path_delay[71][8] = 0.78;
+    path_delay[72][43] = 0.81;
+    path_delay[72][42] = 0.78;
+    path_delay[72][8] = 0.77;
+    path_delay[72][9] = 0.78;
+    path_delay[73][43] = 0.78;
+    path_delay[73][44] = 0.81;
+    path_delay[73][10] = 0.78;
+    path_delay[73][9] = 0.77;
+    path_delay[96][34] = 0.32;
+    path_delay[96][0] = 0.18;
+    path_delay[106][44] = 0.38;
+    path_delay[106][10] = 0.18;
+    path_delay[107][45] = 0.38;
+    path_delay[107][11] = 0.18;
+    path_delay[108][46] = 0.38;
+    path_delay[108][12] = 0.18;
+    path_delay[109][47] = 0.38;
+    path_delay[109][13] = 0.18;
+    path_delay[110][48] = 0.38;
+    path_delay[110][14] = 0.18;
+    path_delay[111][49] = 0.38;
+    path_delay[111][15] = 0.18;
+    path_delay[112][50] = 0.38;
+    path_delay[112][16] = 0.18;
+    path_delay[113][51] = 0.38;
+    path_delay[113][17] = 0.18;
+    path_delay[114][52] = 0.38;
+    path_delay[114][18] = 0.18;
+    path_delay[115][53] = 0.38;
+    path_delay[115][19] = 0.18;
+    path_delay[97][35] = 0.38;
+    path_delay[97][1] = 0.18;
+    path_delay[116][54] = 0.38;
+    path_delay[116][20] = 0.18;
+    path_delay[117][55] = 0.38;
+    path_delay[117][21] = 0.18;
+    path_delay[118][56] = 0.38;
+    path_delay[118][22] = 0.18;
+    path_delay[119][57] = 0.38;
+    path_delay[119][23] = 0.18;
+    path_delay[120][58] = 0.38;
+    path_delay[120][24] = 0.18;
+    path_delay[121][59] = 0.38;
+    path_delay[121][25] = 0.18;
+    path_delay[122][60] = 0.38;
+    path_delay[122][26] = 0.18;
+    path_delay[123][61] = 0.38;
+    path_delay[123][27] = 0.18;
+    path_delay[124][62] = 0.38;
+    path_delay[124][28] = 0.18;
+    path_delay[125][63] = 0.38;
+    path_delay[125][29] = 0.18;
+    path_delay[98][36] = 0.38;
+    path_delay[98][2] = 0.18;
+    path_delay[126][64] = 0.38;
+    path_delay[126][30] = 0.18;
+    path_delay[127][65] = 0.38;
+    path_delay[127][31] = 0.18;
+    path_delay[99][37] = 0.38;
+    path_delay[99][3] = 0.18;
+    path_delay[100][38] = 0.38;
+    path_delay[100][4] = 0.18;
+    path_delay[101][39] = 0.38;
+    path_delay[101][5] = 0.18;
+    path_delay[102][40] = 0.38;
+    path_delay[102][6] = 0.18;
+    path_delay[103][41] = 0.38;
+    path_delay[103][7] = 0.18;
+    path_delay[104][42] = 0.38;
+    path_delay[104][8] = 0.18;
+    path_delay[105][43] = 0.38;
+    path_delay[105][9] = 0.18;
+}
+
+// ============================================================================
+// 3. TESTBENCH -- Monte Carlo, per-sample EDP. Draws every digit of A
+//    and B independently and uniformly from {-1,0,+1} (genuine
+//    redundant digit-space), same as the original Monte Carlo SD.
+//    design_ptr->reset_counters() already exists and already propagates
+//    correctly through every gate -- call it before EVERY sample instead
+//    of just once before the loop, so total_switches() right after one
+//    apply_test() is that sample's own switch count.
+// ============================================================================
+SC_MODULE(Testbench) {
+    sc_out<sc_lv<32>> A_a, A_b, B_a, B_b;
+    sc_in<sc_lv<33>> S_minus, S_plus;
+
+    SignedDigitAdder32* design_ptr;
+
+    unsigned int number_of_errors;
+
+    unsigned long long num_samples;
+    unsigned long long rng_seed;
+    unsigned long long rep_seed;
+    RepMode mode;
+
+    double sum_switches, sum_delay, sum_edp;
+    double sum_nonzero_digits;
+
+    bool prev_in[NUM_IN];
+    bool prev_out[NUM_OUT];
+
+    SC_CTOR(Testbench)
+        : design_ptr(nullptr),
+          number_of_errors(0),
+          num_samples(1000000ULL),
+          rng_seed(42ULL),
+          rep_seed(1042ULL),
+          mode(RepMode::RANDOM),
+          sum_switches(0.0), sum_delay(0.0), sum_edp(0.0),
+          sum_nonzero_digits(0.0)
+    {
+        for (int i = 0; i < NUM_IN; i++) prev_in[i] = false;
+        for (int i = 0; i < NUM_OUT; i++) prev_out[i] = false;
+        SC_THREAD(stimulus);
+    }
+
+    void stimulus() {
+        int zero_digits[32];
+        for (int i = 0; i < 32; i++) zero_digits[i] = 0;
+        DigitRails32 zero = encode_digits_32(zero_digits);
+
+        A_a.write(zero.rail_a);
+        A_b.write(zero.rail_b);
+        B_a.write(zero.rail_a);
+        B_b.write(zero.rail_b);
+
+        wait(20, SC_NS);
+
+        design_ptr->reset_counters();
+
+        std::mt19937_64 rng(rng_seed);
+        std::uniform_int_distribution<unsigned long long> dist(0ULL, 4294967295ULL);
+        std::mt19937_64 rep_rng(rep_seed);
+
+        for (unsigned long long i = 0; i < num_samples; i++) {
+            unsigned long long value_a = dist(rng);
+            unsigned long long value_b = dist(rng);
+            apply_test(value_a, value_b, rep_rng);
+        }
+
+        assert(number_of_errors == 0);
+        sc_stop();
+    }
+
+    void apply_test(unsigned long long value_a, unsigned long long value_b, std::mt19937_64& rep_rng) {
+        design_ptr->reset_counters();
+
+        int a_digits[32], b_digits[32];
+        make_digits(mode, value_a, a_digits, rep_rng);
+        make_digits(mode, value_b, b_digits, rep_rng);
+        sum_nonzero_digits += static_cast<double>(count_nonzero_32(a_digits) + count_nonzero_32(b_digits));
+
+        DigitRails32 encoded_a = encode_digits_32(a_digits);
+        DigitRails32 encoded_b = encode_digits_32(b_digits);
+
+        A_a.write(encoded_a.rail_a);
+        A_b.write(encoded_a.rail_b);
+        B_a.write(encoded_b.rail_a);
+        B_b.write(encoded_b.rail_b);
+
+        wait(20, SC_NS);
+
+        long long expected_result = signed_value_32(value_a) + signed_value_32(value_b);
+        sc_lv<33> s_plus_val = S_plus.read();
+        sc_lv<33> s_minus_val = S_minus.read();
+        long long actual_result = decode_dual_rail_33(s_plus_val, s_minus_val);
+
+        if (expected_result != actual_result) {
+            number_of_errors++;
+        }
+
+        unsigned long long switches_i = design_ptr->total_switches();
+
+        bool cur_in[NUM_IN];
+        for (int i = 0; i < 32; i++) cur_in[i] = encoded_a.rail_a[i].is_01() ? encoded_a.rail_a[i].to_bool() : false;
+        for (int i = 0; i < 32; i++) cur_in[32 + i] = encoded_a.rail_b[i].is_01() ? encoded_a.rail_b[i].to_bool() : false;
+        for (int i = 0; i < 32; i++) cur_in[64 + i] = encoded_b.rail_a[i].is_01() ? encoded_b.rail_a[i].to_bool() : false;
+        for (int i = 0; i < 32; i++) cur_in[96 + i] = encoded_b.rail_b[i].is_01() ? encoded_b.rail_b[i].to_bool() : false;
+
+        bool cur_out[NUM_OUT];
+        for (int i = 0; i <= 32; i++) cur_out[i] = s_plus_val[i].is_01() ? s_plus_val[i].to_bool() : false;
+        for (int i = 0; i <= 32; i++) cur_out[33 + i] = s_minus_val[i].is_01() ? s_minus_val[i].to_bool() : false;
+
+        double delay_i = 0.0;
+        for (int in = 0; in < NUM_IN; in++) {
+            if (cur_in[in] == prev_in[in]) continue;
+            for (int out = 0; out < NUM_OUT; out++) {
+                if (cur_out[out] == prev_out[out]) continue;
+                double d = path_delay[in][out];
+                if (d > delay_i) delay_i = d;
+            }
+        }
+
+        double edp_i = static_cast<double>(switches_i) * delay_i;
+        sum_switches += static_cast<double>(switches_i);
+        sum_delay += delay_i;
+        sum_edp += edp_i;
+
+        for (int i = 0; i < NUM_IN; i++) prev_in[i] = cur_in[i];
+        for (int i = 0; i < NUM_OUT; i++) prev_out[i] = cur_out[i];
+    }
+};
+
+// ============================================================================
+// 4. MAIN -- Monte Carlo, auto-parallel across all CPU cores
+// ============================================================================
+struct WorkerResult {
+    double sum_switches;
+    double sum_delay;
+    double sum_edp;
+    double sum_nonzero_digits;
+    unsigned long long errors;
+};
+
+static void run_slice(unsigned long long samples_for_this_worker, unsigned long long seed_for_this_worker,
+                       unsigned long long rep_seed_for_this_worker, RepMode mode,
+                       double& out_sum_switches, double& out_sum_delay, double& out_sum_edp,
+                       double& out_sum_nonzero_digits, unsigned int& out_errors) {
+    sc_signal<sc_lv<32>> A_a, A_b, B_a, B_b;
+    sc_signal<sc_lv<33>> S_minus, S_plus;
+
+    SignedDigitAdder32 adder("SignedDigitAdder32");
+    Testbench tb("TB");
+
+    tb.design_ptr = &adder;
+
+    adder.A_a(A_a);
+    adder.A_b(A_b);
+    adder.B_a(B_a);
+    adder.B_b(B_b);
+    adder.S_minus(S_minus);
+    adder.S_plus(S_plus);
+
+    tb.A_a(A_a);
+    tb.A_b(A_b);
+    tb.B_a(B_a);
+    tb.B_b(B_b);
+    tb.S_minus(S_minus);
+    tb.S_plus(S_plus);
+
+    tb.num_samples = samples_for_this_worker;
+    tb.rng_seed = seed_for_this_worker;
+    tb.rep_seed = rep_seed_for_this_worker;
+    tb.mode = mode;
+
+    sc_start();
+
+    out_sum_switches = tb.sum_switches;
+    out_sum_delay = tb.sum_delay;
+    out_sum_edp = tb.sum_edp;
+    out_sum_nonzero_digits = tb.sum_nonzero_digits;
+    out_errors = tb.number_of_errors;
+}
+
+int sc_main(int argc, char* argv[]) {
+    init_path_delay_table();
+
+    unsigned long long total_samples = (argc >= 2) ? std::stoull(argv[1]) : 1000000ULL;
+    unsigned long long base_seed     = (argc >= 3) ? std::stoull(argv[2]) : 42ULL;
+    RepMode mode                     = (argc >= 4) ? parse_mode(argv[3]) : RepMode::RANDOM;
+
+    unsigned int num_workers = std::thread::hardware_concurrency();
+    if (num_workers == 0) num_workers = 1;
+    num_workers = static_cast<unsigned int>(std::min<unsigned long long>(num_workers, std::max<unsigned long long>(total_samples, 1ULL)));
+
+    std::vector<int> read_fd(num_workers);
+    std::vector<pid_t> worker_pid(num_workers);
+
+    unsigned long long base_slice = total_samples / num_workers;
+    unsigned long long remainder  = total_samples % num_workers;
+
+    for (unsigned int i = 0; i < num_workers; i++) {
+        unsigned long long samples_for_worker = base_slice + (i < remainder ? 1ULL : 0ULL);
+
+        int fds[2];
+        if (pipe(fds) != 0) { perror("pipe"); return 1; }
+
+        pid_t child = fork();
+        if (child < 0) { perror("fork"); return 1; }
+
+        if (child == 0) {
+            close(fds[0]);
+            WorkerResult result{};
+            unsigned int errors = 0;
+            run_slice(samples_for_worker, base_seed + i, base_seed + 1000ULL + i, mode,
+                      result.sum_switches, result.sum_delay, result.sum_edp, result.sum_nonzero_digits, errors);
+            result.errors = errors;
+            ssize_t written = write(fds[1], &result, sizeof(result));
+            (void)written;
+            close(fds[1]);
+            _exit(0);
+        }
+
+        close(fds[1]);
+        read_fd[i] = fds[0];
+        worker_pid[i] = child;
+    }
+
+    double total_sum_switches = 0.0, total_sum_delay = 0.0, total_sum_edp = 0.0, total_sum_nonzero_digits = 0.0;
+    unsigned long long total_errors = 0;
+    for (unsigned int i = 0; i < num_workers; i++) {
+        WorkerResult result{};
+        ssize_t got = read(read_fd[i], &result, sizeof(result));
+        if (got == static_cast<ssize_t>(sizeof(result))) {
+            total_sum_switches += result.sum_switches;
+            total_sum_delay    += result.sum_delay;
+            total_sum_edp      += result.sum_edp;
+            total_sum_nonzero_digits += result.sum_nonzero_digits;
+            total_errors       += result.errors;
+        }
+        close(read_fd[i]);
+        int status = 0;
+        waitpid(worker_pid[i], &status, 0);
+    }
+
+    assert(total_errors == 0);
+
+    double avg_switches = total_sum_switches / static_cast<double>(total_samples);
+    double avg_delay    = total_sum_delay    / static_cast<double>(total_samples);
+    double avg_edp_correct = total_sum_edp   / static_cast<double>(total_samples);
+    double avg_edp_naive   = avg_switches * avg_delay;
+    double avg_nonzero_digits = total_sum_nonzero_digits / (2.0 * static_cast<double>(total_samples));
+
+    std::cout << "SD-32-MC-pathEDP: MODE=" << mode_name(mode) << " SAMPLES=" << total_samples
+              << " AVG_SWITCHES=" << avg_switches
+              << " AVG_DELAY_ns=" << avg_delay
+              << " AVG_EDP_correct=" << avg_edp_correct
+              << " AVG_EDP_naive=" << avg_edp_naive
+              << " pct_diff=" << ((avg_edp_naive / avg_edp_correct - 1.0) * 100.0) << "%"
+              << " AVG_NONZERO_DIGITS=" << avg_nonzero_digits << "\n";
+
+    return 0;
+}
