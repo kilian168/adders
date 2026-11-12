@@ -598,7 +598,7 @@ int sc_main(int argc, char* argv[]) {
     double avg_edp_correct = tb.sum_edp   / static_cast<double>(vectors);
     double avg_edp_naive   = avg_switches * avg_delay;
 
-    std::cout << "SD-4-GRAY-pathEDP: VECTORS=" << vectors
+    std::cout << "SD-4-GRAY-pathEDP: VECTORS=" << vectors << " ERRORS=" << tb.number_of_errors
               << " AVG_SWITCHES=" << avg_switches
               << " AVG_DELAY_ns=" << avg_delay
               << " AVG_EDP_correct=" << avg_edp_correct

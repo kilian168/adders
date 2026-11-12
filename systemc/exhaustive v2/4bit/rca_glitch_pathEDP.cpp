@@ -414,7 +414,7 @@ int sc_main(int argc, char* argv[]) {
     double avg_edp_correct = sum_edp   / static_cast<double>(vectors);
     double avg_edp_naive   = avg_switches * avg_delay;
 
-    std::cout << "RCA-4-EXH-pathEDP: VECTORS=" << vectors
+    std::cout << "RCA-4-EXH-pathEDP: VECTORS=" << vectors << " ERRORS=" << errors
               << " AVG_SWITCHES=" << avg_switches
               << " AVG_DELAY_ns=" << avg_delay
               << " AVG_EDP_correct=" << avg_edp_correct

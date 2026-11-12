@@ -536,7 +536,7 @@ int sc_main(int argc, char* argv[]) {
     double avg_delay    = tb.sum_delay / 8.0;
     double avg_edp_correct = tb.sum_edp / 8.0;
 
-    std::cout << "SDTC-PM-4-HYB-pathEDP: STEPS=8 SEED=" << tb.rng_seed
+    std::cout << "SDTC-PM-4-HYB-pathEDP: STEPS=8 SEED=" << tb.rng_seed << " ERRORS=" << tb.number_of_errors
               << " AVG_SWITCHES=" << avg_switches
               << " AVG_DELAY_ns=" << avg_delay
               << " AVG_EDP_correct=" << avg_edp_correct << "\n";
