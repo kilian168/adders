@@ -1,0 +1,20 @@
+# Functional correctness check: dedicated run with seed 777 (independent of the
+# performance sweep's default seed 42) -- every step is checked internally against the
+# expected arithmetic sum; Errors should be 0. Samples column = STEPS (one operand is
+# Monte-Carlo-random, the other cycles through the full Gray-code/sweep order).
+Architecture,Width,Samples,Errors,Result,ValueRange
+RCA,2,2,0,PASS,-2..1
+CLA,2,2,0,PASS,-2..1
+SD,2,2,0,PASS,-2..1
+SD/TC-PM,2,2,0,PASS,-2..1
+SD/TC-PPM,2,2,0,PASS,-2..1
+RCA,4,8,0,PASS,-8..7
+CLA,4,8,0,PASS,-8..7
+SD,4,8,0,PASS,-8..7
+SD/TC-PM,4,8,0,PASS,-8..7
+SD/TC-PPM,4,8,0,PASS,-8..7
+RCA,8,128,0,PASS,-128..127
+CLA,8,128,0,PASS,-128..127
+SD,8,128,0,PASS,-128..127
+SD/TC-PM,8,128,0,PASS,-128..127
+SD/TC-PPM,8,128,0,PASS,-128..127

@@ -1,0 +1,34 @@
+# Functional correctness check: exhaustive v2 tests EVERY (A,B) pair in its domain exactly
+# once (full two's-complement range -2^(N-1)..2^(N-1)-1 for each operand). Widths 2/4/8/12
+# and RCA@16 were freshly re-run for this check; CLA/SD/SD-TC-PM/SD-TC-PPM @ 16-bit (4.29
+# billion vectors each) were NOT re-run, since their correctness is already fully proven by
+# the pre-existing exhaustive_path_aware_edp_results_v2.csv row for that combination: the
+# testbench asserts total_errors==0 and aborts without writing any output on a mismatch, so
+# that row's mere existence is a complete proof over the entire domain already. See the
+# 'Note' column for provenance of each row.
+Architecture,Width,Vectors,Errors,Result,ValueRange,Note
+RCA,2,16,0,PASS,-2..1,"fresh run (seed-independent, this sweep)"
+CLA,2,16,0,PASS,-2..1,"fresh run (seed-independent, this sweep)"
+SD,2,16,0,PASS,-2..1,"fresh run (seed-independent, this sweep)"
+SD/TC-PM,2,16,0,PASS,-2..1,"fresh run (seed-independent, this sweep)"
+SD/TC-PPM,2,16,0,PASS,-2..1,"fresh run (seed-independent, this sweep)"
+RCA,4,256,0,PASS,-8..7,"fresh run (seed-independent, this sweep)"
+CLA,4,256,0,PASS,-8..7,"fresh run (seed-independent, this sweep)"
+SD,4,256,0,PASS,-8..7,"fresh run (seed-independent, this sweep)"
+SD/TC-PM,4,256,0,PASS,-8..7,"fresh run (seed-independent, this sweep)"
+SD/TC-PPM,4,256,0,PASS,-8..7,"fresh run (seed-independent, this sweep)"
+RCA,8,65536,0,PASS,-128..127,"fresh run (seed-independent, this sweep)"
+CLA,8,65536,0,PASS,-128..127,"fresh run (seed-independent, this sweep)"
+SD,8,65536,0,PASS,-128..127,"fresh run (seed-independent, this sweep)"
+SD/TC-PM,8,65536,0,PASS,-128..127,"fresh run (seed-independent, this sweep)"
+SD/TC-PPM,8,65536,0,PASS,-128..127,"fresh run (seed-independent, this sweep)"
+RCA,12,16777216,0,PASS,-2048..2047,"fresh run (seed-independent, this sweep)"
+CLA,12,16777216,0,PASS,-2048..2047,"fresh run (seed-independent, this sweep)"
+SD,12,16777216,0,PASS,-2048..2047,"fresh run (seed-independent, this sweep)"
+SD/TC-PM,12,16777216,0,PASS,-2048..2047,"fresh run (seed-independent, this sweep)"
+SD/TC-PPM,12,16777216,0,PASS,-2048..2047,"fresh run (seed-independent, this sweep)"
+RCA,16,4294967296,0,PASS,-32768..32767,"fresh run (seed-independent, this sweep)"
+CLA,16,4294967296,0,PASS,-32768..32767,cited: exhaustive_path_aware_edp_results_v2.csv row + run.log FINISHED (assert(total_errors==0) would have aborted the program otherwise)
+SD,16,4294967296,0,PASS,-32768..32767,cited: exhaustive_path_aware_edp_results_v2.csv row + run.log FINISHED (assert(total_errors==0) would have aborted the program otherwise)
+SD/TC-PM,16,4294967296,0,PASS,-32768..32767,cited: exhaustive_path_aware_edp_results_v2.csv row + run.log FINISHED (assert(total_errors==0) would have aborted the program otherwise)
+SD/TC-PPM,16,4294967296,0,PASS,-32768..32767,cited: exhaustive_path_aware_edp_results_v2.csv row + run.log FINISHED (assert(total_errors==0) would have aborted the program otherwise)
