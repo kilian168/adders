@@ -11,42 +11,32 @@ module FullAdder(a, b, cin, sum, cout);
   wire sum;
   output cout;
   wire cout;
-  wire notB;
-  wire notS1;
+  wire c1;
+  wire c2;
   wire s1;
-  wire term1;
-  wire term2;
   Gate0 g_and1 (
-    .in1(cin),
-    .in2(notB),
-    .out(term1)
+    .in1(a),
+    .in2(b),
+    .out(c1)
   );
   Gate0 g_and2 (
-    .in1(notS1),
-    .in2(a),
-    .out(term2)
-  );
-  GateNot g_notB (
-    .in1(b),
-    .out(notB)
-  );
-  GateNot g_notS1 (
     .in1(s1),
-    .out(notS1)
+    .in2(cin),
+    .out(c2)
   );
-  Gate2 g_or1 (
-    .in1(term1),
-    .in2(term2),
+  Gate3 g_or1 (
+    .in1(c1),
+    .in2(c2),
     .out(cout)
   );
   Gate g_xor1 (
-    .in1(cin),
+    .in1(a),
     .in2(b),
     .out(s1)
   );
   Gate g_xor2 (
     .in1(s1),
-    .in2(a),
+    .in2(cin),
     .out(sum)
   );
 endmodule
@@ -79,7 +69,7 @@ module Gate0(in1, in2, out);
   );
 endmodule
 
-module Gate2(in1, in2, out);
+module Gate3(in1, in2, out);
   input in1;
   wire in1;
   input in2;
@@ -115,454 +105,968 @@ module SdTcAdderPM64(SD_a, SD_b, TC, Sum_a, Sum_b);
   wire [64:0] Sum_a;
   output [64:0] Sum_b;
   wire [64:0] Sum_b;
+  wire [63:0] sdb_bit_n;
+  wire [63:0] sum_bit_raw;
   wire top_bit;
   FullAdder fa_0 (
     .a(TC[0]),
-    .b(SD_b[0]),
+    .b(sdb_bit_n[0]),
     .cin(SD_a[0]),
     .cout(Sum_b[1]),
-    .sum(Sum_a[0])
+    .sum(sum_bit_raw[0])
   );
   FullAdder fa_1 (
     .a(TC[1]),
-    .b(SD_b[1]),
+    .b(sdb_bit_n[1]),
     .cin(SD_a[1]),
     .cout(Sum_b[2]),
-    .sum(Sum_a[1])
+    .sum(sum_bit_raw[1])
   );
   FullAdder fa_10 (
     .a(TC[10]),
-    .b(SD_b[10]),
+    .b(sdb_bit_n[10]),
     .cin(SD_a[10]),
     .cout(Sum_b[11]),
-    .sum(Sum_a[10])
+    .sum(sum_bit_raw[10])
   );
   FullAdder fa_11 (
     .a(TC[11]),
-    .b(SD_b[11]),
+    .b(sdb_bit_n[11]),
     .cin(SD_a[11]),
     .cout(Sum_b[12]),
-    .sum(Sum_a[11])
+    .sum(sum_bit_raw[11])
   );
   FullAdder fa_12 (
     .a(TC[12]),
-    .b(SD_b[12]),
+    .b(sdb_bit_n[12]),
     .cin(SD_a[12]),
     .cout(Sum_b[13]),
-    .sum(Sum_a[12])
+    .sum(sum_bit_raw[12])
   );
   FullAdder fa_13 (
     .a(TC[13]),
-    .b(SD_b[13]),
+    .b(sdb_bit_n[13]),
     .cin(SD_a[13]),
     .cout(Sum_b[14]),
-    .sum(Sum_a[13])
+    .sum(sum_bit_raw[13])
   );
   FullAdder fa_14 (
     .a(TC[14]),
-    .b(SD_b[14]),
+    .b(sdb_bit_n[14]),
     .cin(SD_a[14]),
     .cout(Sum_b[15]),
-    .sum(Sum_a[14])
+    .sum(sum_bit_raw[14])
   );
   FullAdder fa_15 (
     .a(TC[15]),
-    .b(SD_b[15]),
+    .b(sdb_bit_n[15]),
     .cin(SD_a[15]),
     .cout(Sum_b[16]),
-    .sum(Sum_a[15])
+    .sum(sum_bit_raw[15])
   );
   FullAdder fa_16 (
     .a(TC[16]),
-    .b(SD_b[16]),
+    .b(sdb_bit_n[16]),
     .cin(SD_a[16]),
     .cout(Sum_b[17]),
-    .sum(Sum_a[16])
+    .sum(sum_bit_raw[16])
   );
   FullAdder fa_17 (
     .a(TC[17]),
-    .b(SD_b[17]),
+    .b(sdb_bit_n[17]),
     .cin(SD_a[17]),
     .cout(Sum_b[18]),
-    .sum(Sum_a[17])
+    .sum(sum_bit_raw[17])
   );
   FullAdder fa_18 (
     .a(TC[18]),
-    .b(SD_b[18]),
+    .b(sdb_bit_n[18]),
     .cin(SD_a[18]),
     .cout(Sum_b[19]),
-    .sum(Sum_a[18])
+    .sum(sum_bit_raw[18])
   );
   FullAdder fa_19 (
     .a(TC[19]),
-    .b(SD_b[19]),
+    .b(sdb_bit_n[19]),
     .cin(SD_a[19]),
     .cout(Sum_b[20]),
-    .sum(Sum_a[19])
+    .sum(sum_bit_raw[19])
   );
   FullAdder fa_2 (
     .a(TC[2]),
-    .b(SD_b[2]),
+    .b(sdb_bit_n[2]),
     .cin(SD_a[2]),
     .cout(Sum_b[3]),
-    .sum(Sum_a[2])
+    .sum(sum_bit_raw[2])
   );
   FullAdder fa_20 (
     .a(TC[20]),
-    .b(SD_b[20]),
+    .b(sdb_bit_n[20]),
     .cin(SD_a[20]),
     .cout(Sum_b[21]),
-    .sum(Sum_a[20])
+    .sum(sum_bit_raw[20])
   );
   FullAdder fa_21 (
     .a(TC[21]),
-    .b(SD_b[21]),
+    .b(sdb_bit_n[21]),
     .cin(SD_a[21]),
     .cout(Sum_b[22]),
-    .sum(Sum_a[21])
+    .sum(sum_bit_raw[21])
   );
   FullAdder fa_22 (
     .a(TC[22]),
-    .b(SD_b[22]),
+    .b(sdb_bit_n[22]),
     .cin(SD_a[22]),
     .cout(Sum_b[23]),
-    .sum(Sum_a[22])
+    .sum(sum_bit_raw[22])
   );
   FullAdder fa_23 (
     .a(TC[23]),
-    .b(SD_b[23]),
+    .b(sdb_bit_n[23]),
     .cin(SD_a[23]),
     .cout(Sum_b[24]),
-    .sum(Sum_a[23])
+    .sum(sum_bit_raw[23])
   );
   FullAdder fa_24 (
     .a(TC[24]),
-    .b(SD_b[24]),
+    .b(sdb_bit_n[24]),
     .cin(SD_a[24]),
     .cout(Sum_b[25]),
-    .sum(Sum_a[24])
+    .sum(sum_bit_raw[24])
   );
   FullAdder fa_25 (
     .a(TC[25]),
-    .b(SD_b[25]),
+    .b(sdb_bit_n[25]),
     .cin(SD_a[25]),
     .cout(Sum_b[26]),
-    .sum(Sum_a[25])
+    .sum(sum_bit_raw[25])
   );
   FullAdder fa_26 (
     .a(TC[26]),
-    .b(SD_b[26]),
+    .b(sdb_bit_n[26]),
     .cin(SD_a[26]),
     .cout(Sum_b[27]),
-    .sum(Sum_a[26])
+    .sum(sum_bit_raw[26])
   );
   FullAdder fa_27 (
     .a(TC[27]),
-    .b(SD_b[27]),
+    .b(sdb_bit_n[27]),
     .cin(SD_a[27]),
     .cout(Sum_b[28]),
-    .sum(Sum_a[27])
+    .sum(sum_bit_raw[27])
   );
   FullAdder fa_28 (
     .a(TC[28]),
-    .b(SD_b[28]),
+    .b(sdb_bit_n[28]),
     .cin(SD_a[28]),
     .cout(Sum_b[29]),
-    .sum(Sum_a[28])
+    .sum(sum_bit_raw[28])
   );
   FullAdder fa_29 (
     .a(TC[29]),
-    .b(SD_b[29]),
+    .b(sdb_bit_n[29]),
     .cin(SD_a[29]),
     .cout(Sum_b[30]),
-    .sum(Sum_a[29])
+    .sum(sum_bit_raw[29])
   );
   FullAdder fa_3 (
     .a(TC[3]),
-    .b(SD_b[3]),
+    .b(sdb_bit_n[3]),
     .cin(SD_a[3]),
     .cout(Sum_b[4]),
-    .sum(Sum_a[3])
+    .sum(sum_bit_raw[3])
   );
   FullAdder fa_30 (
     .a(TC[30]),
-    .b(SD_b[30]),
+    .b(sdb_bit_n[30]),
     .cin(SD_a[30]),
     .cout(Sum_b[31]),
-    .sum(Sum_a[30])
+    .sum(sum_bit_raw[30])
   );
   FullAdder fa_31 (
     .a(TC[31]),
-    .b(SD_b[31]),
+    .b(sdb_bit_n[31]),
     .cin(SD_a[31]),
     .cout(Sum_b[32]),
-    .sum(Sum_a[31])
+    .sum(sum_bit_raw[31])
   );
   FullAdder fa_32 (
     .a(TC[32]),
-    .b(SD_b[32]),
+    .b(sdb_bit_n[32]),
     .cin(SD_a[32]),
     .cout(Sum_b[33]),
-    .sum(Sum_a[32])
+    .sum(sum_bit_raw[32])
   );
   FullAdder fa_33 (
     .a(TC[33]),
-    .b(SD_b[33]),
+    .b(sdb_bit_n[33]),
     .cin(SD_a[33]),
     .cout(Sum_b[34]),
-    .sum(Sum_a[33])
+    .sum(sum_bit_raw[33])
   );
   FullAdder fa_34 (
     .a(TC[34]),
-    .b(SD_b[34]),
+    .b(sdb_bit_n[34]),
     .cin(SD_a[34]),
     .cout(Sum_b[35]),
-    .sum(Sum_a[34])
+    .sum(sum_bit_raw[34])
   );
   FullAdder fa_35 (
     .a(TC[35]),
-    .b(SD_b[35]),
+    .b(sdb_bit_n[35]),
     .cin(SD_a[35]),
     .cout(Sum_b[36]),
-    .sum(Sum_a[35])
+    .sum(sum_bit_raw[35])
   );
   FullAdder fa_36 (
     .a(TC[36]),
-    .b(SD_b[36]),
+    .b(sdb_bit_n[36]),
     .cin(SD_a[36]),
     .cout(Sum_b[37]),
-    .sum(Sum_a[36])
+    .sum(sum_bit_raw[36])
   );
   FullAdder fa_37 (
     .a(TC[37]),
-    .b(SD_b[37]),
+    .b(sdb_bit_n[37]),
     .cin(SD_a[37]),
     .cout(Sum_b[38]),
-    .sum(Sum_a[37])
+    .sum(sum_bit_raw[37])
   );
   FullAdder fa_38 (
     .a(TC[38]),
-    .b(SD_b[38]),
+    .b(sdb_bit_n[38]),
     .cin(SD_a[38]),
     .cout(Sum_b[39]),
-    .sum(Sum_a[38])
+    .sum(sum_bit_raw[38])
   );
   FullAdder fa_39 (
     .a(TC[39]),
-    .b(SD_b[39]),
+    .b(sdb_bit_n[39]),
     .cin(SD_a[39]),
     .cout(Sum_b[40]),
-    .sum(Sum_a[39])
+    .sum(sum_bit_raw[39])
   );
   FullAdder fa_4 (
     .a(TC[4]),
-    .b(SD_b[4]),
+    .b(sdb_bit_n[4]),
     .cin(SD_a[4]),
     .cout(Sum_b[5]),
-    .sum(Sum_a[4])
+    .sum(sum_bit_raw[4])
   );
   FullAdder fa_40 (
     .a(TC[40]),
-    .b(SD_b[40]),
+    .b(sdb_bit_n[40]),
     .cin(SD_a[40]),
     .cout(Sum_b[41]),
-    .sum(Sum_a[40])
+    .sum(sum_bit_raw[40])
   );
   FullAdder fa_41 (
     .a(TC[41]),
-    .b(SD_b[41]),
+    .b(sdb_bit_n[41]),
     .cin(SD_a[41]),
     .cout(Sum_b[42]),
-    .sum(Sum_a[41])
+    .sum(sum_bit_raw[41])
   );
   FullAdder fa_42 (
     .a(TC[42]),
-    .b(SD_b[42]),
+    .b(sdb_bit_n[42]),
     .cin(SD_a[42]),
     .cout(Sum_b[43]),
-    .sum(Sum_a[42])
+    .sum(sum_bit_raw[42])
   );
   FullAdder fa_43 (
     .a(TC[43]),
-    .b(SD_b[43]),
+    .b(sdb_bit_n[43]),
     .cin(SD_a[43]),
     .cout(Sum_b[44]),
-    .sum(Sum_a[43])
+    .sum(sum_bit_raw[43])
   );
   FullAdder fa_44 (
     .a(TC[44]),
-    .b(SD_b[44]),
+    .b(sdb_bit_n[44]),
     .cin(SD_a[44]),
     .cout(Sum_b[45]),
-    .sum(Sum_a[44])
+    .sum(sum_bit_raw[44])
   );
   FullAdder fa_45 (
     .a(TC[45]),
-    .b(SD_b[45]),
+    .b(sdb_bit_n[45]),
     .cin(SD_a[45]),
     .cout(Sum_b[46]),
-    .sum(Sum_a[45])
+    .sum(sum_bit_raw[45])
   );
   FullAdder fa_46 (
     .a(TC[46]),
-    .b(SD_b[46]),
+    .b(sdb_bit_n[46]),
     .cin(SD_a[46]),
     .cout(Sum_b[47]),
-    .sum(Sum_a[46])
+    .sum(sum_bit_raw[46])
   );
   FullAdder fa_47 (
     .a(TC[47]),
-    .b(SD_b[47]),
+    .b(sdb_bit_n[47]),
     .cin(SD_a[47]),
     .cout(Sum_b[48]),
-    .sum(Sum_a[47])
+    .sum(sum_bit_raw[47])
   );
   FullAdder fa_48 (
     .a(TC[48]),
-    .b(SD_b[48]),
+    .b(sdb_bit_n[48]),
     .cin(SD_a[48]),
     .cout(Sum_b[49]),
-    .sum(Sum_a[48])
+    .sum(sum_bit_raw[48])
   );
   FullAdder fa_49 (
     .a(TC[49]),
-    .b(SD_b[49]),
+    .b(sdb_bit_n[49]),
     .cin(SD_a[49]),
     .cout(Sum_b[50]),
-    .sum(Sum_a[49])
+    .sum(sum_bit_raw[49])
   );
   FullAdder fa_5 (
     .a(TC[5]),
-    .b(SD_b[5]),
+    .b(sdb_bit_n[5]),
     .cin(SD_a[5]),
     .cout(Sum_b[6]),
-    .sum(Sum_a[5])
+    .sum(sum_bit_raw[5])
   );
   FullAdder fa_50 (
     .a(TC[50]),
-    .b(SD_b[50]),
+    .b(sdb_bit_n[50]),
     .cin(SD_a[50]),
     .cout(Sum_b[51]),
-    .sum(Sum_a[50])
+    .sum(sum_bit_raw[50])
   );
   FullAdder fa_51 (
     .a(TC[51]),
-    .b(SD_b[51]),
+    .b(sdb_bit_n[51]),
     .cin(SD_a[51]),
     .cout(Sum_b[52]),
-    .sum(Sum_a[51])
+    .sum(sum_bit_raw[51])
   );
   FullAdder fa_52 (
     .a(TC[52]),
-    .b(SD_b[52]),
+    .b(sdb_bit_n[52]),
     .cin(SD_a[52]),
     .cout(Sum_b[53]),
-    .sum(Sum_a[52])
+    .sum(sum_bit_raw[52])
   );
   FullAdder fa_53 (
     .a(TC[53]),
-    .b(SD_b[53]),
+    .b(sdb_bit_n[53]),
     .cin(SD_a[53]),
     .cout(Sum_b[54]),
-    .sum(Sum_a[53])
+    .sum(sum_bit_raw[53])
   );
   FullAdder fa_54 (
     .a(TC[54]),
-    .b(SD_b[54]),
+    .b(sdb_bit_n[54]),
     .cin(SD_a[54]),
     .cout(Sum_b[55]),
-    .sum(Sum_a[54])
+    .sum(sum_bit_raw[54])
   );
   FullAdder fa_55 (
     .a(TC[55]),
-    .b(SD_b[55]),
+    .b(sdb_bit_n[55]),
     .cin(SD_a[55]),
     .cout(Sum_b[56]),
-    .sum(Sum_a[55])
+    .sum(sum_bit_raw[55])
   );
   FullAdder fa_56 (
     .a(TC[56]),
-    .b(SD_b[56]),
+    .b(sdb_bit_n[56]),
     .cin(SD_a[56]),
     .cout(Sum_b[57]),
-    .sum(Sum_a[56])
+    .sum(sum_bit_raw[56])
   );
   FullAdder fa_57 (
     .a(TC[57]),
-    .b(SD_b[57]),
+    .b(sdb_bit_n[57]),
     .cin(SD_a[57]),
     .cout(Sum_b[58]),
-    .sum(Sum_a[57])
+    .sum(sum_bit_raw[57])
   );
   FullAdder fa_58 (
     .a(TC[58]),
-    .b(SD_b[58]),
+    .b(sdb_bit_n[58]),
     .cin(SD_a[58]),
     .cout(Sum_b[59]),
-    .sum(Sum_a[58])
+    .sum(sum_bit_raw[58])
   );
   FullAdder fa_59 (
     .a(TC[59]),
-    .b(SD_b[59]),
+    .b(sdb_bit_n[59]),
     .cin(SD_a[59]),
     .cout(Sum_b[60]),
-    .sum(Sum_a[59])
+    .sum(sum_bit_raw[59])
   );
   FullAdder fa_6 (
     .a(TC[6]),
-    .b(SD_b[6]),
+    .b(sdb_bit_n[6]),
     .cin(SD_a[6]),
     .cout(Sum_b[7]),
-    .sum(Sum_a[6])
+    .sum(sum_bit_raw[6])
   );
   FullAdder fa_60 (
     .a(TC[60]),
-    .b(SD_b[60]),
+    .b(sdb_bit_n[60]),
     .cin(SD_a[60]),
     .cout(Sum_b[61]),
-    .sum(Sum_a[60])
+    .sum(sum_bit_raw[60])
   );
   FullAdder fa_61 (
     .a(TC[61]),
-    .b(SD_b[61]),
+    .b(sdb_bit_n[61]),
     .cin(SD_a[61]),
     .cout(Sum_b[62]),
-    .sum(Sum_a[61])
+    .sum(sum_bit_raw[61])
   );
   FullAdder fa_62 (
     .a(TC[62]),
-    .b(SD_b[62]),
+    .b(sdb_bit_n[62]),
     .cin(SD_a[62]),
     .cout(Sum_b[63]),
-    .sum(Sum_a[62])
+    .sum(sum_bit_raw[62])
   );
   FullAdder fa_63 (
     .a(TC[63]),
-    .b(SD_b[63]),
+    .b(sdb_bit_n[63]),
     .cin(SD_a[63]),
     .cout(Sum_b[64]),
-    .sum(Sum_a[63])
+    .sum(sum_bit_raw[63])
   );
   FullAdder fa_7 (
     .a(TC[7]),
-    .b(SD_b[7]),
+    .b(sdb_bit_n[7]),
     .cin(SD_a[7]),
     .cout(Sum_b[8]),
-    .sum(Sum_a[7])
+    .sum(sum_bit_raw[7])
   );
   FullAdder fa_8 (
     .a(TC[8]),
-    .b(SD_b[8]),
+    .b(sdb_bit_n[8]),
     .cin(SD_a[8]),
     .cout(Sum_b[9]),
-    .sum(Sum_a[8])
+    .sum(sum_bit_raw[8])
   );
   FullAdder fa_9 (
     .a(TC[9]),
-    .b(SD_b[9]),
+    .b(sdb_bit_n[9]),
     .cin(SD_a[9]),
     .cout(Sum_b[10]),
-    .sum(Sum_a[9])
+    .sum(sum_bit_raw[9])
+  );
+  GateNot g_notB_0 (
+    .in1(SD_b[0]),
+    .out(sdb_bit_n[0])
+  );
+  GateNot g_notB_1 (
+    .in1(SD_b[1]),
+    .out(sdb_bit_n[1])
+  );
+  GateNot g_notB_10 (
+    .in1(SD_b[10]),
+    .out(sdb_bit_n[10])
+  );
+  GateNot g_notB_11 (
+    .in1(SD_b[11]),
+    .out(sdb_bit_n[11])
+  );
+  GateNot g_notB_12 (
+    .in1(SD_b[12]),
+    .out(sdb_bit_n[12])
+  );
+  GateNot g_notB_13 (
+    .in1(SD_b[13]),
+    .out(sdb_bit_n[13])
+  );
+  GateNot g_notB_14 (
+    .in1(SD_b[14]),
+    .out(sdb_bit_n[14])
+  );
+  GateNot g_notB_15 (
+    .in1(SD_b[15]),
+    .out(sdb_bit_n[15])
+  );
+  GateNot g_notB_16 (
+    .in1(SD_b[16]),
+    .out(sdb_bit_n[16])
+  );
+  GateNot g_notB_17 (
+    .in1(SD_b[17]),
+    .out(sdb_bit_n[17])
+  );
+  GateNot g_notB_18 (
+    .in1(SD_b[18]),
+    .out(sdb_bit_n[18])
+  );
+  GateNot g_notB_19 (
+    .in1(SD_b[19]),
+    .out(sdb_bit_n[19])
+  );
+  GateNot g_notB_2 (
+    .in1(SD_b[2]),
+    .out(sdb_bit_n[2])
+  );
+  GateNot g_notB_20 (
+    .in1(SD_b[20]),
+    .out(sdb_bit_n[20])
+  );
+  GateNot g_notB_21 (
+    .in1(SD_b[21]),
+    .out(sdb_bit_n[21])
+  );
+  GateNot g_notB_22 (
+    .in1(SD_b[22]),
+    .out(sdb_bit_n[22])
+  );
+  GateNot g_notB_23 (
+    .in1(SD_b[23]),
+    .out(sdb_bit_n[23])
+  );
+  GateNot g_notB_24 (
+    .in1(SD_b[24]),
+    .out(sdb_bit_n[24])
+  );
+  GateNot g_notB_25 (
+    .in1(SD_b[25]),
+    .out(sdb_bit_n[25])
+  );
+  GateNot g_notB_26 (
+    .in1(SD_b[26]),
+    .out(sdb_bit_n[26])
+  );
+  GateNot g_notB_27 (
+    .in1(SD_b[27]),
+    .out(sdb_bit_n[27])
+  );
+  GateNot g_notB_28 (
+    .in1(SD_b[28]),
+    .out(sdb_bit_n[28])
+  );
+  GateNot g_notB_29 (
+    .in1(SD_b[29]),
+    .out(sdb_bit_n[29])
+  );
+  GateNot g_notB_3 (
+    .in1(SD_b[3]),
+    .out(sdb_bit_n[3])
+  );
+  GateNot g_notB_30 (
+    .in1(SD_b[30]),
+    .out(sdb_bit_n[30])
+  );
+  GateNot g_notB_31 (
+    .in1(SD_b[31]),
+    .out(sdb_bit_n[31])
+  );
+  GateNot g_notB_32 (
+    .in1(SD_b[32]),
+    .out(sdb_bit_n[32])
+  );
+  GateNot g_notB_33 (
+    .in1(SD_b[33]),
+    .out(sdb_bit_n[33])
+  );
+  GateNot g_notB_34 (
+    .in1(SD_b[34]),
+    .out(sdb_bit_n[34])
+  );
+  GateNot g_notB_35 (
+    .in1(SD_b[35]),
+    .out(sdb_bit_n[35])
+  );
+  GateNot g_notB_36 (
+    .in1(SD_b[36]),
+    .out(sdb_bit_n[36])
+  );
+  GateNot g_notB_37 (
+    .in1(SD_b[37]),
+    .out(sdb_bit_n[37])
+  );
+  GateNot g_notB_38 (
+    .in1(SD_b[38]),
+    .out(sdb_bit_n[38])
+  );
+  GateNot g_notB_39 (
+    .in1(SD_b[39]),
+    .out(sdb_bit_n[39])
+  );
+  GateNot g_notB_4 (
+    .in1(SD_b[4]),
+    .out(sdb_bit_n[4])
+  );
+  GateNot g_notB_40 (
+    .in1(SD_b[40]),
+    .out(sdb_bit_n[40])
+  );
+  GateNot g_notB_41 (
+    .in1(SD_b[41]),
+    .out(sdb_bit_n[41])
+  );
+  GateNot g_notB_42 (
+    .in1(SD_b[42]),
+    .out(sdb_bit_n[42])
+  );
+  GateNot g_notB_43 (
+    .in1(SD_b[43]),
+    .out(sdb_bit_n[43])
+  );
+  GateNot g_notB_44 (
+    .in1(SD_b[44]),
+    .out(sdb_bit_n[44])
+  );
+  GateNot g_notB_45 (
+    .in1(SD_b[45]),
+    .out(sdb_bit_n[45])
+  );
+  GateNot g_notB_46 (
+    .in1(SD_b[46]),
+    .out(sdb_bit_n[46])
+  );
+  GateNot g_notB_47 (
+    .in1(SD_b[47]),
+    .out(sdb_bit_n[47])
+  );
+  GateNot g_notB_48 (
+    .in1(SD_b[48]),
+    .out(sdb_bit_n[48])
+  );
+  GateNot g_notB_49 (
+    .in1(SD_b[49]),
+    .out(sdb_bit_n[49])
+  );
+  GateNot g_notB_5 (
+    .in1(SD_b[5]),
+    .out(sdb_bit_n[5])
+  );
+  GateNot g_notB_50 (
+    .in1(SD_b[50]),
+    .out(sdb_bit_n[50])
+  );
+  GateNot g_notB_51 (
+    .in1(SD_b[51]),
+    .out(sdb_bit_n[51])
+  );
+  GateNot g_notB_52 (
+    .in1(SD_b[52]),
+    .out(sdb_bit_n[52])
+  );
+  GateNot g_notB_53 (
+    .in1(SD_b[53]),
+    .out(sdb_bit_n[53])
+  );
+  GateNot g_notB_54 (
+    .in1(SD_b[54]),
+    .out(sdb_bit_n[54])
+  );
+  GateNot g_notB_55 (
+    .in1(SD_b[55]),
+    .out(sdb_bit_n[55])
+  );
+  GateNot g_notB_56 (
+    .in1(SD_b[56]),
+    .out(sdb_bit_n[56])
+  );
+  GateNot g_notB_57 (
+    .in1(SD_b[57]),
+    .out(sdb_bit_n[57])
+  );
+  GateNot g_notB_58 (
+    .in1(SD_b[58]),
+    .out(sdb_bit_n[58])
+  );
+  GateNot g_notB_59 (
+    .in1(SD_b[59]),
+    .out(sdb_bit_n[59])
+  );
+  GateNot g_notB_6 (
+    .in1(SD_b[6]),
+    .out(sdb_bit_n[6])
+  );
+  GateNot g_notB_60 (
+    .in1(SD_b[60]),
+    .out(sdb_bit_n[60])
+  );
+  GateNot g_notB_61 (
+    .in1(SD_b[61]),
+    .out(sdb_bit_n[61])
+  );
+  GateNot g_notB_62 (
+    .in1(SD_b[62]),
+    .out(sdb_bit_n[62])
+  );
+  GateNot g_notB_63 (
+    .in1(SD_b[63]),
+    .out(sdb_bit_n[63])
+  );
+  GateNot g_notB_7 (
+    .in1(SD_b[7]),
+    .out(sdb_bit_n[7])
+  );
+  GateNot g_notB_8 (
+    .in1(SD_b[8]),
+    .out(sdb_bit_n[8])
+  );
+  GateNot g_notB_9 (
+    .in1(SD_b[9]),
+    .out(sdb_bit_n[9])
+  );
+  GateNot g_notSum_0 (
+    .in1(sum_bit_raw[0]),
+    .out(Sum_a[0])
+  );
+  GateNot g_notSum_1 (
+    .in1(sum_bit_raw[1]),
+    .out(Sum_a[1])
+  );
+  GateNot g_notSum_10 (
+    .in1(sum_bit_raw[10]),
+    .out(Sum_a[10])
+  );
+  GateNot g_notSum_11 (
+    .in1(sum_bit_raw[11]),
+    .out(Sum_a[11])
+  );
+  GateNot g_notSum_12 (
+    .in1(sum_bit_raw[12]),
+    .out(Sum_a[12])
+  );
+  GateNot g_notSum_13 (
+    .in1(sum_bit_raw[13]),
+    .out(Sum_a[13])
+  );
+  GateNot g_notSum_14 (
+    .in1(sum_bit_raw[14]),
+    .out(Sum_a[14])
+  );
+  GateNot g_notSum_15 (
+    .in1(sum_bit_raw[15]),
+    .out(Sum_a[15])
+  );
+  GateNot g_notSum_16 (
+    .in1(sum_bit_raw[16]),
+    .out(Sum_a[16])
+  );
+  GateNot g_notSum_17 (
+    .in1(sum_bit_raw[17]),
+    .out(Sum_a[17])
+  );
+  GateNot g_notSum_18 (
+    .in1(sum_bit_raw[18]),
+    .out(Sum_a[18])
+  );
+  GateNot g_notSum_19 (
+    .in1(sum_bit_raw[19]),
+    .out(Sum_a[19])
+  );
+  GateNot g_notSum_2 (
+    .in1(sum_bit_raw[2]),
+    .out(Sum_a[2])
+  );
+  GateNot g_notSum_20 (
+    .in1(sum_bit_raw[20]),
+    .out(Sum_a[20])
+  );
+  GateNot g_notSum_21 (
+    .in1(sum_bit_raw[21]),
+    .out(Sum_a[21])
+  );
+  GateNot g_notSum_22 (
+    .in1(sum_bit_raw[22]),
+    .out(Sum_a[22])
+  );
+  GateNot g_notSum_23 (
+    .in1(sum_bit_raw[23]),
+    .out(Sum_a[23])
+  );
+  GateNot g_notSum_24 (
+    .in1(sum_bit_raw[24]),
+    .out(Sum_a[24])
+  );
+  GateNot g_notSum_25 (
+    .in1(sum_bit_raw[25]),
+    .out(Sum_a[25])
+  );
+  GateNot g_notSum_26 (
+    .in1(sum_bit_raw[26]),
+    .out(Sum_a[26])
+  );
+  GateNot g_notSum_27 (
+    .in1(sum_bit_raw[27]),
+    .out(Sum_a[27])
+  );
+  GateNot g_notSum_28 (
+    .in1(sum_bit_raw[28]),
+    .out(Sum_a[28])
+  );
+  GateNot g_notSum_29 (
+    .in1(sum_bit_raw[29]),
+    .out(Sum_a[29])
+  );
+  GateNot g_notSum_3 (
+    .in1(sum_bit_raw[3]),
+    .out(Sum_a[3])
+  );
+  GateNot g_notSum_30 (
+    .in1(sum_bit_raw[30]),
+    .out(Sum_a[30])
+  );
+  GateNot g_notSum_31 (
+    .in1(sum_bit_raw[31]),
+    .out(Sum_a[31])
+  );
+  GateNot g_notSum_32 (
+    .in1(sum_bit_raw[32]),
+    .out(Sum_a[32])
+  );
+  GateNot g_notSum_33 (
+    .in1(sum_bit_raw[33]),
+    .out(Sum_a[33])
+  );
+  GateNot g_notSum_34 (
+    .in1(sum_bit_raw[34]),
+    .out(Sum_a[34])
+  );
+  GateNot g_notSum_35 (
+    .in1(sum_bit_raw[35]),
+    .out(Sum_a[35])
+  );
+  GateNot g_notSum_36 (
+    .in1(sum_bit_raw[36]),
+    .out(Sum_a[36])
+  );
+  GateNot g_notSum_37 (
+    .in1(sum_bit_raw[37]),
+    .out(Sum_a[37])
+  );
+  GateNot g_notSum_38 (
+    .in1(sum_bit_raw[38]),
+    .out(Sum_a[38])
+  );
+  GateNot g_notSum_39 (
+    .in1(sum_bit_raw[39]),
+    .out(Sum_a[39])
+  );
+  GateNot g_notSum_4 (
+    .in1(sum_bit_raw[4]),
+    .out(Sum_a[4])
+  );
+  GateNot g_notSum_40 (
+    .in1(sum_bit_raw[40]),
+    .out(Sum_a[40])
+  );
+  GateNot g_notSum_41 (
+    .in1(sum_bit_raw[41]),
+    .out(Sum_a[41])
+  );
+  GateNot g_notSum_42 (
+    .in1(sum_bit_raw[42]),
+    .out(Sum_a[42])
+  );
+  GateNot g_notSum_43 (
+    .in1(sum_bit_raw[43]),
+    .out(Sum_a[43])
+  );
+  GateNot g_notSum_44 (
+    .in1(sum_bit_raw[44]),
+    .out(Sum_a[44])
+  );
+  GateNot g_notSum_45 (
+    .in1(sum_bit_raw[45]),
+    .out(Sum_a[45])
+  );
+  GateNot g_notSum_46 (
+    .in1(sum_bit_raw[46]),
+    .out(Sum_a[46])
+  );
+  GateNot g_notSum_47 (
+    .in1(sum_bit_raw[47]),
+    .out(Sum_a[47])
+  );
+  GateNot g_notSum_48 (
+    .in1(sum_bit_raw[48]),
+    .out(Sum_a[48])
+  );
+  GateNot g_notSum_49 (
+    .in1(sum_bit_raw[49]),
+    .out(Sum_a[49])
+  );
+  GateNot g_notSum_5 (
+    .in1(sum_bit_raw[5]),
+    .out(Sum_a[5])
+  );
+  GateNot g_notSum_50 (
+    .in1(sum_bit_raw[50]),
+    .out(Sum_a[50])
+  );
+  GateNot g_notSum_51 (
+    .in1(sum_bit_raw[51]),
+    .out(Sum_a[51])
+  );
+  GateNot g_notSum_52 (
+    .in1(sum_bit_raw[52]),
+    .out(Sum_a[52])
+  );
+  GateNot g_notSum_53 (
+    .in1(sum_bit_raw[53]),
+    .out(Sum_a[53])
+  );
+  GateNot g_notSum_54 (
+    .in1(sum_bit_raw[54]),
+    .out(Sum_a[54])
+  );
+  GateNot g_notSum_55 (
+    .in1(sum_bit_raw[55]),
+    .out(Sum_a[55])
+  );
+  GateNot g_notSum_56 (
+    .in1(sum_bit_raw[56]),
+    .out(Sum_a[56])
+  );
+  GateNot g_notSum_57 (
+    .in1(sum_bit_raw[57]),
+    .out(Sum_a[57])
+  );
+  GateNot g_notSum_58 (
+    .in1(sum_bit_raw[58]),
+    .out(Sum_a[58])
+  );
+  GateNot g_notSum_59 (
+    .in1(sum_bit_raw[59]),
+    .out(Sum_a[59])
+  );
+  GateNot g_notSum_6 (
+    .in1(sum_bit_raw[6]),
+    .out(Sum_a[6])
+  );
+  GateNot g_notSum_60 (
+    .in1(sum_bit_raw[60]),
+    .out(Sum_a[60])
+  );
+  GateNot g_notSum_61 (
+    .in1(sum_bit_raw[61]),
+    .out(Sum_a[61])
+  );
+  GateNot g_notSum_62 (
+    .in1(sum_bit_raw[62]),
+    .out(Sum_a[62])
+  );
+  GateNot g_notSum_63 (
+    .in1(sum_bit_raw[63]),
+    .out(Sum_a[63])
+  );
+  GateNot g_notSum_7 (
+    .in1(sum_bit_raw[7]),
+    .out(Sum_a[7])
+  );
+  GateNot g_notSum_8 (
+    .in1(sum_bit_raw[8]),
+    .out(Sum_a[8])
+  );
+  GateNot g_notSum_9 (
+    .in1(sum_bit_raw[9]),
+    .out(Sum_a[9])
   );
   GateNot g_not_top (
     .in1(TC[63]),

@@ -11,42 +11,32 @@ module FullAdder(a, b, cin, sum, cout);
   wire sum;
   output cout;
   wire cout;
-  wire notB;
-  wire notS1;
+  wire c1;
+  wire c2;
   wire s1;
-  wire term1;
-  wire term2;
   Gate0 g_and1 (
-    .in1(cin),
-    .in2(notB),
-    .out(term1)
+    .in1(a),
+    .in2(b),
+    .out(c1)
   );
   Gate0 g_and2 (
-    .in1(notS1),
-    .in2(a),
-    .out(term2)
-  );
-  GateNot g_notB (
-    .in1(b),
-    .out(notB)
-  );
-  GateNot g_notS1 (
     .in1(s1),
-    .out(notS1)
+    .in2(cin),
+    .out(c2)
   );
-  Gate2 g_or1 (
-    .in1(term1),
-    .in2(term2),
+  Gate3 g_or1 (
+    .in1(c1),
+    .in2(c2),
     .out(cout)
   );
   Gate g_xor1 (
-    .in1(cin),
+    .in1(a),
     .in2(b),
     .out(s1)
   );
   Gate g_xor2 (
     .in1(s1),
-    .in2(a),
+    .in2(cin),
     .out(sum)
   );
 endmodule
@@ -79,7 +69,7 @@ module Gate0(in1, in2, out);
   );
 endmodule
 
-module Gate2(in1, in2, out);
+module Gate3(in1, in2, out);
   input in1;
   wire in1;
   input in2;
@@ -115,20 +105,38 @@ module SdTcAdderPM2(SD_a, SD_b, TC, Sum_a, Sum_b);
   wire [2:0] Sum_a;
   output [2:0] Sum_b;
   wire [2:0] Sum_b;
+  wire [1:0] sdb_bit_n;
+  wire [1:0] sum_bit_raw;
   wire top_bit;
   FullAdder fa_0 (
     .a(TC[0]),
-    .b(SD_b[0]),
+    .b(sdb_bit_n[0]),
     .cin(SD_a[0]),
     .cout(Sum_b[1]),
-    .sum(Sum_a[0])
+    .sum(sum_bit_raw[0])
   );
   FullAdder fa_1 (
     .a(TC[1]),
-    .b(SD_b[1]),
+    .b(sdb_bit_n[1]),
     .cin(SD_a[1]),
     .cout(Sum_b[2]),
-    .sum(Sum_a[1])
+    .sum(sum_bit_raw[1])
+  );
+  GateNot g_notB_0 (
+    .in1(SD_b[0]),
+    .out(sdb_bit_n[0])
+  );
+  GateNot g_notB_1 (
+    .in1(SD_b[1]),
+    .out(sdb_bit_n[1])
+  );
+  GateNot g_notSum_0 (
+    .in1(sum_bit_raw[0]),
+    .out(Sum_a[0])
+  );
+  GateNot g_notSum_1 (
+    .in1(sum_bit_raw[1]),
+    .out(Sum_a[1])
   );
   GateNot g_not_top (
     .in1(TC[1]),

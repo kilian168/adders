@@ -39,7 +39,7 @@ endmodule
 
 //==============================================================================
 //
-// Module: SdTcAdderPM4 (sdtc_glitch_pm.cpp:183:5)
+// Module: SdTcAdderPM4 (sdtc_glitch_pm.cpp:194:5)
 //
 module SdTcAdderPM4 // "tb.dut_inst"
 (
@@ -56,19 +56,21 @@ logic [3:0] sdb_bit;
 logic [3:0] tc_bit;
 logic [3:0] sum_bit;
 logic [3:0] carry_bit;
+logic [3:0] sdb_bit_n;
+logic [3:0] sum_bit_raw;
 logic const_zero;
 logic top_bit;
 
 //------------------------------------------------------------------------------
-// Method process: drive_const_zero (sdtc_glitch_pm.cpp:115:5) 
+// Method process: drive_const_zero (sdtc_glitch_pm.cpp:109:5) 
 
 assign const_zero = '0;
 
 //------------------------------------------------------------------------------
-// Method process: split_inputs (sdtc_glitch_pm.cpp:145:5) 
+// Method process: split_inputs (sdtc_glitch_pm.cpp:148:5) 
 
 always_comb 
-begin : split_inputs     // sdtc_glitch_pm.cpp:145:5
+begin : split_inputs     // sdtc_glitch_pm.cpp:148:5
     logic [3:0] va;
     logic [3:0] vb;
     logic [3:0] vt;
@@ -84,10 +86,10 @@ begin : split_inputs     // sdtc_glitch_pm.cpp:145:5
 end
 
 //------------------------------------------------------------------------------
-// Method process: combine_outputs (sdtc_glitch_pm.cpp:154:5) 
+// Method process: combine_outputs (sdtc_glitch_pm.cpp:157:5) 
 
 always_comb 
-begin : combine_outputs     // sdtc_glitch_pm.cpp:154:5
+begin : combine_outputs     // sdtc_glitch_pm.cpp:157:5
     logic [4:0] out_a;
     logic [4:0] out_b;
     out_a = '0;
@@ -110,37 +112,85 @@ end
 FullAdder fa_0
 (
   .a(tc_bit[0]),
-  .b(sdb_bit[0]),
+  .b(sdb_bit_n[0]),
   .cin(sda_bit[0]),
-  .sum(sum_bit[0]),
+  .sum(sum_bit_raw[0]),
   .cout(carry_bit[0])
 );
 
 FullAdder fa_1
 (
   .a(tc_bit[1]),
-  .b(sdb_bit[1]),
+  .b(sdb_bit_n[1]),
   .cin(sda_bit[1]),
-  .sum(sum_bit[1]),
+  .sum(sum_bit_raw[1]),
   .cout(carry_bit[1])
 );
 
 FullAdder fa_2
 (
   .a(tc_bit[2]),
-  .b(sdb_bit[2]),
+  .b(sdb_bit_n[2]),
   .cin(sda_bit[2]),
-  .sum(sum_bit[2]),
+  .sum(sum_bit_raw[2]),
   .cout(carry_bit[2])
 );
 
 FullAdder fa_3
 (
   .a(tc_bit[3]),
-  .b(sdb_bit[3]),
+  .b(sdb_bit_n[3]),
   .cin(sda_bit[3]),
-  .sum(sum_bit[3]),
+  .sum(sum_bit_raw[3]),
   .cout(carry_bit[3])
+);
+
+GateNot g_notB_0
+(
+  .in1(sdb_bit[0]),
+  .out(sdb_bit_n[0])
+);
+
+GateNot g_notB_1
+(
+  .in1(sdb_bit[1]),
+  .out(sdb_bit_n[1])
+);
+
+GateNot g_notB_2
+(
+  .in1(sdb_bit[2]),
+  .out(sdb_bit_n[2])
+);
+
+GateNot g_notB_3
+(
+  .in1(sdb_bit[3]),
+  .out(sdb_bit_n[3])
+);
+
+GateNot g_notSum_0
+(
+  .in1(sum_bit_raw[0]),
+  .out(sum_bit[0])
+);
+
+GateNot g_notSum_1
+(
+  .in1(sum_bit_raw[1]),
+  .out(sum_bit[1])
+);
+
+GateNot g_notSum_2
+(
+  .in1(sum_bit_raw[2]),
+  .out(sum_bit[2])
+);
+
+GateNot g_notSum_3
+(
+  .in1(sum_bit_raw[3]),
+  .out(sum_bit[3])
 );
 
 GateNot g_not_top
@@ -148,6 +198,28 @@ GateNot g_not_top
   .in1(tc_bit[3]),
   .out(top_bit)
 );
+
+endmodule
+
+
+
+//==============================================================================
+//
+// Module: GateNot ()
+//
+module GateNot // "tb.dut_inst.NOTB_0"
+(
+    input logic in1,
+    output logic out
+);
+
+//------------------------------------------------------------------------------
+// Method process: logic_v (sdtc_glitch_pm.cpp:50:5) 
+
+always_comb 
+begin : logic_v     // sdtc_glitch_pm.cpp:50:5
+    out = !in1;
+end
 
 endmodule
 
@@ -168,10 +240,8 @@ module FullAdder // "tb.dut_inst.FA_0"
 
 // Variables generated for SystemC signals
 logic s1;
-logic notB;
-logic term1;
-logic notS1;
-logic term2;
+logic c1;
+logic c2;
 
 
 //------------------------------------------------------------------------------
@@ -179,49 +249,37 @@ logic term2;
 
 Gate g_xor1
 (
-  .in1(cin),
+  .in1(a),
   .in2(b),
   .out(s1)
 );
 
 Gate0 g_and1
 (
-  .in1(cin),
-  .in2(notB),
-  .out(term1)
-);
-
-Gate0 g_and2
-(
-  .in1(notS1),
-  .in2(a),
-  .out(term2)
-);
-
-Gate2 g_or1
-(
-  .in1(term1),
-  .in2(term2),
-  .out(cout)
+  .in1(a),
+  .in2(b),
+  .out(c1)
 );
 
 Gate g_xor2
 (
   .in1(s1),
-  .in2(a),
+  .in2(cin),
   .out(sum)
 );
 
-GateNot g_notB
-(
-  .in1(b),
-  .out(notB)
-);
-
-GateNot g_notS1
+Gate0 g_and2
 (
   .in1(s1),
-  .out(notS1)
+  .in2(cin),
+  .out(c2)
+);
+
+Gate3 g_or1
+(
+  .in1(c1),
+  .in2(c2),
+  .out(cout)
 );
 
 endmodule
@@ -252,28 +310,6 @@ begin : logic_v     // sdtc_glitch_pm.cpp:30:5
     a = in1;
     b = in2;
     out = a ^ b;
-end
-
-endmodule
-
-
-
-//==============================================================================
-//
-// Module: GateNot ()
-//
-module GateNot // "tb.dut_inst.FA_0.NOTB"
-(
-    input logic in1,
-    output logic out
-);
-
-//------------------------------------------------------------------------------
-// Method process: logic_v (sdtc_glitch_pm.cpp:50:5) 
-
-always_comb 
-begin : logic_v     // sdtc_glitch_pm.cpp:50:5
-    out = !in1;
 end
 
 endmodule
@@ -314,7 +350,7 @@ endmodule
 //
 // Module: Gate ()
 //
-module Gate2 // "tb.dut_inst.FA_0.OR1"
+module Gate3 // "tb.dut_inst.FA_0.OR1"
 (
     input logic in1,
     input logic in2,

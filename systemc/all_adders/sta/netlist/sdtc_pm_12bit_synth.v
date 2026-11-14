@@ -11,42 +11,32 @@ module FullAdder(a, b, cin, sum, cout);
   wire sum;
   output cout;
   wire cout;
-  wire notB;
-  wire notS1;
+  wire c1;
+  wire c2;
   wire s1;
-  wire term1;
-  wire term2;
   Gate0 g_and1 (
-    .in1(cin),
-    .in2(notB),
-    .out(term1)
+    .in1(a),
+    .in2(b),
+    .out(c1)
   );
   Gate0 g_and2 (
-    .in1(notS1),
-    .in2(a),
-    .out(term2)
-  );
-  GateNot g_notB (
-    .in1(b),
-    .out(notB)
-  );
-  GateNot g_notS1 (
     .in1(s1),
-    .out(notS1)
+    .in2(cin),
+    .out(c2)
   );
-  Gate2 g_or1 (
-    .in1(term1),
-    .in2(term2),
+  Gate3 g_or1 (
+    .in1(c1),
+    .in2(c2),
     .out(cout)
   );
   Gate g_xor1 (
-    .in1(cin),
+    .in1(a),
     .in2(b),
     .out(s1)
   );
   Gate g_xor2 (
     .in1(s1),
-    .in2(a),
+    .in2(cin),
     .out(sum)
   );
 endmodule
@@ -79,7 +69,7 @@ module Gate0(in1, in2, out);
   );
 endmodule
 
-module Gate2(in1, in2, out);
+module Gate3(in1, in2, out);
   input in1;
   wire in1;
   input in2;
@@ -115,90 +105,188 @@ module SdTcAdderPM12(SD_a, SD_b, TC, Sum_a, Sum_b);
   wire [12:0] Sum_a;
   output [12:0] Sum_b;
   wire [12:0] Sum_b;
+  wire [11:0] sdb_bit_n;
+  wire [11:0] sum_bit_raw;
   wire top_bit;
   FullAdder fa_0 (
     .a(TC[0]),
-    .b(SD_b[0]),
+    .b(sdb_bit_n[0]),
     .cin(SD_a[0]),
     .cout(Sum_b[1]),
-    .sum(Sum_a[0])
+    .sum(sum_bit_raw[0])
   );
   FullAdder fa_1 (
     .a(TC[1]),
-    .b(SD_b[1]),
+    .b(sdb_bit_n[1]),
     .cin(SD_a[1]),
     .cout(Sum_b[2]),
-    .sum(Sum_a[1])
+    .sum(sum_bit_raw[1])
   );
   FullAdder fa_10 (
     .a(TC[10]),
-    .b(SD_b[10]),
+    .b(sdb_bit_n[10]),
     .cin(SD_a[10]),
     .cout(Sum_b[11]),
-    .sum(Sum_a[10])
+    .sum(sum_bit_raw[10])
   );
   FullAdder fa_11 (
     .a(TC[11]),
-    .b(SD_b[11]),
+    .b(sdb_bit_n[11]),
     .cin(SD_a[11]),
     .cout(Sum_b[12]),
-    .sum(Sum_a[11])
+    .sum(sum_bit_raw[11])
   );
   FullAdder fa_2 (
     .a(TC[2]),
-    .b(SD_b[2]),
+    .b(sdb_bit_n[2]),
     .cin(SD_a[2]),
     .cout(Sum_b[3]),
-    .sum(Sum_a[2])
+    .sum(sum_bit_raw[2])
   );
   FullAdder fa_3 (
     .a(TC[3]),
-    .b(SD_b[3]),
+    .b(sdb_bit_n[3]),
     .cin(SD_a[3]),
     .cout(Sum_b[4]),
-    .sum(Sum_a[3])
+    .sum(sum_bit_raw[3])
   );
   FullAdder fa_4 (
     .a(TC[4]),
-    .b(SD_b[4]),
+    .b(sdb_bit_n[4]),
     .cin(SD_a[4]),
     .cout(Sum_b[5]),
-    .sum(Sum_a[4])
+    .sum(sum_bit_raw[4])
   );
   FullAdder fa_5 (
     .a(TC[5]),
-    .b(SD_b[5]),
+    .b(sdb_bit_n[5]),
     .cin(SD_a[5]),
     .cout(Sum_b[6]),
-    .sum(Sum_a[5])
+    .sum(sum_bit_raw[5])
   );
   FullAdder fa_6 (
     .a(TC[6]),
-    .b(SD_b[6]),
+    .b(sdb_bit_n[6]),
     .cin(SD_a[6]),
     .cout(Sum_b[7]),
-    .sum(Sum_a[6])
+    .sum(sum_bit_raw[6])
   );
   FullAdder fa_7 (
     .a(TC[7]),
-    .b(SD_b[7]),
+    .b(sdb_bit_n[7]),
     .cin(SD_a[7]),
     .cout(Sum_b[8]),
-    .sum(Sum_a[7])
+    .sum(sum_bit_raw[7])
   );
   FullAdder fa_8 (
     .a(TC[8]),
-    .b(SD_b[8]),
+    .b(sdb_bit_n[8]),
     .cin(SD_a[8]),
     .cout(Sum_b[9]),
-    .sum(Sum_a[8])
+    .sum(sum_bit_raw[8])
   );
   FullAdder fa_9 (
     .a(TC[9]),
-    .b(SD_b[9]),
+    .b(sdb_bit_n[9]),
     .cin(SD_a[9]),
     .cout(Sum_b[10]),
-    .sum(Sum_a[9])
+    .sum(sum_bit_raw[9])
+  );
+  GateNot g_notB_0 (
+    .in1(SD_b[0]),
+    .out(sdb_bit_n[0])
+  );
+  GateNot g_notB_1 (
+    .in1(SD_b[1]),
+    .out(sdb_bit_n[1])
+  );
+  GateNot g_notB_10 (
+    .in1(SD_b[10]),
+    .out(sdb_bit_n[10])
+  );
+  GateNot g_notB_11 (
+    .in1(SD_b[11]),
+    .out(sdb_bit_n[11])
+  );
+  GateNot g_notB_2 (
+    .in1(SD_b[2]),
+    .out(sdb_bit_n[2])
+  );
+  GateNot g_notB_3 (
+    .in1(SD_b[3]),
+    .out(sdb_bit_n[3])
+  );
+  GateNot g_notB_4 (
+    .in1(SD_b[4]),
+    .out(sdb_bit_n[4])
+  );
+  GateNot g_notB_5 (
+    .in1(SD_b[5]),
+    .out(sdb_bit_n[5])
+  );
+  GateNot g_notB_6 (
+    .in1(SD_b[6]),
+    .out(sdb_bit_n[6])
+  );
+  GateNot g_notB_7 (
+    .in1(SD_b[7]),
+    .out(sdb_bit_n[7])
+  );
+  GateNot g_notB_8 (
+    .in1(SD_b[8]),
+    .out(sdb_bit_n[8])
+  );
+  GateNot g_notB_9 (
+    .in1(SD_b[9]),
+    .out(sdb_bit_n[9])
+  );
+  GateNot g_notSum_0 (
+    .in1(sum_bit_raw[0]),
+    .out(Sum_a[0])
+  );
+  GateNot g_notSum_1 (
+    .in1(sum_bit_raw[1]),
+    .out(Sum_a[1])
+  );
+  GateNot g_notSum_10 (
+    .in1(sum_bit_raw[10]),
+    .out(Sum_a[10])
+  );
+  GateNot g_notSum_11 (
+    .in1(sum_bit_raw[11]),
+    .out(Sum_a[11])
+  );
+  GateNot g_notSum_2 (
+    .in1(sum_bit_raw[2]),
+    .out(Sum_a[2])
+  );
+  GateNot g_notSum_3 (
+    .in1(sum_bit_raw[3]),
+    .out(Sum_a[3])
+  );
+  GateNot g_notSum_4 (
+    .in1(sum_bit_raw[4]),
+    .out(Sum_a[4])
+  );
+  GateNot g_notSum_5 (
+    .in1(sum_bit_raw[5]),
+    .out(Sum_a[5])
+  );
+  GateNot g_notSum_6 (
+    .in1(sum_bit_raw[6]),
+    .out(Sum_a[6])
+  );
+  GateNot g_notSum_7 (
+    .in1(sum_bit_raw[7]),
+    .out(Sum_a[7])
+  );
+  GateNot g_notSum_8 (
+    .in1(sum_bit_raw[8]),
+    .out(Sum_a[8])
+  );
+  GateNot g_notSum_9 (
+    .in1(sum_bit_raw[9]),
+    .out(Sum_a[9])
   );
   GateNot g_not_top (
     .in1(TC[11]),
