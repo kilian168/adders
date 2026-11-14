@@ -219,20 +219,16 @@ SC_MODULE(FullAdder) {
     sc_in<bool> a, b, cin;
     sc_out<bool> sum, cout;
 
-    sc_signal<bool> notB, s1, c1, c2;
+    sc_signal<bool> s1, c1, c2;
 
-    GateNot *g_notB;
     Gate *g_xor1, *g_and1, *g_xor2, *g_and2, *g_or1;
 
     SC_CTOR(FullAdder) {
-        g_notB = new GateNot("NOTB");
-        g_notB->in1(b); g_notB->out(notB);
-
         g_xor1 = new Gate("XOR1", GATE_XOR);
-        g_xor1->in1(a); g_xor1->in2(notB); g_xor1->out(s1);
+        g_xor1->in1(a); g_xor1->in2(b); g_xor1->out(s1);
 
         g_and1 = new Gate("AND1", GATE_AND);
-        g_and1->in1(a); g_and1->in2(notB); g_and1->out(c1);
+        g_and1->in1(a); g_and1->in2(b); g_and1->out(c1);
 
         g_xor2 = new Gate("XOR2", GATE_XOR);
         g_xor2->in1(s1); g_xor2->in2(cin); g_xor2->out(sum);
@@ -245,13 +241,12 @@ SC_MODULE(FullAdder) {
     }
 
     unsigned int total_switches() const {
-        return g_notB->switches + g_xor1->switches + g_and1->switches +
-               g_xor2->switches + g_and2->switches + g_or1->switches;
+        return g_xor1->switches + g_and1->switches + g_xor2->switches +
+               g_and2->switches + g_or1->switches;
     }
 
     ~FullAdder() {
-        delete g_notB; delete g_xor1; delete g_and1;
-        delete g_xor2; delete g_and2; delete g_or1;
+        delete g_xor1; delete g_and1; delete g_xor2; delete g_and2; delete g_or1;
     }
 };
 
@@ -273,22 +268,33 @@ SC_MODULE(SdTcAdder12) {
     sc_signal<bool> tc_bit[12];
     sc_signal<bool> sum_bit[12];
     sc_signal<bool> carry_bit[12];
+    sc_signal<bool> sdb_bit_n[12];
+    sc_signal<bool> sum_bit_raw[12];
     sc_signal<bool> const_zero;
     sc_signal<bool> top_bit;
 
     FullAdder* fa[12];
+    GateNot* g_notB[12];
+    GateNot* g_notSum[12];
     GateNot* g_not_top;
 
     SC_CTOR(SdTcAdder12) {
         for (int i = 0; i < 12; i++) {
             std::string name = "FA_" + std::to_string(i);
+            g_notB[i] = new GateNot(("NOTB_" + std::to_string(i)).c_str());
+            g_notB[i]->in1(sdb_bit[i]); g_notB[i]->out(sdb_bit_n[i]);
+            
+
             fa[i] = new FullAdder(name.c_str());
 
             fa[i]->a(tc_bit[i]);
-            fa[i]->b(sdb_bit[i]);
+            fa[i]->b(sdb_bit_n[i]);
             fa[i]->cin(sda_bit[i]);
-            fa[i]->sum(sum_bit[i]);
+            fa[i]->sum(sum_bit_raw[i]);
             fa[i]->cout(carry_bit[i]);
+            
+            g_notSum[i] = new GateNot(("NOTSUM_" + std::to_string(i)).c_str());
+            g_notSum[i]->in1(sum_bit_raw[i]); g_notSum[i]->out(sum_bit[i]);
         }
 
         g_not_top = new GateNot("NOT_TOP");
@@ -337,6 +343,8 @@ SC_MODULE(SdTcAdder12) {
         unsigned int total = 0;
         for (int i = 0; i < 12; i++) {
             total += fa[i]->total_switches();
+            total += g_notB[i]->switches;
+            total += g_notSum[i]->switches;
         }
         total += g_not_top->switches;
         return total;
@@ -345,6 +353,8 @@ SC_MODULE(SdTcAdder12) {
     ~SdTcAdder12() {
         for (int i = 0; i < 12; i++) {
             delete fa[i];
+            delete g_notB[i];
+            delete g_notSum[i];
         }
         delete g_not_top;
     }
@@ -378,79 +388,79 @@ static void init_path_delay_table() {
         for (int o = 0; o < NUM_OUT; o++)
             path_delay[i][o] = 0.0;
 
-    path_delay[0][0] = 0.36;
-    path_delay[0][14] = 0.47;
-    path_delay[10][10] = 0.36;
-    path_delay[10][24] = 0.47;
-    path_delay[11][11] = 0.36;
-    path_delay[11][25] = 0.47;
-    path_delay[1][1] = 0.36;
-    path_delay[1][15] = 0.47;
-    path_delay[2][2] = 0.36;
-    path_delay[2][16] = 0.47;
-    path_delay[3][3] = 0.36;
-    path_delay[3][17] = 0.47;
-    path_delay[4][4] = 0.36;
-    path_delay[4][18] = 0.47;
-    path_delay[5][5] = 0.36;
-    path_delay[5][19] = 0.47;
-    path_delay[6][6] = 0.36;
-    path_delay[6][20] = 0.47;
-    path_delay[7][7] = 0.36;
-    path_delay[7][21] = 0.47;
-    path_delay[8][8] = 0.36;
-    path_delay[8][22] = 0.47;
-    path_delay[9][9] = 0.36;
-    path_delay[9][23] = 0.47;
-    path_delay[12][0] = 0.37;
-    path_delay[12][14] = 0.46;
-    path_delay[22][10] = 0.37;
-    path_delay[22][24] = 0.46;
-    path_delay[23][11] = 0.37;
-    path_delay[23][25] = 0.46;
-    path_delay[13][1] = 0.37;
-    path_delay[13][15] = 0.46;
-    path_delay[14][2] = 0.37;
-    path_delay[14][16] = 0.46;
-    path_delay[15][3] = 0.37;
-    path_delay[15][17] = 0.46;
-    path_delay[16][4] = 0.37;
-    path_delay[16][18] = 0.46;
-    path_delay[17][5] = 0.37;
-    path_delay[17][19] = 0.46;
-    path_delay[18][6] = 0.37;
-    path_delay[18][20] = 0.46;
-    path_delay[19][7] = 0.37;
-    path_delay[19][21] = 0.46;
-    path_delay[20][8] = 0.37;
-    path_delay[20][22] = 0.46;
-    path_delay[21][9] = 0.37;
-    path_delay[21][23] = 0.46;
-    path_delay[24][0] = 0.18;
-    path_delay[24][14] = 0.25;
-    path_delay[34][10] = 0.18;
-    path_delay[34][24] = 0.25;
-    path_delay[35][11] = 0.18;
-    path_delay[35][12] = 0.01;
-    path_delay[35][25] = 0.25;
-    path_delay[25][1] = 0.18;
-    path_delay[25][15] = 0.25;
-    path_delay[26][2] = 0.18;
-    path_delay[26][16] = 0.25;
-    path_delay[27][3] = 0.18;
-    path_delay[27][17] = 0.25;
-    path_delay[28][4] = 0.18;
-    path_delay[28][18] = 0.25;
-    path_delay[29][5] = 0.18;
-    path_delay[29][19] = 0.25;
-    path_delay[30][6] = 0.18;
-    path_delay[30][20] = 0.25;
-    path_delay[31][7] = 0.18;
-    path_delay[31][21] = 0.25;
-    path_delay[32][8] = 0.18;
-    path_delay[32][22] = 0.25;
-    path_delay[33][9] = 0.18;
-    path_delay[33][23] = 0.25;
+    path_delay[0][0] = 0.2192;
+    path_delay[0][14] = 0.2537;
+    path_delay[1][1] = 0.2192;
+    path_delay[1][15] = 0.2537;
+    path_delay[2][2] = 0.2192;
+    path_delay[2][16] = 0.2537;
+    path_delay[3][3] = 0.2192;
+    path_delay[3][17] = 0.2537;
+    path_delay[4][4] = 0.2192;
+    path_delay[4][18] = 0.2537;
+    path_delay[5][5] = 0.2192;
+    path_delay[5][19] = 0.2537;
+    path_delay[6][6] = 0.2192;
+    path_delay[6][20] = 0.2537;
+    path_delay[7][7] = 0.2192;
+    path_delay[7][21] = 0.2537;
+    path_delay[8][8] = 0.2192;
+    path_delay[8][22] = 0.2537;
+    path_delay[9][9] = 0.2192;
+    path_delay[9][23] = 0.2537;
+    path_delay[10][10] = 0.2192;
+    path_delay[10][24] = 0.2537;
+    path_delay[11][11] = 0.2192;
+    path_delay[11][25] = 0.2537;
+    path_delay[12][0] = 0.4307;
+    path_delay[12][14] = 0.4762;
+    path_delay[13][1] = 0.4307;
+    path_delay[13][15] = 0.4762;
+    path_delay[14][2] = 0.4307;
+    path_delay[14][16] = 0.4762;
+    path_delay[15][3] = 0.4307;
+    path_delay[15][17] = 0.4762;
+    path_delay[16][4] = 0.4307;
+    path_delay[16][18] = 0.4762;
+    path_delay[17][5] = 0.4307;
+    path_delay[17][19] = 0.4762;
+    path_delay[18][6] = 0.4307;
+    path_delay[18][20] = 0.4762;
+    path_delay[19][7] = 0.4307;
+    path_delay[19][21] = 0.4762;
+    path_delay[20][8] = 0.4307;
+    path_delay[20][22] = 0.4762;
+    path_delay[21][9] = 0.4307;
+    path_delay[21][23] = 0.4762;
+    path_delay[22][10] = 0.4307;
+    path_delay[22][24] = 0.4762;
+    path_delay[23][11] = 0.4307;
+    path_delay[23][25] = 0.4762;
+    path_delay[24][0] = 0.3985;
+    path_delay[24][14] = 0.4467;
+    path_delay[25][1] = 0.3985;
+    path_delay[25][15] = 0.4467;
+    path_delay[26][2] = 0.3985;
+    path_delay[26][16] = 0.4467;
+    path_delay[27][3] = 0.3985;
+    path_delay[27][17] = 0.4467;
+    path_delay[28][4] = 0.3985;
+    path_delay[28][18] = 0.4467;
+    path_delay[29][5] = 0.3985;
+    path_delay[29][19] = 0.4467;
+    path_delay[30][6] = 0.3985;
+    path_delay[30][20] = 0.4467;
+    path_delay[31][7] = 0.3985;
+    path_delay[31][21] = 0.4467;
+    path_delay[32][8] = 0.3985;
+    path_delay[32][22] = 0.4467;
+    path_delay[33][9] = 0.3985;
+    path_delay[33][23] = 0.4467;
+    path_delay[34][10] = 0.3985;
+    path_delay[34][24] = 0.4467;
+    path_delay[35][11] = 0.3985;
+    path_delay[35][12] = 0.0145;
+    path_delay[35][25] = 0.4467;
 }
 
 // ============================================================================
@@ -535,9 +545,11 @@ SC_MODULE(Testbench) {
         unsigned int actual_sum_a = static_cast<unsigned int>(to_unsigned_13bit(sum_a_val));
         unsigned int actual_sum_b = static_cast<unsigned int>(to_unsigned_13bit(sum_b_val));
 
-        long long actual_result = static_cast<long long>(actual_sum_a)
-                                 + static_cast<long long>(actual_sum_b)
-                                 - ((1LL << (12 + 1)) - 1);
+        unsigned int tc_top = (tc_value >> (12 - 1)) & 1U;
+                                 long long sign_term = tc_top ? -(1LL << 12) : (1LL << 12);
+                                 long long actual_result = static_cast<long long>(actual_sum_b)
+                                 - static_cast<long long>(actual_sum_a)
+                                 + sign_term;
 
         if (expected_result != actual_result) {
             number_of_errors++;

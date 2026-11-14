@@ -209,20 +209,16 @@ SC_MODULE(FullAdder) {
     sc_in<bool> a, b, cin;
     sc_out<bool> sum, cout;
 
-    sc_signal<bool> notB, s1, c1, c2;
+    sc_signal<bool> s1, c1, c2;
 
-    GateNot *g_notB;
     Gate *g_xor1, *g_and1, *g_xor2, *g_and2, *g_or1;
 
     SC_CTOR(FullAdder) {
-        g_notB = new GateNot("NOTB");
-        g_notB->in1(b); g_notB->out(notB);
-
         g_xor1 = new Gate("XOR1", GATE_XOR);
-        g_xor1->in1(a); g_xor1->in2(notB); g_xor1->out(s1);
+        g_xor1->in1(a); g_xor1->in2(b); g_xor1->out(s1);
 
         g_and1 = new Gate("AND1", GATE_AND);
-        g_and1->in1(a); g_and1->in2(notB); g_and1->out(c1);
+        g_and1->in1(a); g_and1->in2(b); g_and1->out(c1);
 
         g_xor2 = new Gate("XOR2", GATE_XOR);
         g_xor2->in1(s1); g_xor2->in2(cin); g_xor2->out(sum);
@@ -235,13 +231,12 @@ SC_MODULE(FullAdder) {
     }
 
     unsigned int total_switches() const {
-        return g_notB->switches + g_xor1->switches + g_and1->switches +
-               g_xor2->switches + g_and2->switches + g_or1->switches;
+        return g_xor1->switches + g_and1->switches + g_xor2->switches +
+               g_and2->switches + g_or1->switches;
     }
 
     ~FullAdder() {
-        delete g_notB; delete g_xor1; delete g_and1;
-        delete g_xor2; delete g_and2; delete g_or1;
+        delete g_xor1; delete g_and1; delete g_xor2; delete g_and2; delete g_or1;
     }
 };
 
@@ -263,22 +258,33 @@ SC_MODULE(SdTcAdder32) {
     sc_signal<bool> tc_bit[32];
     sc_signal<bool> sum_bit[32];
     sc_signal<bool> carry_bit[32];
+    sc_signal<bool> sdb_bit_n[32];
+    sc_signal<bool> sum_bit_raw[32];
     sc_signal<bool> const_zero;
     sc_signal<bool> top_bit;
 
     FullAdder* fa[32];
+    GateNot* g_notB[32];
+    GateNot* g_notSum[32];
     GateNot* g_not_top;
 
     SC_CTOR(SdTcAdder32) {
         for (int i = 0; i < 32; i++) {
             std::string name = "FA_" + std::to_string(i);
+            g_notB[i] = new GateNot(("NOTB_" + std::to_string(i)).c_str());
+            g_notB[i]->in1(sdb_bit[i]); g_notB[i]->out(sdb_bit_n[i]);
+            
+
             fa[i] = new FullAdder(name.c_str());
 
             fa[i]->a(tc_bit[i]);
-            fa[i]->b(sdb_bit[i]);
+            fa[i]->b(sdb_bit_n[i]);
             fa[i]->cin(sda_bit[i]);
-            fa[i]->sum(sum_bit[i]);
+            fa[i]->sum(sum_bit_raw[i]);
             fa[i]->cout(carry_bit[i]);
+            
+            g_notSum[i] = new GateNot(("NOTSUM_" + std::to_string(i)).c_str());
+            g_notSum[i]->in1(sum_bit_raw[i]); g_notSum[i]->out(sum_bit[i]);
         }
 
         g_not_top = new GateNot("NOT_TOP");
@@ -327,6 +333,8 @@ SC_MODULE(SdTcAdder32) {
         unsigned int total = 0;
         for (int i = 0; i < 32; i++) {
             total += fa[i]->total_switches();
+            total += g_notB[i]->switches;
+            total += g_notSum[i]->switches;
         }
         total += g_not_top->switches;
         return total;
@@ -335,6 +343,8 @@ SC_MODULE(SdTcAdder32) {
     ~SdTcAdder32() {
         for (int i = 0; i < 32; i++) {
             delete fa[i];
+            delete g_notB[i];
+            delete g_notSum[i];
         }
         delete g_not_top;
     }
@@ -368,199 +378,199 @@ static void init_path_delay_table() {
         for (int o = 0; o < NUM_OUT; o++)
             path_delay[i][o] = 0.0;
 
-    path_delay[0][0] = 0.36;
-    path_delay[0][34] = 0.47;
-    path_delay[10][10] = 0.36;
-    path_delay[10][44] = 0.47;
-    path_delay[11][11] = 0.36;
-    path_delay[11][45] = 0.47;
-    path_delay[12][12] = 0.36;
-    path_delay[12][46] = 0.47;
-    path_delay[13][13] = 0.36;
-    path_delay[13][47] = 0.47;
-    path_delay[14][14] = 0.36;
-    path_delay[14][48] = 0.47;
-    path_delay[15][15] = 0.36;
-    path_delay[15][49] = 0.47;
-    path_delay[16][16] = 0.36;
-    path_delay[16][50] = 0.47;
-    path_delay[17][17] = 0.36;
-    path_delay[17][51] = 0.47;
-    path_delay[18][18] = 0.36;
-    path_delay[18][52] = 0.47;
-    path_delay[19][19] = 0.36;
-    path_delay[19][53] = 0.47;
-    path_delay[1][1] = 0.36;
-    path_delay[1][35] = 0.47;
-    path_delay[20][20] = 0.36;
-    path_delay[20][54] = 0.47;
-    path_delay[21][21] = 0.36;
-    path_delay[21][55] = 0.47;
-    path_delay[22][22] = 0.36;
-    path_delay[22][56] = 0.47;
-    path_delay[23][23] = 0.36;
-    path_delay[23][57] = 0.47;
-    path_delay[24][24] = 0.36;
-    path_delay[24][58] = 0.47;
-    path_delay[25][25] = 0.36;
-    path_delay[25][59] = 0.47;
-    path_delay[26][26] = 0.36;
-    path_delay[26][60] = 0.47;
-    path_delay[27][27] = 0.36;
-    path_delay[27][61] = 0.47;
-    path_delay[28][28] = 0.36;
-    path_delay[28][62] = 0.47;
-    path_delay[29][29] = 0.36;
-    path_delay[29][63] = 0.47;
-    path_delay[2][2] = 0.36;
-    path_delay[2][36] = 0.47;
-    path_delay[30][30] = 0.36;
-    path_delay[30][64] = 0.47;
-    path_delay[31][31] = 0.36;
-    path_delay[31][65] = 0.47;
-    path_delay[3][3] = 0.36;
-    path_delay[3][37] = 0.47;
-    path_delay[4][4] = 0.36;
-    path_delay[4][38] = 0.47;
-    path_delay[5][5] = 0.36;
-    path_delay[5][39] = 0.47;
-    path_delay[6][6] = 0.36;
-    path_delay[6][40] = 0.47;
-    path_delay[7][7] = 0.36;
-    path_delay[7][41] = 0.47;
-    path_delay[8][8] = 0.36;
-    path_delay[8][42] = 0.47;
-    path_delay[9][9] = 0.36;
-    path_delay[9][43] = 0.47;
-    path_delay[32][0] = 0.37;
-    path_delay[32][34] = 0.46;
-    path_delay[42][10] = 0.37;
-    path_delay[42][44] = 0.46;
-    path_delay[43][11] = 0.37;
-    path_delay[43][45] = 0.46;
-    path_delay[44][12] = 0.37;
-    path_delay[44][46] = 0.46;
-    path_delay[45][13] = 0.37;
-    path_delay[45][47] = 0.46;
-    path_delay[46][14] = 0.37;
-    path_delay[46][48] = 0.46;
-    path_delay[47][15] = 0.37;
-    path_delay[47][49] = 0.46;
-    path_delay[48][16] = 0.37;
-    path_delay[48][50] = 0.46;
-    path_delay[49][17] = 0.37;
-    path_delay[49][51] = 0.46;
-    path_delay[50][18] = 0.37;
-    path_delay[50][52] = 0.46;
-    path_delay[51][19] = 0.37;
-    path_delay[51][53] = 0.46;
-    path_delay[33][1] = 0.37;
-    path_delay[33][35] = 0.46;
-    path_delay[52][20] = 0.37;
-    path_delay[52][54] = 0.46;
-    path_delay[53][21] = 0.37;
-    path_delay[53][55] = 0.46;
-    path_delay[54][22] = 0.37;
-    path_delay[54][56] = 0.46;
-    path_delay[55][23] = 0.37;
-    path_delay[55][57] = 0.46;
-    path_delay[56][24] = 0.37;
-    path_delay[56][58] = 0.46;
-    path_delay[57][25] = 0.37;
-    path_delay[57][59] = 0.46;
-    path_delay[58][26] = 0.37;
-    path_delay[58][60] = 0.46;
-    path_delay[59][27] = 0.37;
-    path_delay[59][61] = 0.46;
-    path_delay[60][28] = 0.37;
-    path_delay[60][62] = 0.46;
-    path_delay[61][29] = 0.37;
-    path_delay[61][63] = 0.46;
-    path_delay[34][2] = 0.37;
-    path_delay[34][36] = 0.46;
-    path_delay[62][30] = 0.37;
-    path_delay[62][64] = 0.46;
-    path_delay[63][31] = 0.37;
-    path_delay[63][65] = 0.46;
-    path_delay[35][3] = 0.37;
-    path_delay[35][37] = 0.46;
-    path_delay[36][4] = 0.37;
-    path_delay[36][38] = 0.46;
-    path_delay[37][5] = 0.37;
-    path_delay[37][39] = 0.46;
-    path_delay[38][6] = 0.37;
-    path_delay[38][40] = 0.46;
-    path_delay[39][7] = 0.37;
-    path_delay[39][41] = 0.46;
-    path_delay[40][8] = 0.37;
-    path_delay[40][42] = 0.46;
-    path_delay[41][9] = 0.37;
-    path_delay[41][43] = 0.46;
-    path_delay[64][0] = 0.18;
-    path_delay[64][34] = 0.25;
-    path_delay[74][10] = 0.18;
-    path_delay[74][44] = 0.25;
-    path_delay[75][11] = 0.18;
-    path_delay[75][45] = 0.25;
-    path_delay[76][12] = 0.18;
-    path_delay[76][46] = 0.25;
-    path_delay[77][13] = 0.18;
-    path_delay[77][47] = 0.25;
-    path_delay[78][14] = 0.18;
-    path_delay[78][48] = 0.25;
-    path_delay[79][15] = 0.18;
-    path_delay[79][49] = 0.25;
-    path_delay[80][16] = 0.18;
-    path_delay[80][50] = 0.25;
-    path_delay[81][17] = 0.18;
-    path_delay[81][51] = 0.25;
-    path_delay[82][18] = 0.18;
-    path_delay[82][52] = 0.25;
-    path_delay[83][19] = 0.18;
-    path_delay[83][53] = 0.25;
-    path_delay[65][1] = 0.18;
-    path_delay[65][35] = 0.25;
-    path_delay[84][20] = 0.18;
-    path_delay[84][54] = 0.25;
-    path_delay[85][21] = 0.18;
-    path_delay[85][55] = 0.25;
-    path_delay[86][22] = 0.18;
-    path_delay[86][56] = 0.25;
-    path_delay[87][23] = 0.18;
-    path_delay[87][57] = 0.25;
-    path_delay[88][24] = 0.18;
-    path_delay[88][58] = 0.25;
-    path_delay[89][25] = 0.18;
-    path_delay[89][59] = 0.25;
-    path_delay[90][26] = 0.18;
-    path_delay[90][60] = 0.25;
-    path_delay[91][27] = 0.18;
-    path_delay[91][61] = 0.25;
-    path_delay[92][28] = 0.18;
-    path_delay[92][62] = 0.25;
-    path_delay[93][29] = 0.18;
-    path_delay[93][63] = 0.25;
-    path_delay[66][2] = 0.18;
-    path_delay[66][36] = 0.25;
-    path_delay[94][30] = 0.18;
-    path_delay[94][64] = 0.25;
-    path_delay[95][31] = 0.18;
-    path_delay[95][32] = 0.01;
-    path_delay[95][65] = 0.25;
-    path_delay[67][3] = 0.18;
-    path_delay[67][37] = 0.25;
-    path_delay[68][4] = 0.18;
-    path_delay[68][38] = 0.25;
-    path_delay[69][5] = 0.18;
-    path_delay[69][39] = 0.25;
-    path_delay[70][6] = 0.18;
-    path_delay[70][40] = 0.25;
-    path_delay[71][7] = 0.18;
-    path_delay[71][41] = 0.25;
-    path_delay[72][8] = 0.18;
-    path_delay[72][42] = 0.25;
-    path_delay[73][9] = 0.18;
-    path_delay[73][43] = 0.25;
+    path_delay[0][0] = 0.2192;
+    path_delay[0][34] = 0.2537;
+    path_delay[1][1] = 0.2192;
+    path_delay[1][35] = 0.2537;
+    path_delay[2][2] = 0.2192;
+    path_delay[2][36] = 0.2537;
+    path_delay[3][3] = 0.2192;
+    path_delay[3][37] = 0.2537;
+    path_delay[4][4] = 0.2192;
+    path_delay[4][38] = 0.2537;
+    path_delay[5][5] = 0.2192;
+    path_delay[5][39] = 0.2537;
+    path_delay[6][6] = 0.2192;
+    path_delay[6][40] = 0.2537;
+    path_delay[7][7] = 0.2192;
+    path_delay[7][41] = 0.2537;
+    path_delay[8][8] = 0.2192;
+    path_delay[8][42] = 0.2537;
+    path_delay[9][9] = 0.2192;
+    path_delay[9][43] = 0.2537;
+    path_delay[10][10] = 0.2192;
+    path_delay[10][44] = 0.2537;
+    path_delay[11][11] = 0.2192;
+    path_delay[11][45] = 0.2537;
+    path_delay[12][12] = 0.2192;
+    path_delay[12][46] = 0.2537;
+    path_delay[13][13] = 0.2192;
+    path_delay[13][47] = 0.2537;
+    path_delay[14][14] = 0.2192;
+    path_delay[14][48] = 0.2537;
+    path_delay[15][15] = 0.2192;
+    path_delay[15][49] = 0.2537;
+    path_delay[16][16] = 0.2192;
+    path_delay[16][50] = 0.2537;
+    path_delay[17][17] = 0.2192;
+    path_delay[17][51] = 0.2537;
+    path_delay[18][18] = 0.2192;
+    path_delay[18][52] = 0.2537;
+    path_delay[19][19] = 0.2192;
+    path_delay[19][53] = 0.2537;
+    path_delay[20][20] = 0.2192;
+    path_delay[20][54] = 0.2537;
+    path_delay[21][21] = 0.2192;
+    path_delay[21][55] = 0.2537;
+    path_delay[22][22] = 0.2192;
+    path_delay[22][56] = 0.2537;
+    path_delay[23][23] = 0.2192;
+    path_delay[23][57] = 0.2537;
+    path_delay[24][24] = 0.2192;
+    path_delay[24][58] = 0.2537;
+    path_delay[25][25] = 0.2192;
+    path_delay[25][59] = 0.2537;
+    path_delay[26][26] = 0.2192;
+    path_delay[26][60] = 0.2537;
+    path_delay[27][27] = 0.2192;
+    path_delay[27][61] = 0.2537;
+    path_delay[28][28] = 0.2192;
+    path_delay[28][62] = 0.2537;
+    path_delay[29][29] = 0.2192;
+    path_delay[29][63] = 0.2537;
+    path_delay[30][30] = 0.2192;
+    path_delay[30][64] = 0.2537;
+    path_delay[31][31] = 0.2192;
+    path_delay[31][65] = 0.2537;
+    path_delay[32][0] = 0.4307;
+    path_delay[32][34] = 0.4762;
+    path_delay[33][1] = 0.4307;
+    path_delay[33][35] = 0.4762;
+    path_delay[34][2] = 0.4307;
+    path_delay[34][36] = 0.4762;
+    path_delay[35][3] = 0.4307;
+    path_delay[35][37] = 0.4762;
+    path_delay[36][4] = 0.4307;
+    path_delay[36][38] = 0.4762;
+    path_delay[37][5] = 0.4307;
+    path_delay[37][39] = 0.4762;
+    path_delay[38][6] = 0.4307;
+    path_delay[38][40] = 0.4762;
+    path_delay[39][7] = 0.4307;
+    path_delay[39][41] = 0.4762;
+    path_delay[40][8] = 0.4307;
+    path_delay[40][42] = 0.4762;
+    path_delay[41][9] = 0.4307;
+    path_delay[41][43] = 0.4762;
+    path_delay[42][10] = 0.4307;
+    path_delay[42][44] = 0.4762;
+    path_delay[43][11] = 0.4307;
+    path_delay[43][45] = 0.4762;
+    path_delay[44][12] = 0.4307;
+    path_delay[44][46] = 0.4762;
+    path_delay[45][13] = 0.4307;
+    path_delay[45][47] = 0.4762;
+    path_delay[46][14] = 0.4307;
+    path_delay[46][48] = 0.4762;
+    path_delay[47][15] = 0.4307;
+    path_delay[47][49] = 0.4762;
+    path_delay[48][16] = 0.4307;
+    path_delay[48][50] = 0.4762;
+    path_delay[49][17] = 0.4307;
+    path_delay[49][51] = 0.4762;
+    path_delay[50][18] = 0.4307;
+    path_delay[50][52] = 0.4762;
+    path_delay[51][19] = 0.4307;
+    path_delay[51][53] = 0.4762;
+    path_delay[52][20] = 0.4307;
+    path_delay[52][54] = 0.4762;
+    path_delay[53][21] = 0.4307;
+    path_delay[53][55] = 0.4762;
+    path_delay[54][22] = 0.4307;
+    path_delay[54][56] = 0.4762;
+    path_delay[55][23] = 0.4307;
+    path_delay[55][57] = 0.4762;
+    path_delay[56][24] = 0.4307;
+    path_delay[56][58] = 0.4762;
+    path_delay[57][25] = 0.4307;
+    path_delay[57][59] = 0.4762;
+    path_delay[58][26] = 0.4307;
+    path_delay[58][60] = 0.4762;
+    path_delay[59][27] = 0.4307;
+    path_delay[59][61] = 0.4762;
+    path_delay[60][28] = 0.4307;
+    path_delay[60][62] = 0.4762;
+    path_delay[61][29] = 0.4307;
+    path_delay[61][63] = 0.4762;
+    path_delay[62][30] = 0.4307;
+    path_delay[62][64] = 0.4762;
+    path_delay[63][31] = 0.4307;
+    path_delay[63][65] = 0.4762;
+    path_delay[64][0] = 0.3985;
+    path_delay[64][34] = 0.4467;
+    path_delay[65][1] = 0.3985;
+    path_delay[65][35] = 0.4467;
+    path_delay[66][2] = 0.3985;
+    path_delay[66][36] = 0.4467;
+    path_delay[67][3] = 0.3985;
+    path_delay[67][37] = 0.4467;
+    path_delay[68][4] = 0.3985;
+    path_delay[68][38] = 0.4467;
+    path_delay[69][5] = 0.3985;
+    path_delay[69][39] = 0.4467;
+    path_delay[70][6] = 0.3985;
+    path_delay[70][40] = 0.4467;
+    path_delay[71][7] = 0.3985;
+    path_delay[71][41] = 0.4467;
+    path_delay[72][8] = 0.3985;
+    path_delay[72][42] = 0.4467;
+    path_delay[73][9] = 0.3985;
+    path_delay[73][43] = 0.4467;
+    path_delay[74][10] = 0.3985;
+    path_delay[74][44] = 0.4467;
+    path_delay[75][11] = 0.3985;
+    path_delay[75][45] = 0.4467;
+    path_delay[76][12] = 0.3985;
+    path_delay[76][46] = 0.4467;
+    path_delay[77][13] = 0.3985;
+    path_delay[77][47] = 0.4467;
+    path_delay[78][14] = 0.3985;
+    path_delay[78][48] = 0.4467;
+    path_delay[79][15] = 0.3985;
+    path_delay[79][49] = 0.4467;
+    path_delay[80][16] = 0.3985;
+    path_delay[80][50] = 0.4467;
+    path_delay[81][17] = 0.3985;
+    path_delay[81][51] = 0.4467;
+    path_delay[82][18] = 0.3985;
+    path_delay[82][52] = 0.4467;
+    path_delay[83][19] = 0.3985;
+    path_delay[83][53] = 0.4467;
+    path_delay[84][20] = 0.3985;
+    path_delay[84][54] = 0.4467;
+    path_delay[85][21] = 0.3985;
+    path_delay[85][55] = 0.4467;
+    path_delay[86][22] = 0.3985;
+    path_delay[86][56] = 0.4467;
+    path_delay[87][23] = 0.3985;
+    path_delay[87][57] = 0.4467;
+    path_delay[88][24] = 0.3985;
+    path_delay[88][58] = 0.4467;
+    path_delay[89][25] = 0.3985;
+    path_delay[89][59] = 0.4467;
+    path_delay[90][26] = 0.3985;
+    path_delay[90][60] = 0.4467;
+    path_delay[91][27] = 0.3985;
+    path_delay[91][61] = 0.4467;
+    path_delay[92][28] = 0.3985;
+    path_delay[92][62] = 0.4467;
+    path_delay[93][29] = 0.3985;
+    path_delay[93][63] = 0.4467;
+    path_delay[94][30] = 0.3985;
+    path_delay[94][64] = 0.4467;
+    path_delay[95][31] = 0.3985;
+    path_delay[95][32] = 0.0145;
+    path_delay[95][65] = 0.4467;
 }
 
 // ============================================================================
@@ -632,11 +642,13 @@ SC_MODULE(Testbench) {
         unsigned long long actual_sum_a = to_unsigned_33bit(sum_a_val);
         unsigned long long actual_sum_b = to_unsigned_33bit(sum_b_val);
 
-        long long actual_result = static_cast<long long>(actual_sum_a)
+        unsigned int tc_top = (tc_value >> (32 - 1)) & 1U;
+                                 long long sign_term = tc_top ? -(1LL << 32) : (1LL << 32);
+                                 long long actual_result = static_cast<long long>(actual_sum_b)
 
-                                 + static_cast<long long>(actual_sum_b)
+                                 - static_cast<long long>(actual_sum_a)
 
-                                 - ((1LL << (32 + 1)) - 1);
+                                 + sign_term;
 
         if (expected_result != actual_result) {
             number_of_errors++;

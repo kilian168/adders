@@ -1,0 +1,17 @@
+# hybrid_mcA_grayB: hybrid A-operand Monte-Carlo / B-operand gray-code stimulus, 128 steps, seed 42. Rebuilt after the SD/TC-PM two-inverter gate fix (input NOT on SD_b, output NOT on sum) and the matching fresh Nangate45 delay table.
+Architecture,Width,Steps,Seed,Errors,AvgSwitches,AvgDelay_ns,AvgEDP_Correct
+RCA,2,2,42,0,3.5,0.41,1.51
+CLA,2,2,42,0,3.5,0.41,1.51
+SD,2,2,42,0,10,0.795,8
+SD/TC-PM,2,2,42,0,4.5,0.3261,1.50365
+SD/TC-PPM,2,2,42,0,3.5,0.305,1.095
+RCA,4,8,42,0,8.75,0.85625,8.24375
+CLA,4,8,42,0,12.375,0.85,10.4525
+SD,4,8,42,0,17.75,0.80125,14.23
+SD/TC-PM,4,8,42,0,10.875,0.370012,3.99017
+SD/TC-PPM,4,8,42,0,7.875,0.36625,2.8825
+RCA,8,128,42,0,21.1562,1.73484,37.9175
+CLA,8,128,42,0,27.6641,1.28102,36.4081
+SD,8,128,42,0,32.0781,0.805,25.8716
+SD/TC-PM,8,128,42,0,15.3203,0.387802,5.91585
+SD/TC-PPM,8,128,42,0,11.0234,0.374844,4.12336

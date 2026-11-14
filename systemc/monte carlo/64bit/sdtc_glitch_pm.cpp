@@ -193,42 +193,34 @@ SC_MODULE(FullAdder) {
     sc_in<bool> a, b, cin;
     sc_out<bool> sum, cout;
 
-    sc_signal<bool> s1, notB, term1, notS1, term2;
+    sc_signal<bool> s1, c1, c2;
 
-    Gate *g_xor1, *g_and1, *g_and2, *g_or1, *g_xor2;
-    GateNot *g_notB, *g_notS1;
+    Gate *g_xor1, *g_and1, *g_xor2, *g_and2, *g_or1;
 
     SC_CTOR(FullAdder) {
         g_xor1 = new Gate("XOR1", GATE_XOR);
-        g_xor1->in1(cin); g_xor1->in2(b); g_xor1->out(s1);
-
-        g_notB = new GateNot("NOTB");
-        g_notB->in1(b); g_notB->out(notB);
+        g_xor1->in1(a); g_xor1->in2(b); g_xor1->out(s1);
 
         g_and1 = new Gate("AND1", GATE_AND);
-        g_and1->in1(cin); g_and1->in2(notB); g_and1->out(term1);
-
-        g_notS1 = new GateNot("NOTS1");
-        g_notS1->in1(s1); g_notS1->out(notS1);
-
-        g_and2 = new Gate("AND2", GATE_AND);
-        g_and2->in1(notS1); g_and2->in2(a); g_and2->out(term2);
-
-        g_or1 = new Gate("OR1", GATE_OR);
-        g_or1->in1(term1); g_or1->in2(term2); g_or1->out(cout);
+        g_and1->in1(a); g_and1->in2(b); g_and1->out(c1);
 
         g_xor2 = new Gate("XOR2", GATE_XOR);
-        g_xor2->in1(s1); g_xor2->in2(a); g_xor2->out(sum);
+        g_xor2->in1(s1); g_xor2->in2(cin); g_xor2->out(sum);
+
+        g_and2 = new Gate("AND2", GATE_AND);
+        g_and2->in1(s1); g_and2->in2(cin); g_and2->out(c2);
+
+        g_or1 = new Gate("OR1", GATE_OR);
+        g_or1->in1(c1); g_or1->in2(c2); g_or1->out(cout);
     }
 
-    uint64_t total_switches() const {
-        return g_xor1->switches + g_notB->switches + g_and1->switches +
-               g_notS1->switches + g_and2->switches + g_or1->switches + g_xor2->switches;
+    unsigned int total_switches() const {
+        return g_xor1->switches + g_and1->switches + g_xor2->switches +
+               g_and2->switches + g_or1->switches;
     }
 
     ~FullAdder() {
-        delete g_xor1; delete g_notB; delete g_and1; delete g_notS1;
-        delete g_and2; delete g_or1; delete g_xor2;
+        delete g_xor1; delete g_and1; delete g_xor2; delete g_and2; delete g_or1;
     }
 };
 
@@ -250,22 +242,33 @@ SC_MODULE(SdTcAdder64) {
     sc_signal<bool> tc_bit[64];
     sc_signal<bool> sum_bit[64];
     sc_signal<bool> carry_bit[64];
+    sc_signal<bool> sdb_bit_n[64];
+    sc_signal<bool> sum_bit_raw[64];
     sc_signal<bool> const_zero;
     sc_signal<bool> top_bit;
 
     FullAdder* fa[64];
+    GateNot* g_notB[64];
+    GateNot* g_notSum[64];
     GateNot* g_not_top;
 
     SC_CTOR(SdTcAdder64) {
         for (int i = 0; i < 64; i++) {
             std::string name = "FA_" + std::to_string(i);
+            g_notB[i] = new GateNot(("NOTB_" + std::to_string(i)).c_str());
+            g_notB[i]->in1(sdb_bit[i]); g_notB[i]->out(sdb_bit_n[i]);
+            
+
             fa[i] = new FullAdder(name.c_str());
 
             fa[i]->a(tc_bit[i]);
-            fa[i]->b(sdb_bit[i]);
+            fa[i]->b(sdb_bit_n[i]);
             fa[i]->cin(sda_bit[i]);
-            fa[i]->sum(sum_bit[i]);
+            fa[i]->sum(sum_bit_raw[i]);
             fa[i]->cout(carry_bit[i]);
+            
+            g_notSum[i] = new GateNot(("NOTSUM_" + std::to_string(i)).c_str());
+            g_notSum[i]->in1(sum_bit_raw[i]); g_notSum[i]->out(sum_bit[i]);
         }
 
         g_not_top = new GateNot("NOT_TOP");
@@ -313,7 +316,7 @@ SC_MODULE(SdTcAdder64) {
     uint64_t total_switches() const {
         uint64_t total = 0;
         for (int i = 0; i < 64; i++) {
-            total += fa[i]->total_switches();
+            total += fa[i]->total_switches() + g_notB[i]->switches + g_notSum[i]->switches;
         }
         total += g_not_top->switches;
         return total;
@@ -322,6 +325,8 @@ SC_MODULE(SdTcAdder64) {
     ~SdTcAdder64() {
         for (int i = 0; i < 64; i++) {
             delete fa[i];
+            delete g_notB[i];
+            delete g_notSum[i];
         }
         delete g_not_top;
     }

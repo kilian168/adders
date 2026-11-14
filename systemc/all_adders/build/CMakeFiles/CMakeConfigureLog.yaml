@@ -2065,3 +2065,561 @@ events:
         - "/usr/pkg"
         - "/opt"
 ...
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineSystem.cmake:220 (message)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      The system is: Linux - 7.3.4-arch1-1 - x86_64
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:541 (find_file)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:583 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCCompilerId.c.in"
+    candidate_directories:
+      - "/usr/share/cmake/Modules/"
+    found: "/usr/share/cmake/Modules/CMakeCCompilerId.c.in"
+    search_context:
+      ENV{PATH}:
+        - "/mnt/storage/bachelor/venv/bin"
+        - "/home/kilian/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:122 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: /home/kilian/Projects/systemc-compiler/bin/clang 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+      
+      The C compiler identification is Clang, found in:
+        /mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/4.5.0/CompilerIdC/a.out
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:541 (find_file)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:583 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:15 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "NEVER"
+      SearchAppBundle: "NEVER"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCXXCompilerId.cpp.in"
+    candidate_directories:
+      - "/usr/share/cmake/Modules/"
+    found: "/usr/share/cmake/Modules/CMakeCXXCompilerId.cpp.in"
+    search_context:
+      ENV{PATH}:
+        - "/mnt/storage/bachelor/venv/bin"
+        - "/home/kilian/.local/bin"
+        - "/usr/local/sbin"
+        - "/usr/local/bin"
+        - "/usr/bin"
+        - "/home/kilian/.local/share/flatpak/exports/bin"
+        - "/var/lib/flatpak/exports/bin"
+        - "/usr/lib/jvm/default/bin"
+        - "/usr/bin/site_perl"
+        - "/usr/bin/vendor_perl"
+        - "/usr/bin/core_perl"
+        - "/usr/lib/rustup/bin"
+      CMAKE_INSTALL_PREFIX: "/usr/local"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /home/kilian/Projects/systemc-compiler/bin/clang++ 
+      Build flags: -stdlib=libc++
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+      
+      The CXX compiler identification is Clang, found in:
+        /mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/4.5.0/CompilerIdCXX/a.out
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:123 (try_compile)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm"
+      binary: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: false
+      stdout: |
+        Change Dir: '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm'
+        
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_a43b1/fast
+        make[1]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm'
+        /usr/bin/make  -f CMakeFiles/cmTC_a43b1.dir/build.make CMakeFiles/cmTC_a43b1.dir/build
+        make[2]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm'
+        Building C object CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o
+        /home/kilian/Projects/systemc-compiler/bin/clang   -v -MD -MT CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake/Modules/CMakeCCompilerABI.c
+        clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)
+        Target: x86_64-unknown-linux-gnu
+        Thread model: posix
+        InstalledDir: /home/kilian/Projects/systemc-compiler/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16
+        Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Candidate multilib: .;@m64
+        Candidate multilib: 32;@m32
+        Selected multilib: .;@m64
+         (in-process)
+         "/home/kilian/Projects/systemc-compiler/bin/clang-18" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm -v -fcoverage-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm -resource-dir /home/kilian/Projects/systemc-compiler/lib/clang/18 -dependency-file CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -sys-header-deps -internal-isystem /home/kilian/Projects/systemc-compiler/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake/Modules/CMakeCCompilerABI.c
+        clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target x86_64-unknown-linux-gnu
+        ignoring nonexistent directory "/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include"
+        ignoring nonexistent directory "/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /home/kilian/Projects/systemc-compiler/lib/clang/18/include
+         /usr/local/include
+         /usr/include
+        End of search list.
+        Linking C executable cmTC_a43b1
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a43b1.dir/link.txt --verbose=1
+        clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)
+        Target: x86_64-unknown-linux-gnu
+        Thread model: posix
+        InstalledDir: /home/kilian/Projects/systemc-compiler/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16
+        Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Candidate multilib: .;@m64
+        Candidate multilib: 32;@m32
+        Selected multilib: .;@m64
+         "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_a43b1 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o
+        GNU ld (GNU Binutils) 2.47
+        /home/kilian/Projects/systemc-compiler/bin/clang -stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw -v -Wl,-v CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -o cmTC_a43b1
+        make[2]: Leaving directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm'
+        make[1]: Leaving directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:255 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Parsed C implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+          add: [/usr/local/include]
+          add: [/usr/include]
+        end of search list found
+        collapse include dir [/home/kilian/Projects/systemc-compiler/lib/clang/18/include] ==> [/home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+        collapse include dir [/usr/local/include] ==> [/usr/local/include]
+        collapse include dir [/usr/include] ==> [/usr/include]
+        implicit include dirs: [/home/kilian/Projects/systemc-compiler/lib/clang/18/include;/usr/local/include;/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:291 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Parsed C implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|wild|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)(\\.exe)?"?( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|wild))("|,| |$)]
+        ignore line: [Change Dir: '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm']
+        ignore line: []
+        ignore line: [Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_a43b1/fast]
+        ignore line: [make[1]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm']
+        ignore line: [/usr/bin/make  -f CMakeFiles/cmTC_a43b1.dir/build.make CMakeFiles/cmTC_a43b1.dir/build]
+        ignore line: [make[2]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm']
+        ignore line: [Building C object CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o]
+        ignore line: [/home/kilian/Projects/systemc-compiler/bin/clang   -v -MD -MT CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -MF CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o.d -o CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake/Modules/CMakeCCompilerABI.c]
+        ignore line: [clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)]
+        ignore line: [Target: x86_64-unknown-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /home/kilian/Projects/systemc-compiler/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Candidate multilib: 32]
+        ignore line: [@m32]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        ignore line: [ (in-process)]
+        ignore line: [ "/home/kilian/Projects/systemc-compiler/bin/clang-18" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm -v -fcoverage-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-BKe4Wm -resource-dir /home/kilian/Projects/systemc-compiler/lib/clang/18 -dependency-file CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o.d -MT CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -sys-header-deps -internal-isystem /home/kilian/Projects/systemc-compiler/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -x c /usr/share/cmake/Modules/CMakeCCompilerABI.c]
+        ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target x86_64-unknown-linux-gnu]
+        ignore line: [ignoring nonexistent directory "/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include"]
+        ignore line: [ignoring nonexistent directory "/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+        ignore line: [ /usr/local/include]
+        ignore line: [ /usr/include]
+        ignore line: [End of search list.]
+        ignore line: [Linking C executable cmTC_a43b1]
+        ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a43b1.dir/link.txt --verbose=1]
+        ignore line: [clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)]
+        ignore line: [Target: x86_64-unknown-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /home/kilian/Projects/systemc-compiler/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Candidate multilib: 32]
+        ignore line: [@m32]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_a43b1 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> linker [/usr/bin/ld]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_a43b1 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> linker architecture flags [-m;elf_x86_64]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_a43b1 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o]
+          arg [/usr/bin/ld] ==> ignore
+          arg [--hash-style=gnu] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [elf_x86_64] ==> ignore
+          arg [-pie] ==> ignore
+          arg [-dynamic-linker] ==> ignore, skip following value
+          arg [/lib64/ld-linux-x86-64.so.2] ==> skip value of -dynamic-linker
+          arg [-o] ==> ignore, skip following value
+          arg [cmTC_a43b1] ==> skip value of -o
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o]
+          arg [-L/home/kilian/Projects/systemc-compiler/lib] ==> dir [/home/kilian/Projects/systemc-compiler/lib]
+          arg [-L/usr/lib64/gcc/x86_64-pc-linux-gnu/16] ==> dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+          arg [-L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64] ==> dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64]
+          arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+          arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+          arg [-L/lib] ==> dir [/lib]
+          arg [-L/usr/lib] ==> dir [/usr/lib]
+          arg [-lncursesw] ==> lib [ncursesw]
+          arg [-v] ==> ignore
+          arg [CMakeFiles/cmTC_a43b1.dir/CMakeCCompilerABI.c.o] ==> ignore
+          arg [-lgcc] ==> lib [gcc]
+          arg [--as-needed] ==> ignore
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [--no-as-needed] ==> ignore
+          arg [-lc] ==> lib [c]
+          arg [-lgcc] ==> lib [gcc]
+          arg [--as-needed] ==> ignore
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [--no-as-needed] ==> ignore
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o]
+        linker tool for 'C': /usr/bin/ld -m;elf_x86_64
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o] ==> [/usr/lib64/Scrt1.o]
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o] ==> [/usr/lib64/crti.o]
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> [/usr/lib64/crtn.o]
+        collapse library dir [/home/kilian/Projects/systemc-compiler/lib] ==> [/home/kilian/Projects/systemc-compiler/lib]
+        collapse library dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16] ==> [/usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        collapse library dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib/../lib64] ==> [/lib64]
+        collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib] ==> [/lib]
+        collapse library dir [/usr/lib] ==> [/usr/lib]
+        implicit libs: [ncursesw;gcc;gcc_s;c;gcc;gcc_s]
+        implicit objs: [/usr/lib64/Scrt1.o;/usr/lib64/crti.o;/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o;/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o;/usr/lib64/crtn.o]
+        implicit dirs: [/home/kilian/Projects/systemc-compiler/lib;/usr/lib64/gcc/x86_64-pc-linux-gnu/16;/usr/lib64;/lib64;/lib;/usr/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake:41 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:337 (cmake_determine_linker_id)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Running the C compiler's linker: "/usr/bin/ld" "-v"
+      GNU ld (GNU Binutils) 2.47
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:123 (try_compile)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF"
+      binary: "/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/home/kilian/Projects/systemc-compiler/bin/clang-scan-deps"
+      CMAKE_CXX_FLAGS: "-stdlib=libc++"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: "-stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: false
+      stdout: |
+        Change Dir: '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF'
+        
+        Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_3f7b0/fast
+        make[1]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF'
+        /usr/bin/make  -f CMakeFiles/cmTC_3f7b0.dir/build.make CMakeFiles/cmTC_3f7b0.dir/build
+        make[2]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF'
+        Building CXX object CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o
+        /home/kilian/Projects/systemc-compiler/bin/clang++   -stdlib=libc++    -v -MD -MT CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)
+        Target: x86_64-unknown-linux-gnu
+        Thread model: posix
+        InstalledDir: /home/kilian/Projects/systemc-compiler/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16
+        Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Candidate multilib: .;@m64
+        Candidate multilib: 32;@m32
+        Selected multilib: .;@m64
+         (in-process)
+         "/home/kilian/Projects/systemc-compiler/bin/clang-18" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF -v -fcoverage-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF -resource-dir /home/kilian/Projects/systemc-compiler/lib/clang/18 -dependency-file CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /home/kilian/Projects/systemc-compiler/bin/../include/c++/v1 -internal-isystem /home/kilian/Projects/systemc-compiler/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target x86_64-unknown-linux-gnu
+        ignoring nonexistent directory "/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include"
+        ignoring nonexistent directory "/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /home/kilian/Projects/systemc-compiler/bin/../include/c++/v1
+         /home/kilian/Projects/systemc-compiler/lib/clang/18/include
+         /usr/local/include
+         /usr/include
+        End of search list.
+        Linking CXX executable cmTC_3f7b0
+        /usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3f7b0.dir/link.txt --verbose=1
+        clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)
+        Target: x86_64-unknown-linux-gnu
+        Thread model: posix
+        InstalledDir: /home/kilian/Projects/systemc-compiler/bin
+        Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16
+        Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16
+        Candidate multilib: .;@m64
+        Candidate multilib: 32;@m32
+        Selected multilib: .;@m64
+         "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_3f7b0 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o
+        GNU ld (GNU Binutils) 2.47
+        /home/kilian/Projects/systemc-compiler/bin/clang++ -stdlib=libc++  -stdlib=libc++ -L/home/kilian/Projects/systemc-compiler/lib -lncursesw -v -Wl,-v CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_3f7b0
+        make[2]: Leaving directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF'
+        make[1]: Leaving directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:255 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/home/kilian/Projects/systemc-compiler/bin/../include/c++/v1]
+          add: [/home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+          add: [/usr/local/include]
+          add: [/usr/include]
+        end of search list found
+        collapse include dir [/home/kilian/Projects/systemc-compiler/bin/../include/c++/v1] ==> [/home/kilian/Projects/systemc-compiler/include/c++/v1]
+        collapse include dir [/home/kilian/Projects/systemc-compiler/lib/clang/18/include] ==> [/home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+        collapse include dir [/usr/local/include] ==> [/usr/local/include]
+        collapse include dir [/usr/include] ==> [/usr/include]
+        implicit include dirs: [/home/kilian/Projects/systemc-compiler/include/c++/v1;/home/kilian/Projects/systemc-compiler/lib/clang/18/include;/usr/local/include;/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:291 (message)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|wild|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)(\\.exe)?"?( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|wild))("|,| |$)]
+        ignore line: [Change Dir: '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF']
+        ignore line: []
+        ignore line: [Run Build Command(s): /usr/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_3f7b0/fast]
+        ignore line: [make[1]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF']
+        ignore line: [/usr/bin/make  -f CMakeFiles/cmTC_3f7b0.dir/build.make CMakeFiles/cmTC_3f7b0.dir/build]
+        ignore line: [make[2]: Entering directory '/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF']
+        ignore line: [Building CXX object CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/home/kilian/Projects/systemc-compiler/bin/clang++   -stdlib=libc++    -v -MD -MT CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)]
+        ignore line: [Target: x86_64-unknown-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /home/kilian/Projects/systemc-compiler/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Candidate multilib: 32]
+        ignore line: [@m32]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        ignore line: [ (in-process)]
+        ignore line: [ "/home/kilian/Projects/systemc-compiler/bin/clang-18" -cc1 -triple x86_64-unknown-linux-gnu -emit-obj -mrelax-all -disable-free -clear-ast-before-backend -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF -v -fcoverage-compilation-dir=/mnt/storage/bachelor/adders/systemc/all_adders/build/CMakeFiles/CMakeScratch/TryCompile-eEc1FF -resource-dir /home/kilian/Projects/systemc-compiler/lib/clang/18 -dependency-file CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -internal-isystem /home/kilian/Projects/systemc-compiler/bin/../include/c++/v1 -internal-isystem /home/kilian/Projects/systemc-compiler/lib/clang/18/include -internal-isystem /usr/local/include -internal-isystem /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include -internal-externc-isystem /include -internal-externc-isystem /usr/include -fdeprecated-macro -ferror-limit 19 -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -faddrsig -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -x c++ /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang -cc1 version 18.1.8 based upon LLVM 18.1.8 default target x86_64-unknown-linux-gnu]
+        ignore line: [ignoring nonexistent directory "/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../x86_64-pc-linux-gnu/include"]
+        ignore line: [ignoring nonexistent directory "/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /home/kilian/Projects/systemc-compiler/bin/../include/c++/v1]
+        ignore line: [ /home/kilian/Projects/systemc-compiler/lib/clang/18/include]
+        ignore line: [ /usr/local/include]
+        ignore line: [ /usr/include]
+        ignore line: [End of search list.]
+        ignore line: [Linking CXX executable cmTC_3f7b0]
+        ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_3f7b0.dir/link.txt --verbose=1]
+        ignore line: [clang version 18.1.8 (https://github.com/intel/systemc-compiler.git 68e56ae742e662199b697f7535f761c8d9bfcb7b)]
+        ignore line: [Target: x86_64-unknown-linux-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /home/kilian/Projects/systemc-compiler/bin]
+        ignore line: [Found candidate GCC installation: /usr/lib/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Found candidate GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Selected GCC installation: /usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        ignore line: [Candidate multilib: .]
+        ignore line: [@m64]
+        ignore line: [Candidate multilib: 32]
+        ignore line: [@m32]
+        ignore line: [Selected multilib: .]
+        ignore line: [@m64]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_3f7b0 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> linker [/usr/bin/ld]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_3f7b0 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> linker architecture flags [-m;elf_x86_64]
+        link line: [ "/usr/bin/ld" --hash-style=gnu --eh-frame-hdr -m elf_x86_64 -pie -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o cmTC_3f7b0 /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o -L/home/kilian/Projects/systemc-compiler/lib -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16 -L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/lib -L/usr/lib -lncursesw -v CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o /usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o]
+          arg [/usr/bin/ld] ==> ignore
+          arg [--hash-style=gnu] ==> ignore
+          arg [--eh-frame-hdr] ==> ignore
+          arg [-m] ==> ignore
+          arg [elf_x86_64] ==> ignore
+          arg [-pie] ==> ignore
+          arg [-dynamic-linker] ==> ignore, skip following value
+          arg [/lib64/ld-linux-x86-64.so.2] ==> skip value of -dynamic-linker
+          arg [-o] ==> ignore, skip following value
+          arg [cmTC_3f7b0] ==> skip value of -o
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o]
+          arg [-L/home/kilian/Projects/systemc-compiler/lib] ==> dir [/home/kilian/Projects/systemc-compiler/lib]
+          arg [-L/usr/lib64/gcc/x86_64-pc-linux-gnu/16] ==> dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+          arg [-L/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64] ==> dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64]
+          arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+          arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+          arg [-L/lib] ==> dir [/lib]
+          arg [-L/usr/lib] ==> dir [/usr/lib]
+          arg [-lncursesw] ==> lib [ncursesw]
+          arg [-v] ==> ignore
+          arg [CMakeFiles/cmTC_3f7b0.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [-lc++] ==> lib [c++]
+          arg [-lm] ==> lib [m]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [-lc] ==> lib [c]
+          arg [-lgcc_s] ==> lib [gcc_s]
+          arg [-lgcc] ==> lib [gcc]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o]
+          arg [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o]
+        linker tool for 'CXX': /usr/bin/ld -m;elf_x86_64
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/Scrt1.o] ==> [/usr/lib64/Scrt1.o]
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crti.o] ==> [/usr/lib64/crti.o]
+        collapse obj [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64/crtn.o] ==> [/usr/lib64/crtn.o]
+        collapse library dir [/home/kilian/Projects/systemc-compiler/lib] ==> [/home/kilian/Projects/systemc-compiler/lib]
+        collapse library dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16] ==> [/usr/lib64/gcc/x86_64-pc-linux-gnu/16]
+        collapse library dir [/usr/lib64/gcc/x86_64-pc-linux-gnu/16/../../../../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib/../lib64] ==> [/lib64]
+        collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+        collapse library dir [/lib] ==> [/lib]
+        collapse library dir [/usr/lib] ==> [/usr/lib]
+        implicit libs: [ncursesw;c++;m;gcc_s;gcc;c;gcc_s;gcc]
+        implicit objs: [/usr/lib64/Scrt1.o;/usr/lib64/crti.o;/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtbeginS.o;/usr/lib64/gcc/x86_64-pc-linux-gnu/16/crtendS.o;/usr/lib64/crtn.o]
+        implicit dirs: [/home/kilian/Projects/systemc-compiler/lib;/usr/lib64/gcc/x86_64-pc-linux-gnu/16;/usr/lib64;/lib64;/lib;/usr/lib]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake:41 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:337 (cmake_determine_linker_id)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:15 (project)"
+    message: |
+      Running the CXX compiler's linker: "/usr/bin/ld" "-v"
+      GNU ld (GNU Binutils) 2.47
+...
